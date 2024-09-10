@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 
-import { LoginSchema } from '@/schemas';
+import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,8 +19,8 @@ import {
     FormMessage
 } from '@/components/ui/form';
 import CardWrapper from './card-wrapper';
-import { FormError } from '../form-error';
-import { FormSuccess } from '../form-success';
+import FormError from '@/components/form/FormError';
+import FormSuccess from '@/components/form/FormSuccess';
 import { login } from '@/actions/login';
 
 const LoginForm = () => {
@@ -84,7 +84,7 @@ const LoginForm = () => {
                         {showTwoFactor && (
                             <FormField
                                 control={form.control}
-                                name="code"
+                                name="token"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Two Factor Code</FormLabel>
