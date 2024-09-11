@@ -1,6 +1,6 @@
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/layout/PageContainer';
-import UserClient from '@/components/members/UserClient';
+import MemberClient from '@/components/members/MemberClient';
 import { users } from '@/constants/data';
 
 const breadcrumbItems = [
@@ -12,7 +12,7 @@ export default function page() {
         <PageContainer>
             <div className="space-y-2">
                 <Breadcrumbs items={breadcrumbItems} />
-                <UserClient data={users} />
+                <MemberClient data={users} />
             </div>
         </PageContainer>
     );

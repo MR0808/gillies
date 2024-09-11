@@ -5,7 +5,7 @@ import CellAction from './CellAction';
 import { User } from '@/constants/data';
 import { Checkbox } from '@/components/ui/checkbox';
 
-export const columns: ColumnDef<User>[] = [
+export const memberColumns: ColumnDef<User>[] = [
     {
         id: 'select',
         header: ({ table }) => (

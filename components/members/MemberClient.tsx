@@ -1,21 +1,25 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { User } from '@/constants/data';
-import { columns } from './Columns';
+import { memberColumns } from './MemberColumns';
+import FormSuccess from '../form/FormSuccess';
 
 interface ProductsClientProps {
     data: User[];
 }
 
-const UserClient: React.FC<ProductsClientProps> = ({ data }) => {
+const MemberClient: React.FC<ProductsClientProps> = ({ data }) => {
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const created = searchParams.get('created');
 
     return (
         <>
@@ -32,9 +36,9 @@ const UserClient: React.FC<ProductsClientProps> = ({ data }) => {
                 </Button>
             </div>
             <Separator />
-            <DataTable searchKey="name" columns={columns} data={data} />
+            <DataTable searchKey="name" columns={memberColumns} data={data} />
         </>
     );
 };
 
-export default UserClient;
+export default MemberClient;
