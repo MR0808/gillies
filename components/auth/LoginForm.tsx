@@ -6,6 +6,7 @@ import { useTransition, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
 
 import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
@@ -16,12 +17,20 @@ import {
     FormField,
     FormItem,
     FormLabel,
-    FormMessage
+    FormMessage,
+    FormDescription
 } from '@/components/ui/form';
-import CardWrapper from './card-wrapper';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+    InputOTPSeparator
+} from '@/components/ui/input-otp';
+import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
 import FormSuccess from '@/components/form/FormSuccess';
 import { login } from '@/actions/login';
+import { cn } from '@/lib/utils';
 
 const LoginForm = () => {
     const searchParams = useSearchParams();
@@ -32,6 +41,7 @@ const LoginForm = () => {
             : '';
 
     const [showTwoFactor, setShowTwoFactor] = useState(false);
+    const [showBackupCode, setShowBackupCode] = useState(false);
     const [error, setError] = useState<string | undefined>('');
     const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
@@ -40,9 +50,23 @@ const LoginForm = () => {
         resolver: zodResolver(LoginSchema),
         defaultValues: {
             email: '',
-            password: ''
+            password: '',
+            rememberMe: true
         }
     });
+
+    const backupCode = () => {
+        setShowTwoFactor(false);
+        setShowBackupCode(true);
+        form.resetField('token');
+    };
+
+    const phoneCode = () => {
+        setShowTwoFactor(true);
+        setShowBackupCode(false);
+        form.resetField('backupCode');
+    };
+
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
         setError('');
         setSuccess('');
@@ -53,11 +77,6 @@ const LoginForm = () => {
                     if (data?.error) {
                         form.reset();
                         setError(data.error);
-                    }
-
-                    if (data?.success) {
-                        form.reset();
-                        setSuccess(data.success);
                     }
 
                     if (data?.twoFactor) {
@@ -73,7 +92,6 @@ const LoginForm = () => {
             headerLabel="Welcome back"
             backButtonLabel="Don't have an account?"
             backButtonHref="/auth/register"
-            showSocial
         >
             <Form {...form}>
                 <form
@@ -87,20 +105,77 @@ const LoginForm = () => {
                                 name="token"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Two Factor Code</FormLabel>
                                         <FormControl>
-                                            <Input
+                                            <InputOTP
+                                                maxLength={6}
                                                 {...field}
-                                                disabled={isPending}
-                                                placeholder="123456"
-                                            />
+                                                className={cn(
+                                                    'flex items-center justify-center'
+                                                )}
+                                            >
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={0} />
+                                                    <InputOTPSlot index={1} />
+                                                    <InputOTPSlot index={2} />
+                                                </InputOTPGroup>
+                                                <InputOTPSeparator />
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={3} />
+                                                    <InputOTPSlot index={4} />
+                                                    <InputOTPSlot index={5} />
+                                                </InputOTPGroup>
+                                            </InputOTP>
                                         </FormControl>
+                                        <FormDescription>
+                                            Please enter the one-time password
+                                            sent to your phone.
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
                         )}
-                        {!showTwoFactor && (
+                        {showBackupCode && (
+                            <FormField
+                                control={form.control}
+                                name="backupCode"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <InputOTP
+                                                maxLength={6}
+                                                {...field}
+                                                className={cn(
+                                                    'flex items-center justify-center'
+                                                )}
+                                                pattern={
+                                                    REGEXP_ONLY_DIGITS_AND_CHARS
+                                                }
+                                            >
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={0} />
+                                                    <InputOTPSlot index={1} />
+                                                    <InputOTPSlot index={2} />
+                                                </InputOTPGroup>
+                                                <InputOTPSeparator />
+                                                <InputOTPGroup>
+                                                    <InputOTPSlot index={3} />
+                                                    <InputOTPSlot index={4} />
+                                                    <InputOTPSlot index={5} />
+                                                </InputOTPGroup>
+                                            </InputOTP>
+                                        </FormControl>
+                                        <FormDescription>
+                                            Please enter one of your backup
+                                            codes. This code will no longer be
+                                            able to be used after login.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                        {!showTwoFactor && !showBackupCode && (
                             <>
                                 <FormField
                                     control={form.control}

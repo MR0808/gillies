@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Dispatch, SetStateAction } from 'react';
 
-import { Icons } from '@/components/icons';
+import { Icons } from '@/components/global/Icons';
 import { cn } from '@/lib/utils';
 import { NavItem } from '@/types';
-import { Dispatch, SetStateAction } from 'react';
 import { useSidebar } from '@/hooks/useSidebar';
 import {
     Tooltip,
@@ -21,11 +21,11 @@ interface DashboardNavProps {
     isMobileNav?: boolean;
 }
 
-export function DashboardNav({
+const DashboardNav = ({
     items,
     setOpen,
     isMobileNav = false
-}: DashboardNavProps) {
+}: DashboardNavProps) => {
     const path = usePathname();
     const { isMinimized } = useSidebar();
 
@@ -89,4 +89,6 @@ export function DashboardNav({
             </TooltipProvider>
         </nav>
     );
-}
+};
+
+export default DashboardNav;

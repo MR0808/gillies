@@ -3,15 +3,18 @@
 import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
 import { useTheme } from 'next-themes';
 
-import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+
+import { Button } from '@/components/ui/button';
+
 type CompProps = {};
-export default function ThemeToggle({}: CompProps) {
+
+const ThemeToggle = ({}: CompProps) => {
     const { setTheme } = useTheme();
     return (
         <DropdownMenu>
@@ -35,4 +38,6 @@ export default function ThemeToggle({}: CompProps) {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-}
+};
+
+export default ThemeToggle;

@@ -1,6 +1,3 @@
-import { CalendarDateRangePicker } from '@/components/date-range-picker';
-import PageContainer from '@/components/layout/page-container';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -8,6 +5,10 @@ import {
     CardHeader,
     CardTitle
 } from '@/components/ui/card';
+
+import CalendarDateRangePicker from '@/components/global/DateRangePicker';
+import PageContainer from '@/components/layout/page-container';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function page() {
