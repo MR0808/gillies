@@ -4,6 +4,30 @@ import bcrypt from 'bcryptjs';
 import db from '@/lib/db';
 import { getVerificationTokenByEmail } from '@/data/verificationToken';
 import { getPasswordResetTokenByEmail } from '@/data/passwordResetToken';
+import { getRegistrationTokenByEmail } from '@/data/registrationToken';
+
+export const generateRegistrationToken = async (email: string) => {
+    const token = uuidv4();
+
+    const existingToken = await getRegistrationTokenByEmail(email);
+
+    if (existingToken) {
+        await db.registrationToken.delete({
+            where: {
+                id: existingToken.id
+            }
+        });
+    }
+
+    const registrationToken = await db.registrationToken.create({
+        data: {
+            email,
+            token
+        }
+    });
+
+    return registrationToken;
+};
 
 export const generateVerificationToken = async (email: string) => {
     const token = uuidv4();

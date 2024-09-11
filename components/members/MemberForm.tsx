@@ -4,11 +4,11 @@ import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Trash } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useToast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '../form/Buttons';
 import {
     Form,
     FormControl,
@@ -19,25 +19,20 @@ import {
 } from '@/components/ui/form';
 import { Heading } from '@/components/ui/heading';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { MemberSchema } from '@/schemas/members';
+import { createMember } from '@/actions/members';
+import FormError from '../form/FormError';
 
 const MemberForm = () => {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
-    const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState<string | undefined>();
     const title = 'Add Member';
     const description = 'Create a new member';
-    const action = 'Create';
+    const action = 'Create Member';
 
     const form = useForm<z.infer<typeof MemberSchema>>({
         resolver: zodResolver(MemberSchema),
@@ -48,7 +43,22 @@ const MemberForm = () => {
         }
     });
 
-    const onSubmit = (values: z.infer<typeof MemberSchema>) => {};
+    const onSubmit = (values: z.infer<typeof MemberSchema>) => {
+        startTransition(() => {
+            createMember(values)
+                .then((data) => {
+                    if (data?.error) {
+                        form.reset();
+                        setError(data.error);
+                    }
+                    if (data?.success) {
+                        router.refresh();
+                        router.push(`/dashboard/members/?created=true`);
+                    }
+                })
+                .catch(() => setError('Something went wrong'));
+        });
+    };
 
     return (
         <>
@@ -67,6 +77,7 @@ const MemberForm = () => {
             </div>
             <Separator />
             <Form {...form}>
+                <FormError message={error} />
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="w-3/4 space-y-8"
@@ -80,7 +91,7 @@ const MemberForm = () => {
                                     <FormLabel>First Name</FormLabel>
                                     <FormControl>
                                         <Input
-                                            disabled={loading}
+                                            disabled={isPending}
                                             placeholder="First Name"
                                             {...field}
                                         />
@@ -97,7 +108,7 @@ const MemberForm = () => {
                                     <FormLabel>Last Name</FormLabel>
                                     <FormControl>
                                         <Input
-                                            disabled={loading}
+                                            disabled={isPending}
                                             placeholder="Last Name"
                                             {...field}
                                         />
@@ -115,7 +126,7 @@ const MemberForm = () => {
                                     <FormControl>
                                         <Input
                                             type="email"
-                                            disabled={loading}
+                                            disabled={isPending}
                                             placeholder="Email"
                                             {...field}
                                         />
@@ -125,13 +136,11 @@ const MemberForm = () => {
                             )}
                         />
                     </div>
-                    <Button
-                        disabled={loading}
+                    <SubmitButton
+                        isPending={isPending}
                         className="ml-auto"
-                        type="submit"
-                    >
-                        {action}
-                    </Button>
+                        text={action}
+                    />
                 </form>
             </Form>
         </>

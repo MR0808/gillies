@@ -1,28 +1,21 @@
-import { Breadcrumbs } from '@/components/breadcrumbs';
-import { ProductForm } from '@/components/forms/product-form';
-import PageContainer from '@/components/layout/page-container';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import React from 'react';
 
+import Breadcrumbs from '@/components/global/Breadcrumbs';
+import MemberForm from '@/components/members/MemberForm';
+import PageContainer from '@/components/layout/PageContainer';
+
 const breadcrumbItems = [
-  { title: 'Dashboard', link: '/dashboard' },
-  { title: 'User', link: '/dashboard/user' },
-  { title: 'Create', link: '/dashboard/user/create' }
+    { title: 'Dashboard', link: '/dashboard' },
+    { title: 'Members', link: '/dashboard/members' },
+    { title: 'Update Member', link: '/dashboard/member/new' }
 ];
 export default function Page() {
-  return (
-    <PageContainer scrollable={true}>
-      <div className="space-y-4">
-        <Breadcrumbs items={breadcrumbItems} />
-        <ProductForm
-          categories={[
-            { _id: 'shirts', name: 'shirts' },
-            { _id: 'pants', name: 'pants' }
-          ]}
-          initialData={null}
-          key={null}
-        />
-      </div>
-    </PageContainer>
-  );
+    return (
+        <PageContainer scrollable={true}>
+            <div className="space-y-4">
+                <Breadcrumbs items={breadcrumbItems} />
+                <MemberForm />
+            </div>
+        </PageContainer>
+    );
 }

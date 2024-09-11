@@ -20,6 +20,7 @@ model User {
   lastName      String?
   email         String?   @unique
   emailVerified DateTime?
+  registered    Boolean @default(false)
   image         String?
   password      String?
   role          UserRole @default(USER)
@@ -56,6 +57,14 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model RegistrationToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+
+  @@unique([email, token])
 }
 
 model VerificationToken {
