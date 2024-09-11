@@ -1,11 +1,11 @@
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/layout/PageContainer';
-import { UserClient } from '@/components/tables/user-tables/client';
+import UserClient from '@/components/members/UserClient';
 import { users } from '@/constants/data';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
-    { title: 'User', link: '/dashboard/user' }
+    { title: 'Members', link: '/dashboard/members' }
 ];
 export default function page() {
     return (
