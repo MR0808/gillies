@@ -4,9 +4,6 @@
  * @type {string[]}
  */
 export const publicRoutes = [
-    '/dashboard',
-    '/dashboard/members',
-    '/dashboard/members/new',
     '/auth/verification',
     '/auth/error',
     '/auth/register'
@@ -29,7 +26,11 @@ export const authRoutes = [
  * If the user is not an admin, they will be redirected to the main page
  * @type {string[]}
  */
-export const adminRoutes = ['/dashboard'];
+export const adminRoutes = [
+    '/dashboard',
+    '/dashboard/members',
+    '/dashboard/members/new'
+];
 
 /**
  * The prefix for API authentication routes

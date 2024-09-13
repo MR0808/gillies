@@ -15,18 +15,22 @@ import AlertModal from '@/components/modal/AlertModal';
 import ResendModal from '@/components/modal/ResendModal';
 import { Button } from '@/components/ui/button';
 import { MemberCellActionProps } from '@/types';
-import { resendInvite } from '@/actions/members';
+import { resendInvite, deleteMember } from '@/actions/members';
 
-const CellAction: React.FC<MemberCellActionProps> = ({ data }) => {
-    const [loadingDelete, setLoadingDelete] = useState(false);
+const MemberCellAction: React.FC<MemberCellActionProps> = ({ data }) => {
     const [openDelete, setOpenDelete] = useState(false);
-    const [isPending, startTransition] = useTransition();
+    const [isPendingDelete, startTransitionDelete] = useTransition();
+    const [isPendingResend, startTransitionResend] = useTransition();
     const [openResend, setOpenResend] = useState(false);
     const router = useRouter();
 
-    const onConfirmDelete = async () => {};
+    const onConfirmDelete = () => {
+        deleteMember(data.id)
+            .then(() => setOpenDelete(false))
+            .catch((error) => console.log(error));
+    };
     const handleResend = () => {
-        startTransition(() => {
+        startTransitionResend(() => {
             setOpenResend(true);
             resendInvite(data.email!).catch((error) => console.log(error));
         });
@@ -38,12 +42,12 @@ const CellAction: React.FC<MemberCellActionProps> = ({ data }) => {
                 isOpen={openDelete}
                 onClose={() => setOpenDelete(false)}
                 onConfirm={onConfirmDelete}
-                loading={loadingDelete}
+                loading={isPendingDelete}
             />
             <ResendModal
                 isOpen={openResend}
                 onClose={() => setOpenResend(false)}
-                loading={isPending}
+                loading={isPendingResend}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -75,4 +79,4 @@ const CellAction: React.FC<MemberCellActionProps> = ({ data }) => {
     );
 };
 
-export default CellAction;
+export default MemberCellAction;

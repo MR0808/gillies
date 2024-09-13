@@ -3,7 +3,7 @@ import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { User } from '@prisma/client';
 import { ArrowUpDown } from 'lucide-react';
 
-import CellAction from './CellAction';
+import MemberCellAction from './MemberCellAction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -110,6 +110,6 @@ export const memberColumns: ColumnDef<User>[] = [
     },
     {
         id: 'actions',
-        cell: ({ row }) => <CellAction data={row.original} />
+        cell: ({ row }) => <MemberCellAction data={row.original} />
     }
 ];

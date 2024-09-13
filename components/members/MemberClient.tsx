@@ -24,12 +24,20 @@ const MemberClient: React.FC<MembersClientProps> = ({ data }) => {
                     title={`Members (${data.length})`}
                     description="Manage members below"
                 />
-                <Button
-                    className="text-xs md:text-sm"
-                    onClick={() => router.push(`/dashboard/members/new`)}
-                >
-                    <Plus className="mr-2 h-4 w-4" /> Add New
-                </Button>
+                <div className="flex flex-row gap-x-2">
+                    <Button
+                        className="text-xs md:text-sm"
+                        onClick={() => router.push(`/dashboard/members/new`)}
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Add New
+                    </Button>
+                    <Button
+                        className="text-xs md:text-sm"
+                        onClick={() => router.push(`/dashboard/members/bulk`)}
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Add Bulk
+                    </Button>
+                </div>
             </div>
             <Separator />
             <DataTable

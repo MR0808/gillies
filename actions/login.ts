@@ -9,10 +9,11 @@ import db from '@/lib/db';
 import { signIn } from '@/auth';
 import { LoginSchema } from '@/schemas/auth';
 import { getUserByEmail } from '@/data/user';
-import { sendVerificationEmail } from '@/lib/mail';
+import { sendVerificationEmail, sendRegistrationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { generateVerificationToken } from '@/lib/tokens';
 import getTwoFactorConfirmationByUserId from '@/data/twoFactorConfirmation';
+import { getRegistrationTokenByEmail } from '@/data/registrationToken';
 
 export const login = async (
     values: z.infer<typeof LoginSchema>,
@@ -43,6 +44,23 @@ export const login = async (
         );
 
         return { error: 'Email not verified. New confirmation email sent!' };
+    }
+
+    if (!existingUser.registered) {
+        const registrationToken = await getRegistrationTokenByEmail(
+            existingUser.email
+        );
+
+        if (registrationToken) {
+            await sendRegistrationEmail(
+                registrationToken.email,
+                registrationToken?.token
+            );
+        }
+
+        return {
+            error: 'Please click the link you were sent to confirm your registration'
+        };
     }
 
     if (existingUser.otpEnabled && existingUser.email) {

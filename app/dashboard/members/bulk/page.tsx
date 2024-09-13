@@ -1,23 +1,22 @@
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/layout/PageContainer';
-import MemberClient from '@/components/members/MemberClient';
-import { fetchAllMembers } from '@/actions/members';
+import MembersBulkUpload from '@/components/members/MembersBulkUpload';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
-    { title: 'Members', link: '/dashboard/members' }
+    { title: 'Members', link: '/dashboard/members' },
+    { title: 'Bulk Upload Members', link: '/dashboard/members/bulk' }
 ];
 
-const MembersPage = async () => {
-    const users = await fetchAllMembers();
+const BulkUploadMembersPage = async () => {
     return (
         <PageContainer>
             <div className="space-y-2">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MemberClient data={users!} />
+                <MembersBulkUpload />
             </div>
         </PageContainer>
     );
 };
 
-export default MembersPage;
+export default BulkUploadMembersPage;

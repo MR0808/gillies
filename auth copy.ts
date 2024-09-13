@@ -1,44 +1,20 @@
-import bcrypt from 'bcryptjs';
-import type { NextAuthConfig } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import NextAuth from 'next-auth';
 import { UserRole } from '@prisma/client';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 
 import db from './lib/db';
-import { LoginSchema } from '@/schemas/auth';
-import { getUserByEmail } from '@/data/user';
+import authConfig from '@/auth.config';
 import { getUserById } from '@/data/user';
 import { getAccountByUserId } from '@/data/account';
 import getTwoFactorConfirmationByUserId from '@/data/twoFactorConfirmation';
 
-export default {
-    providers: [
-        Credentials({
-            async authorize(credentials) {
-                try {
-                    const validatedFields = LoginSchema.safeParse(credentials);
-
-                    if (validatedFields.success) {
-                        const { email, password } = validatedFields.data;
-
-                        const user = await getUserByEmail(email);
-                        if (!user || !user.password) return null;
-
-                        const passwordsMatch = await bcrypt.compare(
-                            password,
-                            user.password
-                        );
-
-                        if (passwordsMatch) return user;
-                    }
-                    return null;
-                } catch (error) {
-                    console.log(error);
-                    return null;
-                }
-            }
-        })
-    ],
+export const {
+    handlers: { GET, POST },
+    auth,
+    signIn,
+    signOut,
+    unstable_update
+} = NextAuth({
     pages: {
         signIn: '/login',
         error: '/error'
@@ -124,5 +100,6 @@ export default {
         }
     },
     adapter: PrismaAdapter(db),
-    session: { strategy: 'jwt' }
-} satisfies NextAuthConfig;
+    session: { strategy: 'jwt' },
+    ...authConfig
+});

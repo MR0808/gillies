@@ -4,8 +4,8 @@ import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 
 export const metadata: Metadata = {
-    title: 'Next Shadcn Dashboard Starter',
-    description: 'Basic dashboard with Next.js and Shadcn'
+    title: 'Gillies Voting System Admin',
+    description: 'Gillies voting system admin'
 };
 
 export default function DashboardLayout({

@@ -1,7 +1,7 @@
-const renderError = (error: unknown): { message: string } => {
+const renderError = (error: unknown): { error: string } => {
     console.log(error);
     return {
-        message: error instanceof Error ? error.message : 'An error occurred'
+        error: error instanceof Error ? error.message : 'An error occurred'
     };
 };
 
