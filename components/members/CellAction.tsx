@@ -1,7 +1,7 @@
 'use client';
-import { Edit, MoreHorizontal, Trash } from 'lucide-react';
+import { Edit, MoreHorizontal, Trash, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import {
     DropdownMenu,
@@ -12,27 +12,38 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import AlertModal from '@/components/modal/AlertModal';
+import ResendModal from '@/components/modal/ResendModal';
 import { Button } from '@/components/ui/button';
-import { User } from '@/constants/data';
+import { MemberCellActionProps } from '@/types';
+import { resendInvite } from '@/actions/members';
 
-interface CellActionProps {
-    data: User;
-}
-
-const CellAction: React.FC<CellActionProps> = ({ data }) => {
-    const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
+const CellAction: React.FC<MemberCellActionProps> = ({ data }) => {
+    const [loadingDelete, setLoadingDelete] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [openResend, setOpenResend] = useState(false);
     const router = useRouter();
 
-    const onConfirm = async () => {};
+    const onConfirmDelete = async () => {};
+    const handleResend = () => {
+        startTransition(() => {
+            setOpenResend(true);
+            resendInvite(data.email!).catch((error) => console.log(error));
+        });
+    };
 
     return (
         <>
             <AlertModal
-                isOpen={open}
-                onClose={() => setOpen(false)}
-                onConfirm={onConfirm}
-                loading={loading}
+                isOpen={openDelete}
+                onClose={() => setOpenDelete(false)}
+                onConfirm={onConfirmDelete}
+                loading={loadingDelete}
+            />
+            <ResendModal
+                isOpen={openResend}
+                onClose={() => setOpenResend(false)}
+                loading={isPending}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -43,7 +54,6 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
                     <DropdownMenuItem
                         onClick={() =>
                             router.push(`/dashboard/members/${data.id}`)
@@ -51,9 +61,14 @@ const CellAction: React.FC<CellActionProps> = ({ data }) => {
                     >
                         <Edit className="mr-2 h-4 w-4" /> Update
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setOpen(true)}>
+                    <DropdownMenuItem onClick={() => setOpenDelete(true)}>
                         <Trash className="mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
+                    {!data.registered && (
+                        <DropdownMenuItem onClick={handleResend}>
+                            <RefreshCw className="mr-2 h-4 w-4" /> Resend Invite
+                        </DropdownMenuItem>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

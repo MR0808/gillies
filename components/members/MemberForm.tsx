@@ -6,8 +6,8 @@ import { Trash } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
-import { useToast } from '@/components/ui/use-toast';
 import { SubmitButton } from '../form/Buttons';
 import {
     Form,
@@ -27,7 +27,6 @@ import FormError from '../form/FormError';
 const MemberForm = () => {
     const params = useParams();
     const router = useRouter();
-    const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | undefined>();
     const title = 'Add Member';
@@ -53,7 +52,8 @@ const MemberForm = () => {
                     }
                     if (data?.success) {
                         router.refresh();
-                        router.push(`/dashboard/members/?created=true`);
+                        router.push(`/dashboard/members/`);
+                        toast.success('Member created');
                     }
                 })
                 .catch(() => setError('Something went wrong'));

@@ -1,7 +1,7 @@
-import { Toaster } from '@/components/ui/toaster';
 import { Inter } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Toaster } from '@/components/ui/sonner';
 
 import type { Metadata } from 'next';
 import './globals.css';
@@ -29,8 +29,8 @@ export default async function RootLayout({
             >
                 <NextTopLoader showSpinner={false} />
                 <Providers session={session}>
-                    <Toaster />
                     {children}
+                    <Toaster richColors />
                     <SpeedInsights />
                 </Providers>
             </body>

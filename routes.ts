@@ -8,7 +8,8 @@ export const publicRoutes = [
     '/dashboard/members',
     '/dashboard/members/new',
     '/auth/verification',
-    '/auth/error'
+    '/auth/error',
+    '/auth/register'
 ];
 
 /**
@@ -18,7 +19,6 @@ export const publicRoutes = [
  */
 export const authRoutes = [
     '/auth/login',
-    '/auth/register',
     '/auth/reset',
     '/auth/forgotpassword',
     '/auth/newpassword'

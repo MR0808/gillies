@@ -1,3 +1,5 @@
+import { User } from '@prisma/client';
+
 import { Icons } from '@/components/global/Icons';
 
 export interface NavItem {
@@ -30,3 +32,14 @@ export interface FooterItem {
 export type MainNavItem = NavItemWithOptionalChildren;
 
 export type SidebarNavItem = NavItemWithChildren;
+
+export interface MemberCellActionProps {
+    data: User;
+}
+
+export interface AlertModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    loading: boolean;
+}
