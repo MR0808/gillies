@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 
 import type { Metadata } from 'next';
 import './globals.css';
-import Providers from '@/components/layout/Providers';
+import Providers from '@/providers/Providers';
 import { auth } from '@/auth';
 
 const inter = Inter({ subsets: ['latin'] });

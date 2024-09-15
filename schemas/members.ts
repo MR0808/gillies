@@ -11,3 +11,5 @@ export const MemberSchema = z.object({
         message: 'Last name is required'
     })
 });
+
+export const MemberUploadSchema = z.array(MemberSchema);
