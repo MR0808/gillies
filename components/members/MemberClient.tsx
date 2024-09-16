@@ -3,7 +3,6 @@
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { User } from '@prisma/client';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,8 +12,9 @@ import { Separator } from '@/components/ui/separator';
 import { memberColumns } from './MemberColumns';
 import UploadButton from './UploadButton';
 import ImportCard from './ImportCard';
-import { MemberUploadSchema } from '@/schemas/members';
+import { MemberImportSchema } from '@/schemas/members';
 import { useGetMembers } from '@/features/members/useGetMembers';
+import { getUserByEmail } from '@/data/user';
 
 enum VARIANT {
     LIST = 'LIST',
@@ -35,7 +35,7 @@ const MemberClient = () => {
     const [variant, setVariant] = useState<VARIANT>(VARIANT.LIST);
     const [importResults, setImportResults] = useState(INITIAL_IMPORT_RESULTS);
 
-    const onUpload = (results: typeof INITIAL_IMPORT_RESULTS) => {
+    const onUpload = async (results: typeof INITIAL_IMPORT_RESULTS) => {
         setVariant(VARIANT.IMPORT);
         setImportResults(results);
     };
@@ -46,7 +46,7 @@ const MemberClient = () => {
     };
 
     const onSubmitImport = async (
-        values: z.infer<typeof MemberUploadSchema>
+        values: z.infer<typeof MemberImportSchema>
     ) => {
         console.log(values);
     };

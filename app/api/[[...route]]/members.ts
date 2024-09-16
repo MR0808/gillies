@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 
 import db from '@/lib/db';
 import { getAuth, getAuthAdmin } from './getAuth';
-import { MemberSchema } from '@/schemas/members';
+import { MemberSchema, MemberImportSchema } from '@/schemas/members';
 import { generateRegistrationToken } from '@/lib/tokens';
 import { sendRegistrationEmail } from '@/lib/mail';
 import { getRegistrationTokenById } from '@/data/registrationToken';
@@ -152,6 +152,16 @@ const app = new Hono()
             }
 
             return c.json({ data });
+        }
+    )
+    .post(
+        '/bulk-create',
+        getAuthAdmin,
+        zValidator('json', MemberImportSchema),
+        async (c) => {
+            const values = c.req.valid('json');
+
+            return c.json({ data: true });
         }
     );
 
