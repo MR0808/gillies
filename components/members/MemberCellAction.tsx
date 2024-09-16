@@ -17,6 +17,7 @@ import AlertModal from '@/components/modal/AlertModal';
 import ResendModal from '@/components/modal/ResendModal';
 import { Button } from '@/components/ui/button';
 import { useResendMember } from '@/features/members/useResendMember';
+import { useDeleteMember } from '@/features/members/useDeleteMember';
 
 export type ResponseType = InferResponseType<
     typeof client.api.members.$get,
@@ -29,11 +30,11 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
     const router = useRouter();
 
     const resendMutation = useResendMember(data.id);
+    const deleteMutation = useDeleteMember(data.id);
 
     const onConfirmDelete = () => {
-        // deleteMember(data.id)
-        //     .then(() => setOpenDelete(false))
-        //     .catch((error) => console.log(error));
+        deleteMutation.mutate(undefined);
+        setOpenDelete(false);
     };
 
     const handleResend = () => {
@@ -47,7 +48,7 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
                 isOpen={openDelete}
                 onClose={() => setOpenDelete(false)}
                 onConfirm={onConfirmDelete}
-                loading={false}
+                loading={deleteMutation.isPending}
             />
             <ResendModal
                 isOpen={openResend}
