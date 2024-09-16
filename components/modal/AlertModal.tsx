@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -37,7 +38,14 @@ const AlertModal: React.FC<AlertModalProps> = ({
                     variant="destructive"
                     onClick={onConfirm}
                 >
-                    Continue
+                    {loading ? (
+                        <>
+                            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                            Please wait...
+                        </>
+                    ) : (
+                        <>Continue</>
+                    )}
                 </Button>
             </div>
         </Modal>

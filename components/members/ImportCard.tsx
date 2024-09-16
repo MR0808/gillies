@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { ReloadIcon } from '@radix-ui/react-icons';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ImportTable from './ImportTable';
 import { Heading } from '@/components/ui/heading';
@@ -15,9 +15,10 @@ type Props = {
     onCancel: () => void;
     onSubmit: (data: any) => void;
     data: string[][];
+    isPending: boolean;
 };
 
-const ImportCard = ({ onCancel, onSubmit, data }: Props) => {
+const ImportCard = ({ onCancel, onSubmit, data, isPending }: Props) => {
     const headers = data[0];
     const body = data.slice(1);
     const [selectedColumns, setSelectedColumns] =
@@ -95,14 +96,26 @@ const ImportCard = ({ onCancel, onSubmit, data }: Props) => {
                     <Button
                         disabled={
                             Object.keys(selectedColumns).length <
-                            requiredOptions.length
+                                requiredOptions.length || isPending
                         }
                         className="text-xs md:text-sm"
                         onClick={onContinue}
                     >
-                        Continue (
-                        {Object.keys(selectedColumns).filter(Boolean).length}/
-                        {requiredOptions.length})
+                        {isPending ? (
+                            <>
+                                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                                Please wait...
+                            </>
+                        ) : (
+                            <>
+                                Continue (
+                                {
+                                    Object.keys(selectedColumns).filter(Boolean)
+                                        .length
+                                }
+                                /{requiredOptions.length})
+                            </>
+                        )}
                     </Button>
                 </div>
             </div>

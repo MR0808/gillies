@@ -110,14 +110,12 @@ const app = new Hono()
         zValidator('param', z.object({ id: z.string().optional() })),
         async (c) => {
             const { id } = c.req.valid('param');
-            console.log('id', id);
 
             if (!id) {
                 return c.json({ error: 'Missing id' }, 400);
             }
 
             const registrationToken = await getRegistrationTokenById(id);
-            console.log(registrationToken);
 
             if (!registrationToken) {
                 return c.json({ error: 'Not found' }, 404);
@@ -161,7 +159,31 @@ const app = new Hono()
         async (c) => {
             const values = c.req.valid('json');
 
-            return c.json({ data: true });
+            const emails = await db.user.findMany({ select: { email: true } });
+            const list = emails.map((email) => {
+                return email.email;
+            });
+
+            const upload = values.filter(
+                (member) => list.includes(member.email) === false
+            );
+
+            const data = await db.user.createMany({
+                data: upload
+            });
+
+            upload.forEach(async (member) => {
+                const registrationToken = await generateRegistrationToken(
+                    member.email
+                );
+
+                await sendRegistrationEmail(
+                    registrationToken.email,
+                    registrationToken.token
+                );
+            });
+
+            return c.json({ data });
         }
     );
 

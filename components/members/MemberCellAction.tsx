@@ -33,8 +33,11 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
     const deleteMutation = useDeleteMember(data.id);
 
     const onConfirmDelete = () => {
-        deleteMutation.mutate(undefined);
-        setOpenDelete(false);
+        deleteMutation.mutate(undefined, {
+            onSuccess: () => {
+                setOpenDelete(false);
+            }
+        });
     };
 
     const handleResend = () => {

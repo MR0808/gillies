@@ -14,7 +14,7 @@ import UploadButton from './UploadButton';
 import ImportCard from './ImportCard';
 import { MemberImportSchema } from '@/schemas/members';
 import { useGetMembers } from '@/features/members/useGetMembers';
-import { getUserByEmail } from '@/data/user';
+import { useBulkCreateMembers } from '@/features/members/useBulkCreateMembers';
 
 enum VARIANT {
     LIST = 'LIST',
@@ -30,6 +30,8 @@ const INITIAL_IMPORT_RESULTS = {
 const MemberClient = () => {
     const membersQuery = useGetMembers();
     const members = membersQuery.data || [];
+
+    const createMembers = useBulkCreateMembers();
 
     const router = useRouter();
     const [variant, setVariant] = useState<VARIANT>(VARIANT.LIST);
@@ -48,7 +50,11 @@ const MemberClient = () => {
     const onSubmitImport = async (
         values: z.infer<typeof MemberImportSchema>
     ) => {
-        console.log(values);
+        createMembers.mutate(values, {
+            onSuccess: () => {
+                onCancelImport();
+            }
+        });
     };
 
     if (variant === VARIANT.IMPORT) {
@@ -58,6 +64,7 @@ const MemberClient = () => {
                     data={importResults.data}
                     onCancel={onCancelImport}
                     onSubmit={onSubmitImport}
+                    isPending={createMembers.isPending}
                 />
             </>
         );
