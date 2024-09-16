@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MemberForm from '@/components/members/MemberForm';
+import MemberFormLayout from '@/components/members/MemberFormLayout';
 import PageContainer from '@/components/layout/PageContainer';
 
 const breadcrumbItems = [
@@ -14,7 +14,7 @@ export default function Page() {
         <PageContainer scrollable={true}>
             <div className="space-y-4">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MemberForm />
+                <MemberFormLayout edit={false} />
             </div>
         </PageContainer>
     );

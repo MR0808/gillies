@@ -2,13 +2,19 @@
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { User } from '@prisma/client';
 import { ArrowUpDown } from 'lucide-react';
+import { InferResponseType } from 'hono';
+import { client } from '@/lib/hono';
 
 import MemberCellAction from './MemberCellAction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
+const multiColumnFilterFn: FilterFn<ResponseType> = (
+    row,
+    columnId,
+    filterValue
+) => {
     // Concatenate the values from multiple columns into a single string
     const searchableRowContent = `${row.original.firstName} ${row.original.lastName} ${row.original.email}`;
 
@@ -18,7 +24,12 @@ const multiColumnFilterFn: FilterFn<User> = (row, columnId, filterValue) => {
         .includes(filterValue.toLowerCase());
 };
 
-export const memberColumns: ColumnDef<User>[] = [
+export type ResponseType = InferResponseType<
+    typeof client.api.members.$get,
+    200
+>['data'][0];
+
+export const memberColumns: ColumnDef<ResponseType>[] = [
     {
         accessorKey: 'firstName',
         header: ({ column }) => {

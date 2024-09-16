@@ -9,12 +9,12 @@ const breadcrumbItems = [
 ];
 
 const MembersPage = async () => {
-    const users = await fetchAllMembers();
+    // const users = await fetchAllMembers();
     return (
         <PageContainer>
             <div className="space-y-2">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MemberClient data={users!} />
+                <MemberClient />
             </div>
         </PageContainer>
     );

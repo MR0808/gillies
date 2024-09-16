@@ -51,7 +51,7 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
     }
 };
 
-export const resendInvite = async (email: string) => {
+export const resendInvite = async (id: string) => {
     try {
         const registrationToken = await getRegistrationTokenByEmail(email);
 

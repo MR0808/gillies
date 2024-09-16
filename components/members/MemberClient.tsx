@@ -14,10 +14,7 @@ import { memberColumns } from './MemberColumns';
 import UploadButton from './UploadButton';
 import ImportCard from './ImportCard';
 import { MemberUploadSchema } from '@/schemas/members';
-
-interface MembersClientProps {
-    data: User[];
-}
+import { useGetMembers } from '@/features/members/useGetMembers';
 
 enum VARIANT {
     LIST = 'LIST',
@@ -30,7 +27,10 @@ const INITIAL_IMPORT_RESULTS = {
     meta: {}
 };
 
-const MemberClient: React.FC<MembersClientProps> = ({ data }) => {
+const MemberClient = () => {
+    const membersQuery = useGetMembers();
+    const members = membersQuery.data || [];
+
     const router = useRouter();
     const [variant, setVariant] = useState<VARIANT>(VARIANT.LIST);
     const [importResults, setImportResults] = useState(INITIAL_IMPORT_RESULTS);
@@ -67,7 +67,7 @@ const MemberClient: React.FC<MembersClientProps> = ({ data }) => {
         <>
             <div className="flex sm:flex-row flex-col items-start justify-between">
                 <Heading
-                    title={`Members (${data.length})`}
+                    title={`Members (${members.length})`}
                     description="Manage members below"
                 />
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -84,7 +84,7 @@ const MemberClient: React.FC<MembersClientProps> = ({ data }) => {
             <DataTable
                 searchKey="lastName"
                 columns={memberColumns}
-                data={data}
+                data={members}
             />
         </>
     );

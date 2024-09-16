@@ -1,9 +1,8 @@
 import React from 'react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MemberForm from '@/components/members/MemberForm';
+import MemberFormLayout from '@/components/members/MemberFormLayout';
 import PageContainer from '@/components/layout/PageContainer';
-import { getUserById } from '@/data/user';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -11,14 +10,12 @@ const breadcrumbItems = [
     { title: 'Update Member', link: '/dashboard/member/new' }
 ];
 
-const MemberEditPage = async ({ params }: { params: { memberid: string } }) => {
-    const { memberid } = params;
-    const member = await getUserById(memberid);
+const MemberEditPage = () => {
     return (
         <PageContainer scrollable={true}>
             <div className="space-y-4">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MemberForm member={member!} />
+                <MemberFormLayout edit={true} />
             </div>
         </PageContainer>
     );
