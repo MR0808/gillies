@@ -7,7 +7,8 @@ import {
     apiAuthPrefix,
     authRoutes,
     publicRoutes,
-    adminRoutes
+    adminRoutes,
+    apiPrefix
 } from '@/routes';
 
 const { auth } = NextAuth(authConfig);
@@ -18,6 +19,7 @@ export default auth((req) => {
     const role = req.auth?.user.role;
 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
+    const isApiRoute = nextUrl.pathname.startsWith(apiPrefix);
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
     const isAdminRoute = adminRoutes.includes(nextUrl.pathname);
@@ -25,7 +27,7 @@ export default auth((req) => {
     const headers = new Headers(req.headers);
     headers.set('x-current-path', req.nextUrl.pathname);
 
-    if (isApiAuthRoute) {
+    if (isApiAuthRoute || isApiRoute) {
         // return NextResponse.next({ headers });
         return;
     }

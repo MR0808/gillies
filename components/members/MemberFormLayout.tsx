@@ -66,36 +66,6 @@ const MemberFormLayout = ({ edit }: { edit: boolean }) => {
               });
     };
 
-    // const onSubmit = (values: z.infer<typeof MemberSchema>) => {
-    //     startTransition(() => {
-    //         member
-    //             ? updateMember(values, member.id)
-    //                   .then((data) => {
-    //                       if (data?.error) {
-    //                           setError(data.error);
-    //                       }
-    //                       if (data?.success) {
-    //                           router.refresh();
-    //                           router.push(`/dashboard/members/`);
-    //                           toast.success('Member updated');
-    //                       }
-    //                   })
-    //                   .catch(() => setError('Something went wrong'))
-    //             : createMember(values)
-    //                   .then((data) => {
-    //                       if (data?.error) {
-    //                           setError(data.error);
-    //                       }
-    //                       if (data?.success) {
-    //                           router.refresh();
-    //                           router.push(`/dashboard/members/`);
-    //                           toast.success('Member created');
-    //                       }
-    //                   })
-    //                   .catch(() => setError('Something went wrong'));
-    //     });
-    // };
-
     return (
         <>
             <div className="flex items-center justify-between">
