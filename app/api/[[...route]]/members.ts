@@ -129,6 +129,30 @@ const app = new Hono()
             );
             return c.json({ registrationToken });
         }
+    )
+    .delete(
+        '/:id',
+        getAuthAdmin,
+        zValidator('param', z.object({ id: z.string().optional() })),
+        async (c) => {
+            const { id } = c.req.valid('param');
+
+            if (!id) {
+                return c.json({ error: 'Missing id' }, 400);
+            }
+
+            const data = await db.user.delete({
+                where: {
+                    id
+                }
+            });
+
+            if (!data) {
+                return c.json({ error: 'Not found' }, 404);
+            }
+
+            return c.json({ data });
+        }
     );
 
 export default app;
