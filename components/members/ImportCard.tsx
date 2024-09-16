@@ -110,7 +110,7 @@ const ImportCard = ({ onCancel, onSubmit, data }: Props) => {
             <ImportTable
                 headers={headers}
                 body={body}
-                selectedColumns={selectedColumns!!}
+                selectedColumns={selectedColumns}
                 onTableHeadSelectChange={onTableHeadSelectChange}
             />
         </>
