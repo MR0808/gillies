@@ -1,7 +1,7 @@
 'use server';
 
 import * as z from 'zod';
-import bcrypt from 'bcryptjs';
+import { hash } from 'bcrypt-ts';
 
 import db from '@/lib/db';
 import { getRegistrationTokenByToken } from '@/data/registrationToken';
@@ -52,7 +52,7 @@ export const register = async (
 
     if (email !== existingToken.email) return { error: 'Invalid email!' };
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hash(password, 10);
 
     await db.user.update({
         where: { id: existingUser.id },

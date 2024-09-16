@@ -3,7 +3,7 @@
 import * as z from 'zod';
 import { AuthError } from 'next-auth';
 import * as OTPAuth from 'otpauth';
-import bcrypt from 'bcryptjs';
+import { compareSync } from 'bcrypt-ts';
 
 import db from '@/lib/db';
 import { signIn } from '@/auth';
@@ -100,7 +100,7 @@ export const login = async (
             let passed = false;
             let index = -1;
             for (const [i, code] of codes.entries()) {
-                const doMatch = await bcrypt.compare(backupCode, code);
+                const doMatch = await compareSync(backupCode, code);
 
                 if (doMatch) {
                     passed = true;

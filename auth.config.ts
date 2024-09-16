@@ -1,4 +1,4 @@
-import bcrypt from 'bcryptjs';
+import { compare } from 'bcrypt-ts';
 import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { UserRole } from '@prisma/client';
@@ -24,7 +24,7 @@ export default {
                         const user = await getUserByEmail(email);
                         if (!user || !user.password) return null;
 
-                        const passwordsMatch = await bcrypt.compare(
+                        const passwordsMatch = await compare(
                             password,
                             user.password
                         );
