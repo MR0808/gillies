@@ -8,7 +8,7 @@ import { currentUser } from '@/lib/auth';
 import { getUserById } from '@/data/user';
 import { unstable_update as update } from '@/auth';
 
-const app = new Hono().post(
+const app = new Hono().patch(
     '/name',
     getAuth,
     zValidator('json', NameSchema),

@@ -1,4 +1,4 @@
-import ThemeToggle from '@/components/layout/ThemeToggle/ThemeToggle';
+import ThemeToggle from '@/components/dashboardLayout/ThemeToggle/ThemeToggle';
 import { cn } from '@/lib/utils';
 import MobileSidebar from './MobileSidebar';
 import UserNav from './UserNav';

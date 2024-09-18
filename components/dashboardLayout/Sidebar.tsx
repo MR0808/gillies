@@ -3,7 +3,7 @@
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
-import DashboardNav from '@/components/layout/DashboardNav';
+import DashboardNav from '@/components/dashboardLayout/DashboardNav';
 import { navItems } from '@/constants/data';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/hooks/useSidebar';

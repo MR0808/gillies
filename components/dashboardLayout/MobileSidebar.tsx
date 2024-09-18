@@ -3,7 +3,7 @@
 import { MenuIcon } from 'lucide-react';
 import { useState } from 'react';
 
-import DashboardNav from '@/components/layout/DashboardNav';
+import DashboardNav from '@/components/dashboardLayout/DashboardNav';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { navItems } from '@/constants/data';
 
