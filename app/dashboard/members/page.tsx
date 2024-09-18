@@ -1,7 +1,6 @@
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import PageContainer from '@/components/layout/PageContainer';
+import PageContainer from '@/components/dashboardLayout/PageContainer';
 import MemberClient from '@/components/members/MemberClient';
-import { fetchAllMembers } from '@/actions/members';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -9,7 +8,6 @@ const breadcrumbItems = [
 ];
 
 const MembersPage = async () => {
-    // const users = await fetchAllMembers();
     return (
         <PageContainer>
             <div className="space-y-2">

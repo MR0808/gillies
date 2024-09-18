@@ -69,7 +69,7 @@ const NameForm = ({ session }: { session: Session | null }) => {
     };
 
     return (
-        <div className="flex flex-col gap-5 border-b border-b-gray-200 pb-8 mt-8">
+        <div className="flex flex-col gap-5 border-b border-b-gray-200 pb-8 mt-8 w-full">
             <div className="flex justify-between">
                 <h3 className="font-semibold text-base">Name</h3>
                 <div

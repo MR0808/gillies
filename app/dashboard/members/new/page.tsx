@@ -2,7 +2,7 @@ import React from 'react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import MemberFormLayout from '@/components/members/MemberFormLayout';
-import PageContainer from '@/components/layout/PageContainer';
+import PageContainer from '@/components/dashboardLayout/PageContainer';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
