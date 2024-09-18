@@ -24,11 +24,7 @@ export default auth((req) => {
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
     const isAdminRoute = adminRoutes.includes(nextUrl.pathname);
 
-    const headers = new Headers(req.headers);
-    headers.set('x-current-path', req.nextUrl.pathname);
-
-    if (isApiAuthRoute || isApiRoute) {
-        // return NextResponse.next({ headers });
+    if (isApiRoute) {
         return;
     }
 
@@ -40,7 +36,22 @@ export default auth((req) => {
     }
 
     if (isAdminRoute) {
-        if (isLoggedIn && role !== 'ADMIN') {
+        if (!isLoggedIn) {
+            let callbackUrl = nextUrl.pathname;
+            if (nextUrl.search) {
+                callbackUrl += nextUrl.search;
+            }
+
+            const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+
+            return Response.redirect(
+                new URL(
+                    `/auth/login?callbackUrl=${encodedCallbackUrl}`,
+                    nextUrl
+                )
+            );
+        }
+        if (isLoggedIn || role !== 'ADMIN') {
             return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
         }
         return;

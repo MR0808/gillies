@@ -1,11 +1,5 @@
 import * as z from 'zod';
 
-export const DisplayNameSchema = z.object({
-    displayName: z.string().min(1, {
-        message: 'Display name is required'
-    })
-});
-
 export const NameSchema = z.object({
     firstName: z.string().min(1, {
         message: 'First name is required'
@@ -15,22 +9,11 @@ export const NameSchema = z.object({
     })
 });
 
-export const GenderSchema = z.object({
-    gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'NOTSAY'], {
-        message: 'Gender is required'
-    })
-});
-
-export const LocationSchema = z.object({
-    country: z.number({ message: 'Country is required' }),
-    state: z.optional(z.number({ message: 'State is required' }))
-});
-
-export const DateOfBirthSchema = z.object({
-    dateOfBirth: z.date({ message: 'Date of birth is required' })
-});
-
 export const ProfilePictureSchema = z.object({
+    image: typeof window === 'undefined' ? z.any() : z.instanceof(FileList)
+});
+
+export const ProfilePictureSchemaFile = z.object({
     image: validateImageFile()
 });
 

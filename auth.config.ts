@@ -15,27 +15,23 @@ export default {
     providers: [
         Credentials({
             async authorize(credentials) {
-                try {
-                    const validatedFields = LoginSchema.safeParse(credentials);
+                const validatedFields = LoginSchema.safeParse(credentials);
 
-                    if (validatedFields.success) {
-                        const { email, password } = validatedFields.data;
+                if (validatedFields.success) {
+                    const { email, password } = validatedFields.data;
+                    const user = await getUserByEmail(email);
 
-                        const user = await getUserByEmail(email);
-                        if (!user || !user.password) return null;
+                    if (!user || !user.password) return null;
 
-                        const passwordsMatch = await compare(
-                            password,
-                            user.password
-                        );
+                    const passwordsMatch = await compare(
+                        password,
+                        user.password
+                    );
 
-                        if (passwordsMatch) return user;
-                    }
-                    return null;
-                } catch (error) {
-                    console.log(error);
-                    return null;
+                    if (passwordsMatch) return user;
                 }
+
+                return null;
             }
         })
     ],
@@ -53,27 +49,32 @@ export default {
     },
     callbacks: {
         async signIn({ user, account }) {
-            // Allow OAuth without email verification
-            if (account?.provider !== 'credentials') return true;
+            try {
+                // Allow OAuth without email verification
+                if (account?.provider !== 'credentials') return true;
 
-            const existingUser = await getUserById(user.id!);
+                const existingUser = await getUserById(user.id!);
 
-            // Prevent sign in without email verification
-            if (!existingUser?.emailVerified) return false;
+                // Prevent sign in without email verification
+                if (!existingUser?.emailVerified) return false;
 
-            if (existingUser.otpEnabled) {
-                const twoFactorConfirmation =
-                    await getTwoFactorConfirmationByUserId(existingUser.id);
+                if (existingUser.otpEnabled) {
+                    const twoFactorConfirmation =
+                        await getTwoFactorConfirmationByUserId(existingUser.id);
 
-                if (!twoFactorConfirmation) return false;
+                    if (!twoFactorConfirmation) return false;
 
-                // Delete two factor confirmation for next sign in
-                await db.twoFactorConfirmation.delete({
-                    where: { id: twoFactorConfirmation.id }
-                });
+                    // Delete two factor confirmation for next sign in
+                    await db.twoFactorConfirmation.delete({
+                        where: { id: twoFactorConfirmation.id }
+                    });
+                }
+
+                return true;
+            } catch (error) {
+                console.log('signinerror', error);
+                return false;
             }
-
-            return true;
         },
         async session({ token, session }) {
             if (token.sub && session.user) {

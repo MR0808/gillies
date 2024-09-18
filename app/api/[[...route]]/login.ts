@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import * as OTPAuth from 'otpauth';
+import { AuthError } from 'next-auth';
 import { compare } from 'bcrypt-ts';
 
 import db from '@/lib/db';
@@ -13,13 +14,17 @@ import getTwoFactorConfirmationByUserId from '@/data/twoFactorConfirmation';
 import { getRegistrationTokenByEmail } from '@/data/registrationToken';
 
 const app = new Hono()
-    .post('/', zValidator('json', LoginSchema),
-        async (c) => {
-            let { email, password } = c.req.valid('json');
-            const existingUser = await getUserByEmail(email);
+    .post('/', zValidator('json', LoginSchema), async (c) => {
+        let { email, password } = c.req.valid('json');
+
+        const existingUser = await getUserByEmail(email);
 
         if (!existingUser || !existingUser.email || !existingUser.password) {
-            return c.json({ data: false, error: 'Email and password combination is invalid' });
+            return c.json({
+                data: false,
+                error: 'Email and password combination is invalid',
+                twoFactorEnabled: false
+            });
         }
 
         if (!existingUser.emailVerified) {
@@ -32,47 +37,80 @@ const app = new Hono()
                 verificationToken.token
             );
 
-            return c.json({data: false,  error: 'Email not verified. New confirmation email sent!' });
+            return c.json({
+                data: false,
+                error: 'Email not verified. New confirmation email sent!',
+                twoFactorEnabled: false
+            });
         }
 
         if (!existingUser.registered) {
             const registrationToken = await getRegistrationTokenByEmail(
                 existingUser.email
             );
-    
+
             if (registrationToken) {
                 await sendRegistrationEmail(
                     registrationToken.email,
                     registrationToken?.token
                 );
             }
-    
-            return c.json({data: false, 
-                error: 'Please click the link you were sent to confirm your registration'
+
+            return c.json({
+                data: false,
+                error: 'Please click the link you were sent to confirm your registration',
+                twoFactorEnabled: false
             });
         }
 
-        const returnSignIn = await signIn('credentials', {
-            email,
-            password,
-            redirect: false
-        }); 
-
-        if (returnSignIn.ok) return c.json({ data: true, twoFactorEnabled: existingUser.otpEnabled });
-
-        return c.json({ data: false, error: 'Email and password combination is invalid' });
-
-        
+        try {
+            await signIn('credentials', {
+                email,
+                password,
+                redirect: false
+            });
+        } catch (error) {
+            console.log(error);
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case 'CredentialsSignin':
+                        return c.json({
+                            data: false,
+                            error: 'Email and password combination is invalid',
+                            twoFactorEnabled: false
+                        });
+                    default:
+                        return c.json(
+                            {
+                                data: false,
+                                error: 'Something went wrong',
+                                twoFactorEnabled: false
+                            },
+                            418
+                        );
+                }
+            }
         }
-    ).post('/token', zValidator('json', LoginSchema),
-        async (c) => {
 
-            let { email, token } = c.req.valid('json');
-            if (token) {
+        return c.json({
+            data: true,
+            twoFactorEnabled: existingUser.otpEnabled,
+            error: ''
+        });
+    })
+    .post('/token', zValidator('json', LoginSchema), async (c) => {
+        let { email, token } = c.req.valid('json');
+        if (token) {
             const existingUser = await getUserByEmail(email);
 
-            if (!existingUser || !existingUser.email || !existingUser.password) {
-                return c.json({ error: 'Email and password combination is invalid' });
+            if (
+                !existingUser ||
+                !existingUser.email ||
+                !existingUser.password
+            ) {
+                return c.json({
+                    error: 'Email and password combination is invalid'
+                });
             }
 
             const totp = new OTPAuth.TOTP({
@@ -105,24 +143,27 @@ const app = new Hono()
                 }
             });
 
-            return c.json({data: true})
+            return c.json({ data: true });
         }
         return c.json({ error: 'No token attached' });
-        
-    }
-    ).post('/backup', zValidator('json', LoginSchema),
-        async (c) => {
+    })
+    .post('/backup', zValidator('json', LoginSchema), async (c) => {
+        let { email, backupCode } = c.req.valid('json');
 
-    let { email, backupCode } = c.req.valid('json');
+        if (backupCode) {
+            const existingUser = await getUserByEmail(email);
 
-    if (backupCode) {
-        const existingUser = await getUserByEmail(email);
+            if (
+                !existingUser ||
+                !existingUser.email ||
+                !existingUser.password
+            ) {
+                return c.json({
+                    error: 'Email and password combination is invalid'
+                });
+            }
 
-        if (!existingUser || !existingUser.email || !existingUser.password) {
-            return c.json({ error: 'Email and password combination is invalid' });
-        }
-
-        const codes = existingUser.otpBackups;
+            const codes = existingUser.otpBackups;
 
             let passed = false;
             let index = -1;
@@ -158,13 +199,12 @@ const app = new Hono()
                     }
                 });
 
-                return c.json({data: true})
+                return c.json({ data: true });
             } else {
                 return c.json({ error: 'Invalid backup code!' });
             }
-    }
-    return c.json({ error: 'No backup code attached' });
-
-});
+        }
+        return c.json({ error: 'No backup code attached' });
+    });
 
 export default app;

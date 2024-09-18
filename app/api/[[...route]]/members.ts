@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 
 import db from '@/lib/db';
-import { getAuth, getAuthAdmin } from './getAuth';
+import { getAuthAdmin } from './getAuth';
 import { MemberSchema, MemberImportSchema } from '@/schemas/members';
 import { generateRegistrationToken } from '@/lib/tokens';
 import { sendRegistrationEmail } from '@/lib/mail';

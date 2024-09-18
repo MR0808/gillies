@@ -2,9 +2,7 @@
 
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
-import { useTransition, useState, useEffect, useCallback } from 'react';
-import { BeatLoader } from 'react-spinners';
-import { useSearchParams } from 'next/navigation';
+import { ReloadIcon } from '@radix-ui/react-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleHelp } from 'lucide-react';
 
@@ -137,7 +135,14 @@ const RegisterForm = ({ onSubmit, isPending, error }: Props) => {
                     />
                 </div>
                 <Button disabled={isPending} type="submit" className="w-full">
-                    Register
+                    {isPending ? (
+                        <>
+                            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                            Please wait...
+                        </>
+                    ) : (
+                        <>Register</>
+                    )}
                 </Button>
             </form>
         </Form>

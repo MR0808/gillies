@@ -14,23 +14,27 @@ interface CardWrapperProps {
     headerLabel: string;
     backButtonLabel: string;
     backButtonHref: string;
+    backButton?: boolean;
 }
 
 const CardWrapper = ({
     children,
     headerLabel,
     backButtonLabel,
-    backButtonHref
+    backButtonHref,
+    backButton = false
 }: CardWrapperProps) => {
     return (
-        <Card className="w-[400px] shadow-md">
+        <Card className="w-[320px] sm:w-[400px] shadow-md">
             <CardHeader>
                 <Header label={headerLabel} />
             </CardHeader>
             <CardContent>{children}</CardContent>
-            <CardFooter>
-                <BackButton label={backButtonLabel} href={backButtonHref} />
-            </CardFooter>
+            {backButton && (
+                <CardFooter>
+                    <BackButton label={backButtonLabel} href={backButtonHref} />
+                </CardFooter>
+            )}{' '}
         </Card>
     );
 };

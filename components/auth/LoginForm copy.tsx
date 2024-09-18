@@ -2,13 +2,11 @@
 
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useTransition, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ReloadIcon } from '@radix-ui/react-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
-import { useRouter } from 'next/navigation';
 
 import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
@@ -28,29 +26,25 @@ import {
     InputOTPSlot,
     InputOTPSeparator
 } from '@/components/ui/input-otp';
-import { useGetLogin } from '@/features/login/useGetLogin';
 import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
+import FormSuccess from '@/components/form/FormSuccess';
+import { login } from '@/actions/login';
 import { cn } from '@/lib/utils';
-
-enum VARIANT {
-    LOGIN = 'LOGIN',
-    TWOFACTOR = 'TWOFACTOR',
-    BACKUP = 'BACKUP'
-}
 
 const LoginForm = () => {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('callbackUrl');
-    const router = useRouter();
+    const urlError =
+        searchParams.get('error') === 'OAuthAccountNotLinked'
+            ? 'Email already in use with different provider!'
+            : '';
 
     const [showTwoFactor, setShowTwoFactor] = useState(false);
     const [showBackupCode, setShowBackupCode] = useState(false);
-    const [variant, setVariant] = useState<VARIANT>(VARIANT.LOGIN);
     const [error, setError] = useState<string | undefined>('');
-    const [isPending, setIsPending] = useState(false);
-
-    const mutationLogin = useGetLogin();
+    const [success, setSuccess] = useState<string | undefined>('');
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
@@ -75,21 +69,21 @@ const LoginForm = () => {
 
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
         setError('');
-        setIsPending(true);
+        setSuccess('');
 
-        mutationLogin.mutate(values, {
-            onSuccess: (data) => {
-                if (!data.twoFactorEnabled) {
-                    router.push(callbackUrl || '/');
-                } else {
-                    setShowTwoFactor(true);
-                }
-            },
-            onError: (error) => {
-                form.setValue('password', '');
-                setError(error.message);
-                setIsPending(false);
-            }
+        startTransition(() => {
+            login(values, callbackUrl)
+                .then((data) => {
+                    if (data?.error) {
+                        form.reset();
+                        setError(data.error);
+                    }
+
+                    if (data?.twoFactor) {
+                        setShowTwoFactor(true);
+                    }
+                })
+                .catch(() => setError('Something went wrong'));
         });
     };
 
@@ -232,20 +226,14 @@ const LoginForm = () => {
                             </>
                         )}
                     </div>
-                    <FormError message={error} />
+                    <FormError message={error || urlError} />
+                    <FormSuccess message={success} />
                     <Button
                         disabled={isPending}
                         type="submit"
                         className="w-full"
                     >
-                        {isPending ? (
-                            <>
-                                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                                Please wait...
-                            </>
-                        ) : (
-                            <>{showTwoFactor ? 'Confirm' : 'Login'}</>
-                        )}
+                        {showTwoFactor ? 'Confirm' : 'Login'}
                     </Button>
                 </form>
             </Form>

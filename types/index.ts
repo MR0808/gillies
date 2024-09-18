@@ -43,3 +43,8 @@ export interface AlertModalProps {
     onConfirm: () => void;
     loading: boolean;
 }
+
+export type actionFunction = (
+    prevState: any,
+    formData: FormData
+) => Promise<{ result: boolean | null; message: string }>;

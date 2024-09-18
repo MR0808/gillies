@@ -2,7 +2,7 @@
 import React from 'react';
 import { SessionProvider, SessionProviderProps } from 'next-auth/react';
 
-import ThemeProvider from '@/components/layout/ThemeToggle/ThemeProvider';
+import ThemeProvider from '@/components/dashboardLayout/ThemeToggle/ThemeProvider';
 import { QueryProvider } from './QueryProvider';
 
 const Providers = ({

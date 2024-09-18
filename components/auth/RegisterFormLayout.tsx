@@ -4,8 +4,6 @@ import * as z from 'zod';
 import { useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { useSearchParams } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-
 import { RegisterSchema } from '@/schemas/auth';
 
 import CardWrapper from './CardWrapper';
