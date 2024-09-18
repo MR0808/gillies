@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import CalendarDateRangePicker from '@/components/global/DateRangePicker';
-import PageContainer from '@/components/layout/PageContainer';
+import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
-import Header from '@/components/layout/Header';
-import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/dashboardLayout/Header';
+import Sidebar from '@/components/dashboardLayout/Sidebar';
 
 export const metadata: Metadata = {
     title: 'Gillies Voting System Admin',

@@ -21,13 +21,16 @@ import { AccountFormInput } from '@/components/form/FormInput';
 import FormError from '@/components/form/FormError';
 import { NameSchema } from '@/schemas/settings';
 import { cn } from '@/lib/utils';
+import { useEditName } from '@/features/settings/useEditMember';
 
 const NameForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
     const [edit, setEdit] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const { data: newSession, update } = useSession();
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
+
+    const mutation = useEditName();
 
     useEffect(() => {
         if (newSession && newSession.user) {
