@@ -3,20 +3,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono';
 
 type ResponseType = InferResponseType<
-    (typeof client.api.credentials.register)[':token']['$patch']
+    (typeof client.api.credentials.updatepassword)[':token']['$patch']
 >;
 type RequestType = InferRequestType<
-    (typeof client.api.credentials.register)[':token']['$patch']
+    (typeof client.api.credentials.updatepassword)[':token']['$patch']
 >['json'];
 
-export const useRegisterMember = (token?: string) => {
+export const useUpdatePassword = (token?: string) => {
     const queryClient = useQueryClient();
 
     const mutation = useMutation<ResponseType, Error, RequestType>({
         mutationFn: async (json) => {
-            const response = await client.api.credentials.register[':token'][
-                '$patch'
-            ]({
+            const response = await client.api.credentials.updatepassword[
+                ':token'
+            ]['$patch']({
                 param: { token },
                 json
             });
@@ -30,7 +30,7 @@ export const useRegisterMember = (token?: string) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['register', { token }]
+                queryKey: ['updatepassword', { token }]
             });
         },
         onError: (error) => {

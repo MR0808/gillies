@@ -1,23 +1,19 @@
 import { client } from '@/lib/hono';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono';
+import { toast } from 'sonner';
 
 type ResponseType = InferResponseType<
-    (typeof client.api.credentials.register)[':token']['$patch']
+    (typeof client.api.settings)['email']['$patch']
 >;
 type RequestType = InferRequestType<
-    (typeof client.api.credentials.register)[':token']['$patch']
+    (typeof client.api.settings)['email']['$patch']
 >['json'];
 
-export const useRegisterMember = (token?: string) => {
-    const queryClient = useQueryClient();
-
+export const useEditEmail = () => {
     const mutation = useMutation<ResponseType, Error, RequestType>({
         mutationFn: async (json) => {
-            const response = await client.api.credentials.register[':token'][
-                '$patch'
-            ]({
-                param: { token },
+            const response = await client.api.settings['email']['$patch']({
                 json
             });
             const data = await response.json();
@@ -25,13 +21,7 @@ export const useRegisterMember = (token?: string) => {
                 const { message } = data;
                 throw new Error(message);
             }
-
             return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['register', { token }]
-            });
         },
         onError: (error) => {
             return error;

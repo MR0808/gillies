@@ -4,26 +4,26 @@ import * as z from 'zod';
 import { useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { useSearchParams } from 'next/navigation';
-import { RegisterSchema } from '@/schemas/auth';
+import { ResetPasswordSchema } from '@/schemas/auth';
 
 import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
 import FormSuccess from '../form/FormSuccess';
-import { useVerifyRegistration } from '@/features/register/useVerifyRegistration';
-import { useRegisterMember } from '@/features/register/useRegisterMember';
-import RegisterForm from './RegisterForm';
+import { useVerifyPassword } from '@/features/forgotpassword/useVerifyPassword';
+import { useUpdatePassword } from '@/features/forgotpassword/useUpdatePassword';
+import NewPasswordForm from './NewPasswordForm';
 
-const RegisterFormLayout = () => {
+const NewPasswordFormLayout = () => {
     const searchParams = useSearchParams();
     const [isPending, setIsPending] = useState(false);
     const [success, setSuccess] = useState<string | undefined>();
     const [error, setError] = useState<string | undefined>();
     const token = searchParams.get('token') || undefined;
 
-    const verifyQuery = useVerifyRegistration(token);
+    const verifyQuery = useVerifyPassword(token);
     const isLoading = verifyQuery.isPending;
 
-    const mutationRegister = useRegisterMember(token);
+    const mutation = useUpdatePassword(token);
 
     if (!token) {
         return (
@@ -31,6 +31,7 @@ const RegisterFormLayout = () => {
                 headerLabel="Welcome to the Gillies Voting System"
                 backButtonLabel="Already registered? Login"
                 backButtonHref="/auth/login"
+                backButton={true}
             >
                 <div className="flex flex-col items-center w-full justify-center">
                     <FormError message="Missing token" />
@@ -39,13 +40,11 @@ const RegisterFormLayout = () => {
         );
     }
 
-    const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+    const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
         setIsPending(true);
-        mutationRegister.mutate(values, {
+        mutation.mutate(values, {
             onSuccess: () => {
-                setSuccess(
-                    'Registration successful, please login to set up your account.'
-                );
+                setSuccess('Password reset successful, please login.');
             },
             onError: (error) => {
                 setIsPending(false);
@@ -56,23 +55,22 @@ const RegisterFormLayout = () => {
 
     return (
         <CardWrapper
-            headerLabel="Welcome to the Gillies Voting System"
-            backButtonLabel="Already registered? Login"
+            headerLabel="Reset your password"
+            backButtonLabel="Remember your password? Login"
             backButtonHref="/auth/login"
-            backButton={true}
         >
             {isLoading ? (
                 <div className="flex flex-col items-center w-full justify-center">
                     <BeatLoader />
                 </div>
             ) : verifyQuery.isError ? (
-                <FormError message="Sorry, there was an issue loading your registration, please try again" />
+                <FormError message={verifyQuery.error.message} />
             ) : success ? (
                 <div className="flex flex-col items-center w-full justify-center">
                     <FormSuccess message={success} />
                 </div>
             ) : (
-                <RegisterForm
+                <NewPasswordForm
                     onSubmit={onSubmit}
                     isPending={isPending}
                     error={error}
@@ -82,4 +80,4 @@ const RegisterFormLayout = () => {
     );
 };
 
-export default RegisterFormLayout;
+export default NewPasswordFormLayout;

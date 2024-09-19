@@ -15,6 +15,11 @@ enum UserRole {
   USER
 }
 
+enum Status {
+  OPEN
+  CLOSED
+}
+
 model User {
   id            String    @id @default(cuid())
   firstName     String?   
@@ -88,9 +93,39 @@ model PasswordResetToken {
 
 model TwoFactorConfirmation {
   id String @id @default(cuid())
-
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
+}
+
+model Meeting {
+  id        String    @id @default(cuid())
+  date      String
+  location  String
+  status    Status @default(OPEN)
+  quaich    String?
+  whiskies  Whisky[]
+}
+
+model Whisky {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  image       String? 
+  quaich      Boolean
+  meeting     Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId   String
+  reviews     Review[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String @unique
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  whisky    Whisky  @relation(fields: [whiskyId], references: [id], onDelete: Cascade)
+  whiskyId  String
 }

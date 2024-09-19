@@ -1,5 +1,5 @@
 import { client } from '@/lib/hono';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { InferRequestType, InferResponseType } from 'hono';
 import { toast } from 'sonner';
 
@@ -10,21 +10,24 @@ type RequestType = InferRequestType<
     (typeof client.api.settings)['name']['$patch']
 >['json'];
 
-export const useEditName = (id?: string) => {
-    const queryClient = useQueryClient();
-
+export const useEditName = () => {
     const mutation = useMutation<ResponseType, Error, RequestType>({
         mutationFn: async (json) => {
             const response = await client.api.settings['name']['$patch']({
                 json
             });
-            return await response.json();
+            const data = await response.json();
+            if (!data.result) {
+                const { message } = data;
+                throw new Error(message);
+            }
+            return data;
         },
         onSuccess: () => {
             toast.success('Name updated');
         },
-        onError: () => {
-            toast.error('Failed to update name');
+        onError: (error) => {
+            return error;
         }
     });
 

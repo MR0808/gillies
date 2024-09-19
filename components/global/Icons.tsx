@@ -16,7 +16,6 @@ import {
     Loader2,
     LogIn,
     LucideIcon,
-    LucideProps,
     Moon,
     MoreVertical,
     Pizza,
@@ -28,7 +27,8 @@ import {
     User2Icon,
     UserX2Icon,
     X,
-    Users
+    Users,
+    CalendarCheck
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -61,5 +61,6 @@ export const Icons = {
     moon: Moon,
     laptop: Laptop,
     check: Check,
-    users: Users
+    users: Users,
+    calendarCheck: CalendarCheck
 };

@@ -94,8 +94,8 @@ const ProfilePictureForm = ({ session }: { session: Session | null }) => {
     };
 
     return (
-        <>
-            <Card className={cn('sm:w-[400px] w-[300px] mb-6')}>
+        <div className="px-4 w-full flex justify-center items-center">
+            <Card className={cn('sm:w-[400px] w-full mb-6')}>
                 <CardHeader>
                     <CardTitle>
                         <div className="flex flex-row justify-center">
@@ -185,7 +185,7 @@ const ProfilePictureForm = ({ session }: { session: Session | null }) => {
                     </Form>
                 </CardContent>
             </Card>
-        </>
+        </div>
     );
 };
 export default ProfilePictureForm;

@@ -3,9 +3,11 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { auth } from '@/auth';
 import { getUserById } from '@/data/user';
 import { currentUser } from '@/lib/auth';
+import { cn } from '@/lib/utils';
 import ProfilePictureForm from '@/components/settings/ProfilePictureForm';
 import NameForm from '@/components/settings/NameForm';
-import { cn } from '@/lib/utils';
+import PasswordForm from '@/components/settings/PasswordForm';
+import EmailForm from '@/components/settings/EmailForm';
 
 const SettingsPage = async () => {
     const user = await currentUser();
@@ -25,7 +27,7 @@ const SettingsPage = async () => {
     const userDb = await getUserById(user.id!);
 
     return (
-        <Card className="w-[320px] sm:w-[600px]">
+        <Card className="w-[320px] sm:w-[600px] mb-8">
             <CardHeader>
                 <p className="text-2xl font-semibold text-center">
                     ⚙️ Settings
@@ -36,6 +38,8 @@ const SettingsPage = async () => {
             >
                 <ProfilePictureForm session={session} />
                 <NameForm session={session} />
+                <PasswordForm session={session} />
+                <EmailForm session={session} />
             </CardContent>
         </Card>
     );

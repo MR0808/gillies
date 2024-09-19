@@ -221,7 +221,7 @@ const LoginForm = () => {
                                                 asChild
                                                 className="px-0 font-normal"
                                             >
-                                                <Link href="/auth/reset">
+                                                <Link href="/auth/forgotpassword">
                                                     Forgot password?
                                                 </Link>
                                             </Button>

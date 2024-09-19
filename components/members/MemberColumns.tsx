@@ -1,6 +1,5 @@
 'use client';
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
-import { User } from '@prisma/client';
 import { ArrowUpDown } from 'lucide-react';
 import { InferResponseType } from 'hono';
 import { client } from '@/lib/hono';

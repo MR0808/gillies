@@ -4,7 +4,6 @@ import authConfig from '@/auth.config';
 
 import {
     DEFAULT_LOGIN_REDIRECT,
-    apiAuthPrefix,
     authRoutes,
     publicRoutes,
     adminRoutes,
@@ -18,7 +17,6 @@ export default auth((req) => {
     const isLoggedIn = !!req.auth;
     const role = req.auth?.user.role;
 
-    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
     const isApiRoute = nextUrl.pathname.startsWith(apiPrefix);
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
     const isAuthRoute = authRoutes.includes(nextUrl.pathname);
@@ -51,7 +49,8 @@ export default auth((req) => {
                 )
             );
         }
-        if (isLoggedIn || role !== 'ADMIN') {
+        if (isLoggedIn && role !== 'ADMIN') {
+            console.log(role);
             return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
         }
         return;

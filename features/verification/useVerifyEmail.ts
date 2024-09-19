@@ -1,12 +1,12 @@
 import { client } from '@/lib/hono';
 import { useQuery } from '@tanstack/react-query';
 
-export const useVerifyRegistration = (token?: string) => {
+export const useVerifyEmail = (token?: string) => {
     const query = useQuery({
         enabled: !!token,
-        queryKey: ['register', { token }],
+        queryKey: ['verifyemail', { token }],
         queryFn: async () => {
-            const response = await client.api.credentials.register[
+            const response = await client.api.credentials.verification[
                 ':token'
             ].$get({
                 param: { token }
