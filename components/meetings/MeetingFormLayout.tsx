@@ -8,11 +8,13 @@ import { Loader2 } from 'lucide-react';
 
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
-import { MeetingSchema } from '@/schemas/meetings';
+import { MeetingSchemaSubmit } from '@/schemas/meetings';
 import { useCreateMeeting } from '@/features/meetings/useCreateMeeting';
 import { useEditMeeting } from '@/features/meetings/useEditMeeting';
 import { useGetMeeting } from '@/features/meetings/useGetMeeting';
+import { useGetWhiskies } from '@/features/whiskies/useGetWhiskies';
 import MeetingForm from './MeetingForm';
+import WhiskyClient from './WhiskyClient';
 
 const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
     const params = useParams<{ meetingid: string }>();
@@ -20,41 +22,47 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
     const meetingQuery = useGetMeeting(meetingid);
     const isLoading = meetingQuery.isLoading;
 
+    const whiskiesQuery = useGetWhiskies(meetingid);
+    const whiskies = whiskiesQuery.data || [];
+    const isLoadingWhisky = whiskiesQuery.isLoading;
+
+    const [isPending, setIsPending] = useState(false);
+
     const mutationCreate = useCreateMeeting();
     const mutationEdit = useEditMeeting(meetingid);
 
     const router = useRouter();
 
-    const [isPending, setIsPending] = useState(false);
-
-    const title = edit ? 'Update Member' : 'Add Member';
-    const description = edit ? 'Update existing member' : 'Create a new member';
-    const action = edit ? 'Update Member' : 'Create Member';
+    const title = edit ? 'Update Meeting' : 'Add Meeting';
+    const description = edit
+        ? 'Update existing meeting'
+        : 'Create a new meeting';
+    const action = edit ? 'Update meeting' : 'Create meeting';
 
     const defaultValues = meetingQuery.data
         ? {
               location: meetingQuery.data.location || '',
-              date: meetingQuery.data.date || ''
+              date: new Date(meetingQuery.data.date) || ''
           }
         : {
               location: '',
-              date: ''
+              date: new Date()
           };
 
-    const onSubmit = (values: z.infer<typeof MeetingSchema>) => {
+    const onSubmit = (values: z.infer<typeof MeetingSchemaSubmit>) => {
         setIsPending(true);
         edit
             ? mutationEdit.mutate(values, {
                   onSuccess: () => {
-                      //   router.push(`/dashboard/members/`);
+                      setIsPending(false);
                   },
                   onError: () => {
                       setIsPending(false);
                   }
               })
             : mutationCreate.mutate(values, {
-                  onSuccess: () => {
-                      //   router.push(`/dashboard/members/`);
+                  onSuccess: (data) => {
+                      router.push(`/dashboard/meetings/${data.data.id}`);
                   },
                   onError: () => {
                       setIsPending(false);
@@ -68,15 +76,23 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
                 <Heading title={title} description={description} />
             </div>
             <Separator />
-            {isLoading ? (
+            {isLoading || isLoadingWhisky ? (
                 <Loader2 className="size-4 text-muted-foreground animate-spin" />
             ) : (
-                <MeetingForm
-                    action={action}
-                    defaultValues={defaultValues}
-                    onSubmit={onSubmit}
-                    isPending={isPending}
-                />
+                <>
+                    <MeetingForm
+                        action={action}
+                        defaultValues={defaultValues}
+                        onSubmit={onSubmit}
+                        isPending={isPending}
+                    />
+                    {edit && (
+                        <>
+                            <Separator />
+                            <WhiskyClient whiskies={whiskies} />
+                        </>
+                    )}
+                </>
             )}
         </>
     );

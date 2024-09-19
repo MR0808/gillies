@@ -5,6 +5,7 @@ import members from './members';
 import credentials from './credentials';
 import settings from './settings';
 import meetings from './meetings';
+import whiskies from './whiskies';
 
 export const runtime = 'edge';
 
@@ -14,7 +15,8 @@ const routes = app
     .route('/members', members)
     .route('/credentials', credentials)
     .route('/settings', settings)
-    .route('/meetings', meetings);
+    .route('/meetings', meetings)
+    .route('/whiskies', whiskies);
 
 export const GET = handle(app);
 export const POST = handle(app);

@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 
 import db from '@/lib/db';
 import { getAuthAdmin } from './getAuth';
-import { MeetingSchema } from '@/schemas/meetings';
+import { MeetingSchemaSubmit } from '@/schemas/meetings';
 
 const app = new Hono()
     .get('/', getAuthAdmin, async (c) => {
@@ -17,18 +17,23 @@ const app = new Hono()
 
         return c.json({ data });
     })
-    .post('/', getAuthAdmin, zValidator('json', MeetingSchema), async (c) => {
-        let { location, date } = c.req.valid('json');
+    .post(
+        '/',
+        getAuthAdmin,
+        zValidator('json', MeetingSchemaSubmit),
+        async (c) => {
+            let { location, date } = c.req.valid('json');
 
-        const data = await db.meeting.create({
-            data: {
-                location,
-                date
-            }
-        });
+            const data = await db.meeting.create({
+                data: {
+                    location,
+                    date
+                }
+            });
 
-        return c.json({ data });
-    })
+            return c.json({ data });
+        }
+    )
     .get(
         '/:id',
         getAuthAdmin,
@@ -61,7 +66,7 @@ const app = new Hono()
         '/:id',
         getAuthAdmin,
         zValidator('param', z.object({ id: z.string().optional() })),
-        zValidator('json', MeetingSchema),
+        zValidator('json', MeetingSchemaSubmit),
         async (c) => {
             const { id } = c.req.valid('param');
             let { date, location } = c.req.valid('json');

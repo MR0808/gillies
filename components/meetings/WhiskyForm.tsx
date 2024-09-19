@@ -26,11 +26,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 
-import { MeetingSchema, MeetingSchemaSubmit } from '@/schemas/meetings';
+import { WhiskySchema, WhiskySchemaForm } from '@/schemas/whisky';
 import { cn } from '@/lib/utils';
 
-type FormValues = z.input<typeof MeetingSchema>;
-type SubmitValues = z.input<typeof MeetingSchemaSubmit>;
+type FormValues = z.input<typeof WhiskySchema>;
+type SubmitValues = z.input<typeof WhiskySchemaForm>;
 
 type Props = {
     id?: string;
@@ -40,7 +40,7 @@ type Props = {
     action: string;
 };
 
-const MeetingForm = ({
+const WhiskyForm = ({
     id,
     defaultValues,
     onSubmit,
@@ -49,18 +49,13 @@ const MeetingForm = ({
 }: Props) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    const form = useForm<z.infer<typeof MeetingSchema>>({
-        resolver: zodResolver(MeetingSchema),
+    const form = useForm<z.infer<typeof WhiskySchemaForm>>({
+        resolver: zodResolver(WhiskySchemaForm),
         defaultValues
     });
 
     const handleSubmit = (values: FormValues) => {
-        const newDate = add(values.date, { days: 1 });
-        const newValues = {
-            ...values,
-            date: newDate.toISOString().substring(0, 10)
-        };
-        onSubmit(newValues);
+        onSubmit(values);
     };
 
     return (
@@ -142,4 +137,4 @@ const MeetingForm = ({
     );
 };
 
-export default MeetingForm;
+export default WhiskyForm;
