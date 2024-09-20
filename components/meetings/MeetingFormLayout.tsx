@@ -90,7 +90,7 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
                         <>
                             <Separator />
                             <Tabs defaultValue="whiskies" className="w-full">
-                                <TabsList>
+                                <TabsList className={cn('mb-4')}>
                                     <TabsTrigger value="whiskies">
                                         Whiskies
                                     </TabsTrigger>
