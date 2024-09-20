@@ -29,13 +29,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { WhiskySchema, WhiskySchemaForm } from '@/schemas/whisky';
 import { cn } from '@/lib/utils';
 
-type FormValues = z.input<typeof WhiskySchema>;
-type SubmitValues = z.input<typeof WhiskySchemaForm>;
+type FormValues = z.input<typeof WhiskySchemaForm>;
 
 type Props = {
     id?: string;
     defaultValues?: FormValues;
-    onSubmit: (values: SubmitValues) => void;
+    onSubmit: (values: FormValues) => void;
     isPending: boolean;
     action: string;
 };

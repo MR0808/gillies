@@ -3,13 +3,11 @@ import { InferResponseType } from 'hono';
 import { ColumnDef } from '@tanstack/react-table';
 import { client } from '@/lib/hono';
 import { ArrowUpDown } from 'lucide-react';
-import Image from 'next/image';
 
 import { Badge } from '@/components/ui/badge';
 import WhiskyCellAction from './WhiskyCellAction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import whisky from '@/public/images/whisky.jpg';
 
 export type ResponseType = InferResponseType<
     (typeof client.api.whiskies)[':meetingid']['$get'],
@@ -17,18 +15,18 @@ export type ResponseType = InferResponseType<
 >['data'][0];
 
 export const WhiskyColumns: ColumnDef<ResponseType>[] = [
-    {
-        accessorKey: 'image',
-        header: 'Image',
-        cell: ({ row }) => {
-            <Image
-                src={row.original.image || whisky}
-                alt={row.original.name}
-                width={100}
-                height={100}
-            />;
-        }
-    },
+    // {
+    //     accessorKey: 'image',
+    //     header: 'Image',
+    //     cell: ({ row }) => {
+    //         <Image
+    //             src={row.original.image || whisky}
+    //             alt={row.original.name}
+    //             width={100}
+    //             height={100}
+    //         />;
+    //     }
+    // },
     {
         accessorKey: 'name',
         header: ({ column }) => {
@@ -46,10 +44,14 @@ export const WhiskyColumns: ColumnDef<ResponseType>[] = [
             );
         },
         cell: ({ row }) => {
-            <div>{row.original.name}</div>;
-            {
-                row.original.quaich && <Badge variant="success">Quaich</Badge>;
-            }
+            return (
+                <>
+                    <div>{row.original.name}</div>
+                    {row.original.quaich && (
+                        <Badge variant="success">Quaich</Badge>
+                    )}
+                </>
+            );
         }
     },
     {

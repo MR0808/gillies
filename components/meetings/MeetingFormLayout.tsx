@@ -8,13 +8,14 @@ import { Loader2 } from 'lucide-react';
 
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MeetingSchemaSubmit } from '@/schemas/meetings';
 import { useCreateMeeting } from '@/features/meetings/useCreateMeeting';
 import { useEditMeeting } from '@/features/meetings/useEditMeeting';
 import { useGetMeeting } from '@/features/meetings/useGetMeeting';
-import { useGetWhiskies } from '@/features/whiskies/useGetWhiskies';
 import MeetingForm from './MeetingForm';
 import WhiskyClient from './WhiskyClient';
+import { cn } from '@/lib/utils';
 
 const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
     const params = useParams<{ meetingid: string }>();
@@ -22,9 +23,8 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
     const meetingQuery = useGetMeeting(meetingid);
     const isLoading = meetingQuery.isLoading;
 
-    const whiskiesQuery = useGetWhiskies(meetingid);
-    const whiskies = whiskiesQuery.data || [];
-    const isLoadingWhisky = whiskiesQuery.isLoading;
+    const whiskies = meetingQuery.data?.whiskies || [];
+    const members = meetingQuery.data?.users || [];
 
     const [isPending, setIsPending] = useState(false);
 
@@ -76,7 +76,7 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
                 <Heading title={title} description={description} />
             </div>
             <Separator />
-            {isLoading || isLoadingWhisky ? (
+            {isLoading ? (
                 <Loader2 className="size-4 text-muted-foreground animate-spin" />
             ) : (
                 <>
@@ -89,7 +89,26 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
                     {edit && (
                         <>
                             <Separator />
-                            <WhiskyClient whiskies={whiskies} />
+                            <Tabs defaultValue="whiskies" className="w-full">
+                                <TabsList className={cn('w-[400px] pb-4')}>
+                                    <TabsTrigger value="whiskies">
+                                        Whiskies
+                                    </TabsTrigger>
+                                    <TabsTrigger value="members">
+                                        Members
+                                    </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="whiskies">
+                                    <WhiskyClient
+                                        whiskies={whiskies}
+                                        meetingid={meetingid}
+                                    />
+                                    .
+                                </TabsContent>
+                                <TabsContent value="members">
+                                    Change your password here.
+                                </TabsContent>
+                            </Tabs>
                         </>
                     )}
                 </>

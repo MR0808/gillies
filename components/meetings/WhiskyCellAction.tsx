@@ -1,6 +1,6 @@
 'use client';
+
 import { Edit, MoreHorizontal, Trash } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { InferResponseType } from 'hono';
 import { client } from '@/lib/hono';
@@ -14,7 +14,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import AlertModal from '@/components/modal/AlertModal';
+import AddWhiskyModal from '@/components/modal/AddWhiskyModal';
 import { Button } from '@/components/ui/button';
+import { useDeleteWhisky } from '@/features/whiskies/useDeleteWhisky';
 
 export type ResponseType = InferResponseType<
     (typeof client.api.whiskies)[':meetingid']['$get'],
@@ -23,9 +25,23 @@ export type ResponseType = InferResponseType<
 
 const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
     const [openDelete, setOpenDelete] = useState(false);
-    const router = useRouter();
+    const [openEdit, setOpenEdit] = useState(false);
 
-    const onConfirmDelete = () => {};
+    const deleteMutation = useDeleteWhisky(data.id);
+
+    const onConfirmDelete = () => {
+        deleteMutation.mutate(undefined, {
+            onSuccess: () => {
+                setOpenDelete(false);
+            }
+        });
+    };
+
+    const defaultValues = {
+        name: data.name,
+        description: data.description || '',
+        quaich: data.quaich
+    };
 
     return (
         <>
@@ -33,7 +49,14 @@ const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
                 isOpen={openDelete}
                 onClose={() => setOpenDelete(false)}
                 onConfirm={onConfirmDelete}
-                loading={false}
+                loading={deleteMutation.isPending}
+            />
+            <AddWhiskyModal
+                isOpen={openEdit}
+                onClose={() => setOpenEdit(false)}
+                defaultValues={defaultValues}
+                edit={true}
+                mutation={{ meetingid: data.meetingId, id: data.id }}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -44,11 +67,7 @@ const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem
-                        onClick={() =>
-                            router.push(`/dashboard/members/${data.id}`)
-                        }
-                    >
+                    <DropdownMenuItem onClick={() => setOpenEdit(true)}>
                         <Edit className="mr-2 h-4 w-4" /> Update
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setOpenDelete(true)}>

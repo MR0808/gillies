@@ -12,7 +12,10 @@ const app = new Hono()
             orderBy: {
                 date: 'asc'
             },
-            include: { whiskies: { orderBy: { name: 'asc' } } }
+            include: {
+                whiskies: { orderBy: { name: 'asc' } },
+                users: { orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }] }
+            }
         });
 
         return c.json({ data });
@@ -52,7 +55,12 @@ const app = new Hono()
 
             const data = await db.meeting.findUnique({
                 where: { id },
-                include: { whiskies: { orderBy: { name: 'asc' } } }
+                include: {
+                    whiskies: { orderBy: { name: 'asc' } },
+                    users: {
+                        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+                    }
+                }
             });
 
             if (!data) {
