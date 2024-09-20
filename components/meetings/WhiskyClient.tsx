@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { WhiskyColumns } from './WhiskyColumns';
 import AddWhiskyModal from '@/components/modal/AddWhiskyModal';
-import { WhiskySchema } from '@/schemas/whisky';
 
 export type ResponseType = InferResponseType<
     (typeof client.api.whiskies)[':meetingid']['$get'],
