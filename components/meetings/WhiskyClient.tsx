@@ -60,11 +60,7 @@ const WhiskyClient = ({
                 </div>
             </div>
             <Separator />
-            <DataTable
-                searchKey="name"
-                columns={WhiskyColumns}
-                data={whiskies}
-            />
+            <DataTable searchKey="" columns={WhiskyColumns} data={whiskies} />
         </>
     );
 };
