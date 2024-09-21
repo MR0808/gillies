@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 
 import db from '@/lib/db';
 import { getAuthAdmin } from './getAuth';
-import { MeetingSchemaSubmit } from '@/schemas/meetings';
+import { MeetingSchemaSubmit, MeetingMemberSchema } from '@/schemas/meetings';
 
 const app = new Hono()
     .get('/', getAuthAdmin, async (c) => {
@@ -86,6 +86,33 @@ const app = new Hono()
                 data: {
                     date,
                     location
+                }
+            });
+
+            if (!data) {
+                return c.json({ error: 'Not found' }, 404);
+            }
+
+            return c.json({ data });
+        }
+    )
+    .patch(
+        '/members/:meetingid',
+        getAuthAdmin,
+        zValidator('param', z.object({ meetingid: z.string().optional() })),
+        zValidator('json', MeetingMemberSchema),
+        async (c) => {
+            const { meetingid } = c.req.valid('param');
+            let members = c.req.valid('json');
+
+            const uploadMembers = members.members.map((member) => {
+                return { id: member };
+            });
+
+            const data = await db.meeting.update({
+                where: { id: meetingid },
+                data: {
+                    users: { set: uploadMembers }
                 }
             });
 

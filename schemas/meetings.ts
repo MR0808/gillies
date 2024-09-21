@@ -13,3 +13,11 @@ export const MeetingSchemaSubmit = z.object({
     }),
     date: z.string().date('Date is required')
 });
+
+export const MeetingMemberSchema = z.object({
+    members: z.array(
+        z.string().min(1, {
+            message: 'Member id required'
+        })
+    )
+});

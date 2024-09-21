@@ -16,6 +16,7 @@ import { useGetMeeting } from '@/features/meetings/useGetMeeting';
 import MeetingForm from './MeetingForm';
 import WhiskyClient from './WhiskyClient';
 import { cn } from '@/lib/utils';
+import MembersClient from './MembersClient';
 
 const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
     const params = useParams<{ meetingid: string }>();
@@ -106,7 +107,10 @@ const MeetingFormLayout = ({ edit }: { edit: boolean }) => {
                                     .
                                 </TabsContent>
                                 <TabsContent value="members">
-                                    Change your password here.
+                                    <MembersClient
+                                        members={members}
+                                        meetingid={meetingid}
+                                    />
                                 </TabsContent>
                             </Tabs>
                         </>
