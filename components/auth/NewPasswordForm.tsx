@@ -71,7 +71,7 @@ const NewPasswordForm = ({ onSubmit, isPending, error }: Props) => {
                                                     characters and contain at
                                                     least one lowercase, one
                                                     uppercase, one number and
-                                                    one special character
+                                                    one special character/symbol
                                                 </p>
                                             </TooltipContent>
                                         </Tooltip>
