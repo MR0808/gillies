@@ -11,7 +11,7 @@ const nextConfig = {
     experimental: {
         serverSourceMaps: true,
         serverActions: {
-            allowedOrigins: ['localhost:3000']
+            allowedOrigins: ['localhost:3000', 'gillies.vercel.app']
         }
     }
 };
