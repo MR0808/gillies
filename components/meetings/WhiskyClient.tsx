@@ -30,7 +30,8 @@ const WhiskyClient = ({
     const defaultValues = {
         name: '',
         description: '',
-        quaich: false
+        quaich: false,
+        order: -1
     };
 
     return (

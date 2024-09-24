@@ -1,7 +1,7 @@
-import MainClient from '@/components/mainPage/MainClient';
+import VoteFormLayout from '@/components/voting/VoteFormLayout';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
-const SettingsPage = () => {
+const VotePage = () => {
     return (
         <Card className="w-[320px] sm:w-[600px]">
             <CardHeader>
@@ -10,12 +10,10 @@ const SettingsPage = () => {
                 </p>
             </CardHeader>
             <CardContent>
-                Welcome to the Gillies Voting System. Please choose your meeting
-                to review or vote for.
-                <MainClient />
+                <VoteFormLayout />
             </CardContent>
         </Card>
     );
 };
 
-export default SettingsPage;
+export default VotePage;

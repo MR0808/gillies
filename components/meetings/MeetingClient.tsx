@@ -38,7 +38,7 @@ const MeetingClient = () => {
                 <Loader2 className="size-4 text-muted-foreground animate-spin" />
             ) : (
                 <DataTable
-                    searchKey="lastName"
+                    searchKey="location"
                     columns={MeetingsColumns}
                     data={meetings}
                 />

@@ -25,7 +25,7 @@ const app = new Hono()
             const data = await db.whisky.findMany({
                 where: { meetingId: meetingid },
                 orderBy: {
-                    name: 'asc'
+                    order: 'asc'
                 }
             });
 
@@ -52,7 +52,7 @@ const app = new Hono()
                     message: 'No meeting id attached'
                 });
             }
-            let { name, description, quaich } = c.req.valid('json');
+            let { name, description, quaich, order } = c.req.valid('json');
 
             if (quaich) {
                 const existingMeeting = await db.whisky.findFirst({
@@ -75,6 +75,7 @@ const app = new Hono()
                     name,
                     description,
                     meetingId: meetingid,
+                    order,
                     quaich
                 }
             });
@@ -135,7 +136,7 @@ const app = new Hono()
                 });
             }
 
-            let { name, description, quaich } = c.req.valid('json');
+            let { name, description, quaich, order } = c.req.valid('json');
 
             if (quaich) {
                 const existingMeeting = await db.whisky.findFirst({
@@ -160,7 +161,8 @@ const app = new Hono()
                 data: {
                     name,
                     description,
-                    quaich
+                    quaich,
+                    order
                 }
             });
 

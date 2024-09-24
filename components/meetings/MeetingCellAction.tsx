@@ -55,7 +55,7 @@ const MeetingCellAction = ({ data }: { data: ResponseType }) => {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem
                         onClick={() =>
-                            router.push(`/dashboard/members/${data.id}`)
+                            router.push(`/dashboard/meetings/${data.id}`)
                         }
                     >
                         <Edit className="mr-2 h-4 w-4" /> Update

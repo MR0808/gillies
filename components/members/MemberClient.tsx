@@ -4,6 +4,7 @@ import * as z from 'zod';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -30,6 +31,7 @@ const INITIAL_IMPORT_RESULTS = {
 const MemberClient = () => {
     const membersQuery = useGetMembers();
     const members = membersQuery.data || [];
+    const isLoading = membersQuery.isLoading;
 
     const createMembers = useBulkCreateMembers();
 
@@ -88,11 +90,15 @@ const MemberClient = () => {
                 </div>
             </div>
             <Separator />
-            <DataTable
-                searchKey="lastName"
-                columns={memberColumns}
-                data={members}
-            />
+            {isLoading ? (
+                <Loader2 className="size-4 text-muted-foreground animate-spin" />
+            ) : (
+                <DataTable
+                    searchKey="lastName"
+                    columns={memberColumns}
+                    data={members}
+                />
+            )}
         </>
     );
 };

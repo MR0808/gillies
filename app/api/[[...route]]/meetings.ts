@@ -56,7 +56,7 @@ const app = new Hono()
             const data = await db.meeting.findUnique({
                 where: { id },
                 include: {
-                    whiskies: { orderBy: { name: 'asc' } },
+                    whiskies: { orderBy: { order: 'asc' } },
                     users: {
                         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
                     }

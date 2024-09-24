@@ -116,6 +116,7 @@ model Whisky {
   description String?
   image       String? 
   quaich      Boolean
+  order       Int?
   meeting     Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId   String
   reviews     Review[]
@@ -124,7 +125,7 @@ model Whisky {
 model Review {
   id        String   @id @default(uuid())
   userId    String @unique
-  rating    Int
+  rating    Decimal
   comment   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

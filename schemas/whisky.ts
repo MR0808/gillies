@@ -9,5 +9,6 @@ export const WhiskySchema = z.object({
             message: 'Description is required'
         })
     ),
-    quaich: z.boolean()
+    quaich: z.boolean(),
+    order: z.coerce.number({ message: 'Please include an order' })
 });

@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 import { auth } from '@/auth';
-import { getUserById } from '@/data/user';
 import { currentUser } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import ProfilePictureForm from '@/components/settings/ProfilePictureForm';
@@ -24,7 +23,6 @@ const SettingsPage = async () => {
         );
     }
     const session = await auth();
-    const userDb = await getUserById(user.id!);
 
     return (
         <Card className="w-[320px] sm:w-[600px] mb-8">

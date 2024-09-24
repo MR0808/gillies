@@ -28,6 +28,23 @@ export const WhiskyColumns: ColumnDef<ResponseType>[] = [
     //     }
     // },
     {
+        accessorKey: 'order',
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() =>
+                        column.toggleSorting(column.getIsSorted() === 'asc')
+                    }
+                    className={cn('pl-0')}
+                >
+                    Order
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            );
+        }
+    },
+    {
         accessorKey: 'name',
         header: ({ column }) => {
             return (

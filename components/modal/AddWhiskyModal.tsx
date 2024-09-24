@@ -137,6 +137,24 @@ const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
                         />
                         <FormField
                             control={form.control}
+                            name="order"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Order</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            disabled={isPending}
+                                            placeholder="Order"
+                                            type="number"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
                             name="quaich"
                             render={({ field }) => (
                                 <FormItem className="flex flex-row items-center justify-between">

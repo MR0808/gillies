@@ -40,7 +40,8 @@ const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
     const defaultValues = {
         name: data.name,
         description: data.description || '',
-        quaich: data.quaich
+        quaich: data.quaich,
+        order: data.order || -1
     };
 
     return (
