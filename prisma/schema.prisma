@@ -124,7 +124,7 @@ model Whisky {
 
 model Review {
   id        String   @id @default(uuid())
-  userId    String @unique
+  userId    String
   rating    Decimal
   comment   String
   createdAt DateTime @default(now())

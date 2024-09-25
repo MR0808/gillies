@@ -72,6 +72,9 @@ const VoteForm = ({
                                     disabled={isPending}
                                     placeholder="Rating"
                                     type="number"
+                                    max={10}
+                                    min={0}
+                                    step={0.1}
                                     {...field}
                                 />
                             </FormControl>
