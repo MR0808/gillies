@@ -29,7 +29,7 @@ const VoteFormLayout = () => {
 
     const defaultValues = rating?.id
         ? {
-              rating: rating.rating || 0,
+              rating: (rating.rating as number) || 0,
               comment: rating.comment || ''
           }
         : {
