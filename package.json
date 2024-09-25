@@ -15,7 +15,7 @@
         "@hono/node-server": "^1.13.1",
         "@hono/zod-validator": "^0.2.2",
         "@hookform/resolvers": "^3.9.0",
-        "@prisma/client": "^5.19.1",
+        "@prisma/client": "^5.20.0",
         "@prisma/extension-accelerate": "^1.1.0",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -48,7 +48,7 @@
         "date-fns": "^3.6.0",
         "hono": "^4.6.3",
         "input-otp": "^1.2.4",
-        "lucide-react": "^0.445.0",
+        "lucide-react": "^0.446.0",
         "next": "^14.2.13",
         "next-auth": "^5.0.0-beta.20",
         "next-themes": "^0.3.0",
@@ -72,7 +72,7 @@
         "zustand": "^4.5.5"
     },
     "devDependencies": {
-        "@types/node": "^22.6.1",
+        "@types/node": "^22.7.0",
         "@types/papaparse": "^5.3.14",
         "@types/react": "^18",
         "@types/react-dom": "^18",
@@ -80,8 +80,8 @@
         "eslint-config-next": "^14.2.13",
         "postcss": "^8.4.47",
         "prettier": "^3.3.3",
-        "prettier-plugin-tailwindcss": "^0.6.6",
-        "prisma": "^5.19.1",
+        "prettier-plugin-tailwindcss": "^0.6.8",
+        "prisma": "^5.20.0",
         "tailwindcss": "^3.4.13",
         "typescript": "^5"
     }
