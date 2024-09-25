@@ -30,8 +30,10 @@ export const useCreateReview = (whiskyid?: string) => {
         },
 
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['whiskies'] });
-            toast.success('Whisky created');
+            queryClient.invalidateQueries({
+                queryKey: ['whiskyvoting', { whiskyid }]
+            });
+            toast.success('Vote created');
         },
         onError: (error) => {
             toast.error(error.message);
