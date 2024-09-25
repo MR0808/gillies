@@ -36,15 +36,35 @@ const app = new Hono()
             })
         ),
         async (c) => {
+            const user = await currentUser();
+
+            if (!user) {
+                return c.json({ error: 'Unauthorized' }, 400);
+            }
+
+            const dbUser = await db.user.findUnique({
+                where: { id: user.id }
+            });
+
+            if (!dbUser) {
+                return c.json({ error: 'Unauthorized' }, 400);
+            }
+
             const { meetingid } = c.req.valid('param');
-            console.log(meetingid);
 
             if (!meetingid) {
                 return c.json({ error: 'Bad request' }, 400);
             }
             const data = await db.whisky.findMany({
                 where: { meetingId: meetingid },
-                orderBy: [{ order: 'asc' }]
+                orderBy: [{ order: 'asc' }],
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    quaich: true,
+                    reviews: { where: { userId: dbUser.id } }
+                }
             });
 
             return c.json({ data });
