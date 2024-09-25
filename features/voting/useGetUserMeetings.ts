@@ -1,14 +1,11 @@
 import { client } from '@/lib/hono';
 import { useQuery } from '@tanstack/react-query';
 
-export const useGetUserMeetings = (meetingid?: string) => {
+export const useGetUserMeetings = () => {
     const query = useQuery({
-        enabled: !!meetingid,
         queryKey: ['userMeetings'],
         queryFn: async () => {
-            const response = await client.api.voting.meetings.$get({
-                param: { meetingid }
-            });
+            const response = await client.api.voting.meetings.$get();
 
             if (!response.ok) {
                 throw new Error('Failed to fetch meetings');
