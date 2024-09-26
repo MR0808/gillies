@@ -3,6 +3,7 @@ import { InferResponseType } from 'hono';
 import { ColumnDef } from '@tanstack/react-table';
 import { client } from '@/lib/hono';
 import { ArrowUpDown } from 'lucide-react';
+import Link from 'next/link';
 
 import MeetingCellAction from './MeetingCellAction';
 import { Button } from '@/components/ui/button';
@@ -66,12 +67,14 @@ export const MeetingsColumns: ColumnDef<ResponseType>[] = [
         }
     },
     {
-        accessorKey: 'whiskies',
-        header: 'Whiskies',
+        id: 'results',
+        header: 'Results',
         cell: ({ row }) => {
-            row.original.whiskies.map((whisky) => {
-                return <div key={whisky.id}>{whisky.name}</div>;
-            });
+            return (
+                <Link href={`/dashboard/meetings/results/${row.original.id}`}>
+                    View Results
+                </Link>
+            );
         }
     },
     {
