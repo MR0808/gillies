@@ -33,6 +33,9 @@ export const useEditReview = ({
             queryClient.invalidateQueries({
                 queryKey: ['whiskyvoting', { whiskyid }]
             });
+            queryClient.invalidateQueries({
+                queryKey: ['meetingsWhiskies', { whiskyid }]
+            });
             toast.success('Vote updated');
         },
         onError: () => {
