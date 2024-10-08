@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ReloadIcon } from '@radix-ui/react-icons';
 
@@ -20,14 +20,13 @@ import { EmailSchema } from '@/schemas/auth';
 import FormError from '@/components/form/FormError';
 import FormSuccess from '@/components/form/FormSuccess';
 import CardWrapper from './CardWrapper';
-import { useForgotPassword } from '@/features/forgotpassword/useForgotPassword';
+import { resetPassword } from '@/actions/resetPassword';
 
 const ForgotPasswordForm = () => {
     const [error, setError] = useState<string | undefined>('');
     const [success, setSuccess] = useState<string | undefined>('');
-    const [isPending, setIsPending] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
-    const mutation = useForgotPassword();
 
     const form = useForm<z.infer<typeof EmailSchema>>({
         resolver: zodResolver(EmailSchema),
@@ -39,16 +38,20 @@ const ForgotPasswordForm = () => {
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
         setError('');
         setSuccess('');
-        setIsPending(true);
-        mutation.mutate(values, {
-            onSuccess: (data) => {
-                setIsPending(false);
-                setSuccess(data.message);
-            },
-            onError: (error) => {
-                setError(error.message);
-                setIsPending(false);
-            }
+        startTransition(() => {
+            resetPassword(values)
+                .then((data) => {
+                    if (data?.error) {
+                        form.reset();
+                        setError(data.error);
+                    }
+
+                    if (data?.success) {
+                        form.reset();
+                        setSuccess(data.success);
+                    }
+                })
+                .catch(() => setError('Something went wrong'));
         });
     };
 

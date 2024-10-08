@@ -1,7 +1,7 @@
 'use client';
 
 import * as z from 'zod';
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useTransition } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { useSearchParams } from 'next/navigation';
 import { ResetPasswordSchema } from '@/schemas/auth';
@@ -9,21 +9,19 @@ import { ResetPasswordSchema } from '@/schemas/auth';
 import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
 import FormSuccess from '../form/FormSuccess';
-import { useVerifyPassword } from '@/features/forgotpassword/useVerifyPassword';
-import { useUpdatePassword } from '@/features/forgotpassword/useUpdatePassword';
 import NewPasswordForm from './NewPasswordForm';
+import { verifyPasswordToken, updatePassword } from '@/actions/resetPassword';
 
 const NewPasswordFormLayout = () => {
+    const [tokenError, setTokenError] = useState<string | undefined>();
+    const [tokenSuccess, setTokenSuccess] = useState<string | undefined>();
+    const [formError, setFormError] = useState<string | undefined>();
+    const [formSuccess, setFormSuccess] = useState<string | undefined>();
+    const [isPending, startTransition] = useTransition();
+
     const searchParams = useSearchParams();
-    const [isPending, setIsPending] = useState(false);
-    const [success, setSuccess] = useState<string | undefined>();
-    const [error, setError] = useState<string | undefined>();
-    const token = searchParams.get('token') || undefined;
 
-    const verifyQuery = useVerifyPassword(token);
-    const isLoading = verifyQuery.isPending;
-
-    const mutation = useUpdatePassword(token);
+    const token = searchParams.get('token');
 
     if (!token) {
         return (
@@ -40,16 +38,37 @@ const NewPasswordFormLayout = () => {
         );
     }
 
+    const onPageLoad = useCallback(() => {
+        if (tokenSuccess || tokenError) return;
+
+        if (!token) {
+            setTokenError('Missing token!');
+            return;
+        }
+
+        verifyPasswordToken(token)
+            .then((data) => {
+                setTokenSuccess(data.success);
+                setTokenError(data.error);
+            })
+            .catch(() => {
+                setTokenError('Something went wrong!');
+            });
+    }, [token, tokenSuccess, tokenError]);
+
+    useEffect(() => {
+        onPageLoad();
+    }, [onPageLoad]);
+
     const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
-        setIsPending(true);
-        mutation.mutate(values, {
-            onSuccess: () => {
-                setSuccess('Password reset successful, please login.');
-            },
-            onError: (error) => {
-                setIsPending(false);
-                setError(error.message);
-            }
+        setFormError("");
+        setFormSuccess("");
+
+        startTransition(() => {
+            updatePassword(values).then((data) => {
+                setFormError(data.error);
+                setFormSuccess(data.success);
+            });
         });
     };
 
@@ -59,21 +78,21 @@ const NewPasswordFormLayout = () => {
             backButtonLabel="Remember your password? Login"
             backButtonHref="/auth/login"
         >
-            {isLoading ? (
+            {!tokenSuccess && !tokenError ? (
                 <div className="flex flex-col items-center w-full justify-center">
                     <BeatLoader />
                 </div>
-            ) : verifyQuery.isError ? (
-                <FormError message={verifyQuery.error.message} />
-            ) : success ? (
+            ) : tokenError ? (
+                <FormError message={tokenError} />
+            ) : formSuccess ? (
                 <div className="flex flex-col items-center w-full justify-center">
-                    <FormSuccess message={success} />
+                    <FormSuccess message={formSuccess} />
                 </div>
             ) : (
                 <NewPasswordForm
                     onSubmit={onSubmit}
                     isPending={isPending}
-                    error={error}
+                    error={formError}
                 />
             )}
         </CardWrapper>

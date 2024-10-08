@@ -35,7 +35,7 @@ export const verification = async (token: string) => {
         where: { id: existingToken.id }
     });
 
-    return { success: 'Email verified!' };
+    return { success: true };
 };
 
 export default verification;

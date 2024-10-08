@@ -1,21 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BeatLoader } from 'react-spinners';
 import { useSearchParams } from 'next/navigation';
 
 import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
-import FormSuccess from '../form/FormSuccess';
-import { useVerifyEmail } from '@/features/verification/useVerifyEmail';
+import FormSuccess from '@/components/form/FormSuccess';
+import verification from '@/actions/verification'
 
 const VerificationForm = () => {
-    const searchParams = useSearchParams();
-    const token = searchParams.get('token') || undefined;
+    const [error, setError] = useState<string | undefined>();
+    const [success, setSuccess] = useState(false);
 
-    const verifyQuery = useVerifyEmail(token);
-    const isLoading = verifyQuery.isPending;
-    const loaded = verifyQuery.isSuccess;
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
 
     if (!token) {
         return (
@@ -31,19 +30,43 @@ const VerificationForm = () => {
         );
     }
 
+    const onSubmit = useCallback(() => {
+        if (success || error) return;
+
+        if (!token) {
+            setError('Missing token!');
+            return;
+        }
+
+        verification(token)
+            .then((data) => {
+                if (data.success) {
+                    setSuccess(data.success);
+                }
+                setError(data.error);
+            })
+            .catch(() => {
+                setError('Something went wrong!');
+            });
+    }, [token, success, error]);
+
+    useEffect(() => {
+        onSubmit();
+    }, [onSubmit]);
+
     return (
         <CardWrapper
             headerLabel="Email Verification"
             backButtonLabel="Now you can login"
             backButtonHref="/auth/login"
-            backButton={loaded}
+            backButton={success}
         >
-            {isLoading ? (
+            {!success && !error ? (
                 <div className="flex flex-col items-center w-full justify-center">
                     <BeatLoader />
                 </div>
-            ) : verifyQuery.isError ? (
-                <FormError message={verifyQuery.error.message} />
+            ) : error ? (
+                <FormError message={error} />
             ) : (
                 <div className="flex flex-col items-center w-full justify-center">
                     <FormSuccess message="Email verified!" />

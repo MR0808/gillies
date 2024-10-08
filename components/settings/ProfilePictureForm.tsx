@@ -24,7 +24,7 @@ import profile from '@/public/images/profile.jpg';
 import { Input } from '@/components/ui/input';
 import { ProfileButton } from '@/components/form/Buttons';
 import { ProfilePictureSchema } from '@/schemas/settings';
-import { updateProfilePicture } from '@/actions/profilePicture';
+import { updateProfilePicture } from '@/actions/settings';
 
 const formSchema = z.object({
     image:
