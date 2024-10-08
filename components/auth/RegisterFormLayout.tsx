@@ -23,20 +23,6 @@ const RegisterFormLayout = () => {
 
     const token = searchParams.get('token');
 
-    if (!token) {
-        return (
-            <CardWrapper
-                headerLabel="Welcome to the Gillies Voting System"
-                backButtonLabel="Already registered? Login"
-                backButtonHref="/auth/login"
-            >
-                <div className="flex flex-col items-center w-full justify-center">
-                    <FormError message="Missing token" />
-                </div>
-            </CardWrapper>
-        );
-    }
-
     const onPageLoad = useCallback(() => {
         if (tokenSuccess || tokenError) return;
 
@@ -58,6 +44,20 @@ const RegisterFormLayout = () => {
     useEffect(() => {
         onPageLoad();
     }, [onPageLoad]);
+    
+    if (!token) {
+        return (
+            <CardWrapper
+                headerLabel="Welcome to the Gillies Voting System"
+                backButtonLabel="Already registered? Login"
+                backButtonHref="/auth/login"
+            >
+                <div className="flex flex-col items-center w-full justify-center">
+                    <FormError message="Missing token" />
+                </div>
+            </CardWrapper>
+        );
+    }
 
     const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
         setFormError("");
