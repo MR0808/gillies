@@ -10,10 +10,14 @@ export const getUserMeetings = async () => {
     const user = await currentUser();
     if (!user) return {error: 'Not authorised'}
 
-    const data = await db.user.findUnique({
-        where: { id: user.id },
-        include: { meetings: true }
-    });
+    // const data = await db.user.findUnique({
+    //     where: { id: user.id },
+    //     include: { meetings: true }
+    // });
+
+    const data = await db.meeting.findMany({
+        where: {users: {every: {id: {contains: user.id} }}}
+    })
 
     if (!data) {
         return { error: 'Unauthorised' }
