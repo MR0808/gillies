@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +28,7 @@ import {
     InputOTPSlot,
     InputOTPSeparator
 } from '@/components/ui/input-otp';
-import { useGetLogin } from '@/features/login/useGetLogin';
+import { login } from '@/actions/login';
 import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
 import { cn } from '@/lib/utils';
@@ -48,9 +48,8 @@ const LoginForm = () => {
     const [showBackupCode, setShowBackupCode] = useState(false);
     const [variant, setVariant] = useState<VARIANT>(VARIANT.LOGIN);
     const [error, setError] = useState<string | undefined>('');
-    const [isPending, setIsPending] = useState(false);
-
-    const mutationLogin = useGetLogin();
+    const [success, setSuccess] = useState<string | undefined>('');
+    const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
@@ -75,21 +74,21 @@ const LoginForm = () => {
 
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
         setError('');
-        setIsPending(true);
+        setSuccess('');
 
-        mutationLogin.mutate(values, {
-            onSuccess: (data) => {
-                if (!data.twoFactorEnabled) {
-                    router.push(callbackUrl || '/');
-                } else {
-                    setShowTwoFactor(true);
-                }
-            },
-            onError: (error) => {
-                form.setValue('password', '');
-                setError(error.message);
-                setIsPending(false);
-            }
+        startTransition(() => {
+            login(values, callbackUrl)
+                .then((data) => {
+                    if (data?.error) {
+                        form.reset();
+                        setError(data.error);
+                    }
+
+                    if (data?.twoFactor) {
+                        setShowTwoFactor(true);
+                    }
+                })
+                .catch(() => setError('Something went wrong'));
         });
     };
 

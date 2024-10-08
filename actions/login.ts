@@ -3,7 +3,8 @@
 import * as z from 'zod';
 import { AuthError } from 'next-auth';
 import * as OTPAuth from 'otpauth';
-import { compareSync } from 'bcrypt-ts';
+import { compare } from 'bcrypt-ts';
+import { isRedirectError } from "next/dist/client/components/redirect";
 
 import db from '@/lib/db';
 import { signIn } from '@/auth';
@@ -30,7 +31,7 @@ export const login = async (
     const existingUser = await getUserByEmail(email);
 
     if (!existingUser || !existingUser.email || !existingUser.password) {
-        return { error: 'Email does not exist!' };
+        return { error: 'Email and password combination is invalid!' };
     }
 
     if (!existingUser.emailVerified) {
@@ -64,19 +65,26 @@ export const login = async (
     }
 
     if (existingUser.otpEnabled && existingUser.email) {
+        const passwordsMatch = await compare(
+            password,
+            existingUser.password
+        );
+
+        if (!passwordsMatch) return {error: "Email and password combination is invalid"};
+
         if (token) {
-            const totp = new OTPAuth.TOTP({
-                issuer: 'Wikibeerdia',
+            let totp = new OTPAuth.TOTP({
+                issuer: "Gillies",
                 label: `${existingUser.firstName} ${existingUser.lastName}`,
-                algorithm: 'SHA1',
+                algorithm: "SHA1",
                 digits: 6,
                 secret: existingUser.otpBase32!
             });
 
-            const delta = totp.validate({ token, window: 2 });
+            let delta = totp.validate({ token, window: 2 });
 
             if (delta === null) {
-                return { error: 'Invalid code!' };
+                return { error: "Invalid code!" };
             }
 
             const existingConfirmation = await getTwoFactorConfirmationByUserId(
@@ -99,8 +107,8 @@ export const login = async (
 
             let passed = false;
             let index = -1;
-            for (const [i, code] of codes.entries()) {
-                const doMatch = await compareSync(backupCode, code);
+            for (let [i, code] of codes.entries()) {
+                const doMatch = await compare(backupCode, code);
 
                 if (doMatch) {
                     passed = true;
@@ -131,7 +139,7 @@ export const login = async (
                     }
                 });
             } else {
-                return { error: 'Invalid backup code!' };
+                return { error: "Invalid backup code!" };
             }
         } else {
             return { twoFactor: true };
@@ -139,25 +147,26 @@ export const login = async (
     }
 
     try {
-        await signIn('credentials', {
+        await signIn("credentials", {
             email,
             password,
             redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT
         });
     } catch (error) {
         console.log(error);
+        if (isRedirectError(error)) {
+            throw error;
+        }
 
         if (error instanceof AuthError) {
             switch (error.type) {
-                case 'CredentialsSignin':
-                    return { error: 'Invalid credentials!' };
+                case "CredentialsSignin":
+                    return { error: "Invalid credentials!" };
                 default:
-                    return { error: 'Something went wrong!' };
+                    return { error: "Something went wrong!" };
             }
         }
 
         throw error;
     }
 };
-
-export default login;
