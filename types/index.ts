@@ -48,3 +48,34 @@ export type actionFunction = (
     prevState: any,
     formData: FormData
 ) => Promise<{ result: boolean | null; message: string }>;
+
+export interface Whiskies {
+    id: string;
+    name: string;
+    description: string | null;
+    quaich: boolean;
+    reviews: {
+        id: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        rating: number;
+        comment: string;
+        whiskyId: string;
+    }[];
+}
+
+export interface Whisky {
+    whisky: {
+        id: string;
+        name: string;
+        description: string | null;
+        image: string | null;
+        quaich: boolean;
+        order: number | null;
+        meetingId: string;
+    };
+    rating: number;
+    comment: string;
+    id: string;
+}

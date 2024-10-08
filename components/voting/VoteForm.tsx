@@ -63,6 +63,24 @@ const VoteForm = ({
             >
                 <FormField
                     control={form.control}
+                    name="comment"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Comments</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    placeholder="Comments"
+                                    className="resize-none"
+                                    disabled={isPending}
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
                     name="rating"
                     render={({ field }) => (
                         <FormItem>
@@ -75,24 +93,6 @@ const VoteForm = ({
                                     max={10}
                                     min={0}
                                     step={0.1}
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="comment"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Comments</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="Comments"
-                                    className="resize-none"
-                                    disabled={isPending}
                                     {...field}
                                 />
                             </FormControl>

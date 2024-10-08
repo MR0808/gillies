@@ -3,8 +3,8 @@
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { User } from '@prisma/client';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -14,8 +14,7 @@ import { memberColumns } from './MemberColumns';
 import UploadButton from './UploadButton';
 import ImportCard from './ImportCard';
 import { MemberImportSchema } from '@/schemas/members';
-import { useGetMembers } from '@/features/members/useGetMembers';
-import { useBulkCreateMembers } from '@/features/members/useBulkCreateMembers';
+import { createMembers } from '@/actions/members';
 
 enum VARIANT {
     LIST = 'LIST',
@@ -28,16 +27,11 @@ const INITIAL_IMPORT_RESULTS = {
     meta: {}
 };
 
-const MemberClient = () => {
-    const membersQuery = useGetMembers();
-    const members = membersQuery.data || [];
-    const isLoading = membersQuery.isLoading;
-
-    const createMembers = useBulkCreateMembers();
-
+const MemberClient = ({ members }: { members: User[] }) => {
     const router = useRouter();
     const [variant, setVariant] = useState<VARIANT>(VARIANT.LIST);
     const [importResults, setImportResults] = useState(INITIAL_IMPORT_RESULTS);
+    const [isPending, startTransition] = useTransition();
 
     const onUpload = async (results: typeof INITIAL_IMPORT_RESULTS) => {
         setVariant(VARIANT.IMPORT);
@@ -52,10 +46,12 @@ const MemberClient = () => {
     const onSubmitImport = async (
         values: z.infer<typeof MemberImportSchema>
     ) => {
-        createMembers.mutate(values, {
-            onSuccess: () => {
-                onCancelImport();
-            }
+        startTransition(() => {
+            createMembers(values).then((data) => {
+                if (data?.data) {
+                    onCancelImport();
+                }
+            });
         });
     };
 
@@ -66,7 +62,7 @@ const MemberClient = () => {
                     data={importResults.data}
                     onCancel={onCancelImport}
                     onSubmit={onSubmitImport}
-                    isPending={createMembers.isPending}
+                    isPending={isPending}
                 />
             </>
         );
@@ -90,15 +86,11 @@ const MemberClient = () => {
                 </div>
             </div>
             <Separator />
-            {isLoading ? (
-                <Loader2 className="size-4 text-muted-foreground animate-spin" />
-            ) : (
-                <DataTable
-                    searchKey="lastName"
-                    columns={memberColumns}
-                    data={members}
-                />
-            )}
+            <DataTable
+                searchKey="lastName"
+                columns={memberColumns}
+                data={members}
+            />
         </>
     );
 };

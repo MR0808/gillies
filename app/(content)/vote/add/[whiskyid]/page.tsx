@@ -1,7 +1,14 @@
+import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
+import { Separator } from '@radix-ui/react-dropdown-menu';
+
 import VoteFormLayout from '@/components/voting/VoteFormLayout';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { getWhiskyForVoting } from '@/actions/voting';
 
-const VotePage = () => {
+const VotePage = async ({ params }: { params: { whiskyid: string } }) => {
+    const review = await getWhiskyForVoting(params.whiskyid);
+
     return (
         <Card className="w-[320px] sm:w-[600px]">
             <CardHeader>
@@ -10,7 +17,18 @@ const VotePage = () => {
                 </p>
             </CardHeader>
             <CardContent>
-                <VoteFormLayout />
+                <Separator className="mb-4" />
+                <Suspense
+                    fallback={
+                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
+                    }
+                >
+                    {!review.data ? (
+                        <div>No whisky found</div>
+                    ) : (
+                        <VoteFormLayout rating={review.data} />
+                    )}
+                </Suspense>
             </CardContent>
         </Card>
     );

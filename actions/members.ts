@@ -1,6 +1,7 @@
-'use server'
+'use server';
 
 import * as z from 'zod';
+import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
 import checkAuth from '@/utils/checkAuth';
@@ -10,8 +11,8 @@ import { sendRegistrationEmail } from '@/lib/mail';
 import { getRegistrationTokenById } from '@/data/registrationToken';
 
 export const getMembers = async () => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     const data = await db.user.findMany({
         orderBy: {
@@ -20,14 +21,14 @@ export const getMembers = async () => {
     });
 
     return { data };
-}
+};
 
 export const getMember = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const data = await db.user.findUnique({ where: { id } });
@@ -37,16 +38,16 @@ export const getMember = async (id: string) => {
     }
 
     return { data };
-}
+};
 
 export const createMember = async (values: z.infer<typeof MemberSchema>) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
-    const validatedFields = MemberSchema.safeParse(values);
+    const validatedFields = await MemberSchema.safeParseAsync(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     let { firstName, lastName, email } = validatedFields.data;
@@ -77,18 +78,21 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
         registrationToken.token
     );
 
+    revalidatePath('/dashboard/members');
+
     return { data };
-}
+};
 
-export const createMembers = async (values: z.infer<typeof MemberImportSchema>) => {
+export const createMembers = async (
+    values: z.infer<typeof MemberImportSchema>
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
-
-    const validatedFields = MemberSchema.safeParse(values);
+    const validatedFields = MemberImportSchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     const emails = await db.user.findMany({ select: { email: true } });
@@ -103,15 +107,13 @@ export const createMembers = async (values: z.infer<typeof MemberImportSchema>) 
     const data = await db.user.createMany({
         data: upload
     });
-    
+
     if (!data) {
         return { error: 'Not found' };
     }
 
     upload.forEach(async (member) => {
-        const registrationToken = await generateRegistrationToken(
-            member.email
-        );
+        const registrationToken = await generateRegistrationToken(member.email);
 
         await sendRegistrationEmail(
             registrationToken.email,
@@ -119,22 +121,26 @@ export const createMembers = async (values: z.infer<typeof MemberImportSchema>) 
         );
     });
 
+    revalidatePath('/dashboard/members');
+
     return { data };
-}
+};
 
-
-export const updateMember = async (values: z.infer<typeof MemberSchema>, id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+export const updateMember = async (
+    values: z.infer<typeof MemberSchema>,
+    id: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
-    const validatedFields = MemberSchema.safeParse(values);
+    const validatedFields = await MemberSchema.safeParseAsync(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     let { firstName, lastName, email } = validatedFields.data;
@@ -156,15 +162,17 @@ export const updateMember = async (values: z.infer<typeof MemberSchema>, id: str
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath('/dashboard/members');
+
+    return { data };
+};
 
 export const resendInvite = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const registrationToken = await getRegistrationTokenById(id);
@@ -179,14 +187,14 @@ export const resendInvite = async (id: string) => {
     );
 
     return { success: registrationToken };
-}
+};
 
 export const deleteMember = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const data = await db.user.delete({
@@ -199,5 +207,7 @@ export const deleteMember = async (id: string) => {
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath('/dashboard/members');
+
+    return { data };
+};

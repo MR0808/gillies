@@ -1,9 +1,8 @@
 'use client';
 import { Edit, MoreHorizontal, Trash, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { InferResponseType } from 'hono';
-import { client } from '@/lib/hono';
+import { useState, useTransition } from 'react';
+import { User } from '@prisma/client';
 
 import {
     DropdownMenu,
@@ -16,33 +15,32 @@ import {
 import AlertModal from '@/components/modal/AlertModal';
 import ResendModal from '@/components/modal/ResendModal';
 import { Button } from '@/components/ui/button';
-import { useResendMember } from '@/features/members/useResendMember';
-import { useDeleteMember } from '@/features/members/useDeleteMember';
+import { deleteMember, resendInvite } from '@/actions/members';
 
-export type ResponseType = InferResponseType<
-    typeof client.api.members.$get,
-    200
->['data'][0];
+export type ResponseType = User;
 
 const MemberCellAction = ({ data }: { data: ResponseType }) => {
     const [openDelete, setOpenDelete] = useState(false);
     const [openResend, setOpenResend] = useState(false);
     const router = useRouter();
-
-    const resendMutation = useResendMember(data.id);
-    const deleteMutation = useDeleteMember(data.id);
+    const [isPendingDelete, startTransitionDelete] = useTransition();
+    const [isPendingResend, startTransitionResend] = useTransition();
 
     const onConfirmDelete = () => {
-        deleteMutation.mutate(undefined, {
-            onSuccess: () => {
-                setOpenDelete(false);
-            }
+        startTransitionDelete(() => {
+            deleteMember(data.id).then((data) => {
+                if (data?.data) {
+                    setOpenDelete(false);
+                }
+            });
         });
     };
 
     const handleResend = () => {
         setOpenResend(true);
-        resendMutation.mutate(undefined);
+        startTransitionResend(() => {
+            resendInvite(data.id).then((data) => {});
+        });
     };
 
     return (
@@ -51,12 +49,12 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
                 isOpen={openDelete}
                 onClose={() => setOpenDelete(false)}
                 onConfirm={onConfirmDelete}
-                loading={deleteMutation.isPending}
+                loading={isPendingDelete}
             />
             <ResendModal
                 isOpen={openResend}
                 onClose={() => setOpenResend(false)}
-                loading={resendMutation.isPending}
+                loading={isPendingResend}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>

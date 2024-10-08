@@ -1,7 +1,14 @@
+import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
+import { Separator } from '@radix-ui/react-dropdown-menu';
+
 import VotingClient from '@/components/voting/VotingClient';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { getMeetingWhiskiesByUser } from '@/actions/voting';
 
-const VotePage = () => {
+const VotePage = async ({ params }: { params: { meetingid: string } }) => {
+    const whiskies = await getMeetingWhiskiesByUser(params.meetingid);
+
     return (
         <Card className="w-[320px] sm:w-[600px]">
             <CardHeader>
@@ -10,7 +17,18 @@ const VotePage = () => {
                 </p>
             </CardHeader>
             <CardContent>
-                <VotingClient />
+                <Separator className="mb-4" />
+                <Suspense
+                    fallback={
+                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
+                    }
+                >
+                    {!whiskies.data ? (
+                        <div>No whiskies found</div>
+                    ) : (
+                        <VotingClient whiskies={whiskies.data} />
+                    )}
+                </Suspense>
             </CardContent>
         </Card>
     );

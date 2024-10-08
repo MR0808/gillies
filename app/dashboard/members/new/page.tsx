@@ -1,8 +1,11 @@
-import React from 'react';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import MemberFormLayout from '@/components/members/MemberFormLayout';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
+import { Heading } from '@/components/ui/heading';
+import { Separator } from '@/components/ui/separator';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -14,7 +17,20 @@ export default function Page() {
         <PageContainer scrollable={true}>
             <div className="space-y-4">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MemberFormLayout edit={false} />
+                <div className="flex items-center justify-between">
+                    <Heading
+                        title="Add Member"
+                        description="Create a new member"
+                    />
+                </div>
+                <Separator />
+                <Suspense
+                    fallback={
+                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
+                    }
+                >
+                    <MemberFormLayout />
+                </Suspense>
             </div>
         </PageContainer>
     );

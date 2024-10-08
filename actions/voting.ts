@@ -1,6 +1,7 @@
-'use server'
+'use server';
 
-import *as z from 'zod';
+import * as z from 'zod';
+import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
 import { currentUser } from '@/lib/auth';
@@ -8,7 +9,7 @@ import { VotingSchema } from '@/schemas/voting';
 
 export const getUserMeetings = async () => {
     const user = await currentUser();
-    if (!user) return {error: 'Not authorised'}
+    if (!user) return { error: 'Not authorised' };
 
     // const data = await db.user.findUnique({
     //     where: { id: user.id },
@@ -16,19 +17,19 @@ export const getUserMeetings = async () => {
     // });
 
     const data = await db.meeting.findMany({
-        where: {users: {some: {id: {contains: user.id} }}}
-    })
+        where: { users: { some: { id: { contains: user.id } } } }
+    });
 
     if (!data) {
-        return { error: 'Unauthorised' }
+        return { error: 'Unauthorised' };
     }
 
     return { data };
-}
+};
 
 export const getMeetingWhiskiesByUser = async (meetingId: string) => {
     const user = await currentUser();
-    if (!user) return {error: 'Not authorised'}
+    if (!user) return { error: 'Not authorised' };
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -55,15 +56,15 @@ export const getMeetingWhiskiesByUser = async (meetingId: string) => {
     });
 
     if (!data) {
-        return { error: 'Not found' }
+        return { error: 'Not found' };
     }
 
     return { data };
-}
+};
 
 export const getWhiskyForVoting = async (whiskyId: string) => {
     const user = await currentUser();
-    if (!user) return {error: 'Not authorised'}
+    if (!user) return { error: 'Not authorised' };
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -105,11 +106,14 @@ export const getWhiskyForVoting = async (whiskyId: string) => {
     }
 
     return { data };
-}
+};
 
-export const createVote = async (values: z.infer<typeof VotingSchema>, whiskyId: string) => {
+export const createVote = async (
+    values: z.infer<typeof VotingSchema>,
+    whiskyId: string
+) => {
     const user = await currentUser();
-    if (!user) return {error: 'Not authorised'}
+    if (!user) return { error: 'Not authorised' };
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -126,10 +130,10 @@ export const createVote = async (values: z.infer<typeof VotingSchema>, whiskyId:
     const validatedFields = VotingSchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return {error: 'Invalid fields' };
+        return { error: 'Invalid fields' };
     }
 
-    let {rating, comment} = validatedFields.data
+    let { rating, comment } = validatedFields.data;
 
     const data = await db.review.create({
         data: {
@@ -141,16 +145,22 @@ export const createVote = async (values: z.infer<typeof VotingSchema>, whiskyId:
     });
 
     if (!data) {
-        return { error: 'Not found' }
+        return { error: 'Not found' };
     }
 
-    return { data };
+    const meeting = await db.whisky.findUnique({ where: { id: whiskyId } });
 
-}
+    revalidatePath(`/vote/${meeting?.meetingId}`);
 
-export const updateVote = async (values: z.infer<typeof VotingSchema>, whiskyId: string, id: string) => {
+    return { success: data };
+};
+
+export const updateVote = async (
+    values: z.infer<typeof VotingSchema>,
+    id: string
+) => {
     const user = await currentUser();
-    if (!user) return {error: 'Not authorised'}
+    if (!user) return { error: 'Not authorised' };
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -160,17 +170,17 @@ export const updateVote = async (values: z.infer<typeof VotingSchema>, whiskyId:
         return { error: 'Unauthorised' };
     }
 
-    if (!whiskyId || !id) {
+    if (!id) {
         return { error: 'Bad request' };
     }
 
     const validatedFields = VotingSchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return {error: 'Invalid fields' };
+        return { error: 'Invalid fields' };
     }
 
-    let {rating, comment} = validatedFields.data
+    let { rating, comment } = validatedFields.data;
 
     const data = await db.review.update({
         where: {
@@ -183,9 +193,15 @@ export const updateVote = async (values: z.infer<typeof VotingSchema>, whiskyId:
     });
 
     if (!data) {
-        return { error: 'Not found' }
+        return { error: 'Not found' };
     }
 
-    return { data };
+    const meeting = await db.review.findUnique({
+        where: { id },
+        select: { whisky: true }
+    });
 
-}
+    revalidatePath(`/vote/${meeting?.whisky.meetingId}`);
+
+    return { success: data };
+};

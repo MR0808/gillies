@@ -1,8 +1,7 @@
 'use client';
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
-import { InferResponseType } from 'hono';
-import { client } from '@/lib/hono';
+import { User } from '@prisma/client';
 
 import MemberCellAction from './MemberCellAction';
 import { Button } from '@/components/ui/button';
@@ -23,10 +22,7 @@ const multiColumnFilterFn: FilterFn<ResponseType> = (
         .includes(filterValue.toLowerCase());
 };
 
-export type ResponseType = InferResponseType<
-    typeof client.api.members.$get,
-    200
->['data'][0];
+export type ResponseType = User;
 
 export const memberColumns: ColumnDef<ResponseType>[] = [
     {

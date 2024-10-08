@@ -49,7 +49,6 @@ const EmailForm = ({ session }: { session: Session | null }) => {
     };
 
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
-        
         startTransition(() => {
             updateEmail(values).then((data) => {
                 if (data?.success) {
