@@ -26,15 +26,6 @@ import { ProfileButton } from '@/components/form/Buttons';
 import { ProfilePictureSchema } from '@/schemas/settings';
 import { updateProfilePicture } from '@/actions/settings';
 
-const formSchema = z.object({
-    image:
-        typeof window === 'undefined'
-            ? z.any()
-            : z
-                  .instanceof(FileList)
-                  .refine((image) => image?.length == 1, 'File is required.')
-});
-
 const ProfilePictureForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
     const { data: newSession, update } = useSession();

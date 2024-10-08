@@ -5,7 +5,7 @@ interface SidebarStore {
   toggle: () => void;
 }
 
-export const useSidebar = create<SidebarStore>((set) => ({
+const useSidebar = create<SidebarStore>((set) => ({
   isMinimized: false,
   toggle: () => set((state) => ({ isMinimized: !state.isMinimized }))
 }));

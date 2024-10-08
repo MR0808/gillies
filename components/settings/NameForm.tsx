@@ -3,9 +3,10 @@
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
+import { toast } from 'sonner';
 
 import {
     Form,
@@ -20,16 +21,14 @@ import { AccountFormInput } from '@/components/form/FormInput';
 import FormError from '@/components/form/FormError';
 import { NameSchema } from '@/schemas/settings';
 import { cn } from '@/lib/utils';
-import { useEditName } from '@/features/settings/useEditName';
+import { updateName } from '@/actions/settings';
 
 const NameForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
     const [edit, setEdit] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const { data: newSession, update } = useSession();
-    const [isPending, setIsPending] = useState(false);
-
-    const mutation = useEditName();
+    const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
         if (newSession && newSession.user) {
@@ -53,20 +52,20 @@ const NameForm = ({ session }: { session: Session | null }) => {
     };
 
     const onSubmit = (values: z.infer<typeof NameSchema>) => {
-        setIsPending(true);
-        mutation.mutate(values, {
-            onSuccess: () => {
-                setEdit(false);
-                update();
-                setError(undefined);
-                form.reset(values);
-                setIsPending(false);
-            },
-            onError: (error) => {
-                setIsPending(false);
-                setError(error.message);
-            }
-        });
+        startTransition(() => {
+            updateName(values).then((data) => {
+                if (data?.success) {
+                    setEdit(false);
+                    update();
+                    setError(undefined);
+                    form.reset(values);
+                    toast.success(data.success)
+                }
+                if (data?.error) {
+                    setError(data.error);
+                }
+            });
+        })
     };
 
     return (

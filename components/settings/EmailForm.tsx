@@ -16,7 +16,7 @@ import FormError from '@/components/form/FormError';
 import FormSuccess from '@/components/form/FormSuccess';
 import { EmailSchema } from '@/schemas/auth';
 import { cn } from '@/lib/utils';
-import { useEditEmail } from '@/features/settings/useEditEmail';
+import { updateEmail } from '@/actions/settings';
 
 const EmailForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
@@ -24,10 +24,8 @@ const EmailForm = ({ session }: { session: Session | null }) => {
     const [error, setError] = useState<string | undefined>();
     const [success, setSuccess] = useState<string | undefined>();
     const { data: newSession, update } = useSession();
-    const [isPending, setIsPending] = useState(false);
     const [closeText, setCloseText] = useState('Cancel');
-
-    const mutation = useEditEmail();
+    const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
         if (newSession && newSession.user) {
@@ -51,22 +49,22 @@ const EmailForm = ({ session }: { session: Session | null }) => {
     };
 
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
-        setIsPending(true);
-        mutation.mutate(values, {
-            onSuccess: () => {
-                update();
-                form.reset();
-                setError(undefined);
-                setSuccess(
-                    'Email successfully updated, you will need to verify this email though'
-                );
-                setCloseText('Close');
-                setIsPending(false);
-            },
-            onError: (error) => {
-                setIsPending(false);
-                setError(error.message);
-            }
+        
+        startTransition(() => {
+            updateEmail(values).then((data) => {
+                if (data?.success) {
+                    update();
+                    form.reset();
+                    setError(undefined);
+                    setSuccess(
+                        'Email successfully updated, you will need to verify this email though'
+                    );
+                    setCloseText('Close');
+                }
+                if (data?.error) {
+                    setError(data.error);
+                }
+            });
         });
     };
 

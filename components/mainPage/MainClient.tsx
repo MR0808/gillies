@@ -14,6 +14,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 const MainClient = ({meetings}: {meetings: Meeting[]}) => {
 
+    if (meetings.length === 0) {
+        return (<div>No meetings available</div>)
+    }
+
     return (
         <Table>
             <TableHeader>
@@ -43,7 +47,7 @@ const MainClient = ({meetings}: {meetings: Meeting[]}) => {
                                     </Badge>
                                 )}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell>
                                 {meeting.status === 'OPEN' ? (
                                     <Link
                                         href={`/vote/${meeting.id}`}
@@ -56,7 +60,7 @@ const MainClient = ({meetings}: {meetings: Meeting[]}) => {
                                         href={`/results/${meeting.id}`}
                                         className="font-semibold hover:text-primary text-blue-600"
                                     >
-                                        Vote
+                                        View Results
                                     </Link>
                                 )}
                             </TableCell>

@@ -16,7 +16,7 @@ export const getUserMeetings = async () => {
     // });
 
     const data = await db.meeting.findMany({
-        where: {users: {every: {id: {contains: user.id} }}}
+        where: {users: {some: {id: {contains: user.id} }}}
     })
 
     if (!data) {

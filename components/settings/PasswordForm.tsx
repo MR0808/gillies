@@ -3,9 +3,10 @@
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSession } from 'next-auth/react';
 import type { Session } from 'next-auth';
+import { toast } from 'sonner';
 
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
 
@@ -13,17 +14,15 @@ import { SubmitButton } from '@/components/form/Buttons';
 import { AccountFormInput } from '@/components/form/FormInput';
 import FormError from '@/components/form/FormError';
 import { ResetPasswordSchema } from '@/schemas/auth';
-import { useEditPassword } from '@/features/settings/useEditPassword';
 import { cn } from '@/lib/utils';
+import { updatePassword } from '@/actions/resetPassword';
 
 const PasswordForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
     const [edit, setEdit] = useState(false);
     const [error, setError] = useState<string | undefined>();
     const { data: newSession, update } = useSession();
-    const [isPending, setIsPending] = useState(false);
-
-    const mutation = useEditPassword();
+    const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
         if (newSession && newSession.user) {
@@ -46,20 +45,20 @@ const PasswordForm = ({ session }: { session: Session | null }) => {
     };
 
     const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
-        setIsPending(true);
-        mutation.mutate(values, {
-            onSuccess: () => {
-                update();
-                form.reset();
-                setError(undefined);
-                setEdit(!edit);
-                setIsPending(false);
-            },
-            onError: (error) => {
-                setIsPending(false);
-                setError(error.message);
-            }
-        });
+        startTransition(() => {
+            updatePassword(values).then((data) => {
+                if (data?.success) {
+                    setEdit(false);
+                    update();
+                    setError(undefined);
+                    form.reset(values);
+                    toast.success(data.success)
+                }
+                if (data?.error) {
+                    setError(data.error);
+                }
+            });
+        })
     };
 
     return (
