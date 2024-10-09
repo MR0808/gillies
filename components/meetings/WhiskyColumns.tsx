@@ -1,20 +1,15 @@
 'use client';
-import { InferResponseType } from 'hono';
+
 import { ColumnDef } from '@tanstack/react-table';
-import { client } from '@/lib/hono';
 import { ArrowUpDown } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import WhiskyCellAction from './WhiskyCellAction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { MeetingWhiskies } from '@/types';
 
-export type ResponseType = InferResponseType<
-    (typeof client.api.whiskies)[':meetingid']['$get'],
-    200
->['data'][0];
-
-export const WhiskyColumns: ColumnDef<ResponseType>[] = [
+export const WhiskyColumns: ColumnDef<MeetingWhiskies>[] = [
     // {
     //     accessorKey: 'image',
     //     header: 'Image',

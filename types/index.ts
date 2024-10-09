@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User, Status } from '@prisma/client';
 
 import { Icons } from '@/components/global/Icons';
 
@@ -65,7 +65,7 @@ export interface Whiskies {
     }[];
 }
 
-export interface Whisky {
+export interface Rating {
     whisky: {
         id: string;
         name: string;
@@ -78,4 +78,67 @@ export interface Whisky {
     rating: number;
     comment: string;
     id: string;
+}
+
+export interface Meeting {
+    id: string;
+    date: string;
+    location: string;
+    status: Status;
+    quaich: string | null;
+    whiskies: {
+        id: string;
+        quaich: boolean;
+        name: string;
+        description: string | null;
+        image: string | null;
+        order: number | null;
+        meetingId: string;
+    }[];
+    users: {
+        id: string;
+        image: string | null;
+        firstName: string | null;
+        lastName: string | null;
+        email: string | null;
+    }[];
+}
+
+export interface MeetingWhiskies {
+    id: string;
+    quaich: boolean;
+    name: string;
+    description: string | null;
+    image: string | null;
+    order: number | null;
+    meetingId: string;
+}
+
+export interface MeetingMembers {
+    id: string;
+    image: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+}
+
+export interface Results {
+    meetingId: string;
+    meetingName: string;
+    meetingDate: string;
+    whiskies: {
+        name: string;
+        average: number;
+        count: number;
+        max: number;
+        min: number;
+    }[];
+}
+
+export interface ResultsWhiskies {
+    name: string;
+    average: number;
+    count: number;
+    max: number;
+    min: number;
 }

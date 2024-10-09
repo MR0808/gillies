@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 
 import VoteForm from './VoteForm';
 import { VotingSchema } from '@/schemas/voting';
-import { Whisky } from '@/types';
+import { Rating } from '@/types';
 import { createVote, updateVote } from '@/actions/voting';
 
-const VoteFormLayout = ({ rating }: { rating: Whisky }) => {
+const VoteFormLayout = ({ rating }: { rating: Rating }) => {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | undefined>();

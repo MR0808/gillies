@@ -1,20 +1,16 @@
 'use client';
 
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Meeting } from '@prisma/client';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Heading } from '@/components/ui/heading';
-import { Separator } from '@/components/ui/separator';
 import { MeetingsColumns } from './MeetingsColumns';
-import { useGetMeetings } from '@/features/meetings/useGetMeetings';
+import { Separator } from '@/components/ui/separator';
 
-const MeetingClient = () => {
-    const meetingsQuery = useGetMeetings();
-    const meetings = meetingsQuery.data || [];
-    const isLoading = meetingsQuery.isLoading;
-
+const MeetingClient = ({ meetings }: { meetings: Meeting[] }) => {
     const router = useRouter();
 
     return (
@@ -34,15 +30,11 @@ const MeetingClient = () => {
                 </div>
             </div>
             <Separator />
-            {isLoading ? (
-                <Loader2 className="size-4 text-muted-foreground animate-spin" />
-            ) : (
-                <DataTable
-                    searchKey="location"
-                    columns={MeetingsColumns}
-                    data={meetings}
-                />
-            )}
+            <DataTable
+                searchKey="location"
+                columns={MeetingsColumns}
+                data={meetings}
+            />
         </>
     );
 };

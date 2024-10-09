@@ -3,6 +3,7 @@ import { Edit, MoreHorizontal, Trash, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { User } from '@prisma/client';
+import { toast } from 'sonner';
 
 import {
     DropdownMenu,
@@ -31,6 +32,9 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
             deleteMember(data.id).then((data) => {
                 if (data?.data) {
                     setOpenDelete(false);
+                }
+                if (data?.error) {
+                    toast.error(data.error);
                 }
             });
         });

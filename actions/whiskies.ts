@@ -1,14 +1,15 @@
-'use server'
+'use server';
 
-import * as z from 'zod'
+import * as z from 'zod';
+import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
 import checkAuth from '@/utils/checkAuth';
 import { WhiskySchema } from '@/schemas/whisky';
 
 export const getMeetingWhiskies = async (meetingId: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!meetingId) {
         return { error: 'Bad request' };
@@ -22,11 +23,11 @@ export const getMeetingWhiskies = async (meetingId: string) => {
     });
 
     return { data };
-}
+};
 
 export const getMeetingWhisky = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
         return { error: 'Bad request' };
@@ -41,33 +42,36 @@ export const getMeetingWhisky = async (id: string) => {
     }
 
     return { data };
-}
+};
 
-export const createWhisky = async (values: z.infer<typeof WhiskySchema>, meetingId: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+export const createWhisky = async (
+    values: z.infer<typeof WhiskySchema>,
+    meetingId: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!meetingId) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const validatedFields = WhiskySchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     let { name, description, quaich, order } = validatedFields.data;
 
     if (quaich) {
-        const existingMeeting = await db.whisky.findFirst({
+        const existingQuich = await db.whisky.findFirst({
             where: {
                 meetingId,
                 quaich: true
             }
         });
-        if (existingMeeting) {
-            return {error: 'Quaich already selected'};
+        if (existingQuich) {
+            return { error: 'Quaich already selected' };
         }
     }
 
@@ -85,34 +89,41 @@ export const createWhisky = async (values: z.infer<typeof WhiskySchema>, meeting
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.meetingId}`);
 
-export const updateWhisky = async (values: z.infer<typeof WhiskySchema>, meetingId: string, id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    return { data };
+};
+
+export const updateWhisky = async (
+    values: z.infer<typeof WhiskySchema>,
+    meetingId: string,
+    id: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!meetingId || !id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const validatedFields = WhiskySchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     let { name, description, quaich, order } = validatedFields.data;
 
     if (quaich) {
-        const existingMeeting = await db.whisky.findFirst({
+        const existingQuaich = await db.whisky.findFirst({
             where: {
                 meetingId,
                 quaich: true
             }
         });
-        if (existingMeeting) {
-            return {error: 'Quaich already selected'};
+
+        if (existingQuaich && existingQuaich.id !== id) {
+            return { error: 'Quaich already selected' };
         }
     }
 
@@ -132,15 +143,17 @@ export const updateWhisky = async (values: z.infer<typeof WhiskySchema>, meeting
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.meetingId}`);
+
+    return { data };
+};
 
 export const deleteWhisky = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const data = await db.whisky.delete({
@@ -153,5 +166,7 @@ export const deleteWhisky = async (id: string) => {
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.meetingId}`);
+
+    return { data };
+};

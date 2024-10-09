@@ -1,25 +1,19 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { InferResponseType } from 'hono';
-import { client } from '@/lib/hono';
 import { useState } from 'react';
 
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import AddMemberMeetingModal from '@/components/modal/AddMemberMeetingModal';
-
-export type ResponseType = InferResponseType<
-    (typeof client.api.meetings)[':id']['$get'],
-    200
->['data']['users'];
+import { MeetingMembers } from '@/types';
 
 const MembersClient = ({
     members,
     meetingid
 }: {
-    members: ResponseType;
+    members: MeetingMembers[];
     meetingid: string;
 }) => {
     const [openEdit, setOpenEdit] = useState(false);
@@ -38,7 +32,7 @@ const MembersClient = ({
                 isOpen={openEdit}
                 onClose={() => setOpenEdit(false)}
                 defaultValues={defaultValues}
-                mutation={{ meetingid }}
+                meetingid={meetingid}
             />
             <div className="flex sm:flex-row flex-col items-start justify-between mb-6">
                 <Heading title={`Members (${members.length})`} description="" />

@@ -1,41 +1,89 @@
-'use server'
+'use server';
 
 import * as z from 'zod';
+import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
 import { MeetingSchemaSubmit, MeetingMemberSchema } from '@/schemas/meetings';
 import checkAuth from '@/utils/checkAuth';
 
 export const getMeetings = async () => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     const data = await db.meeting.findMany({
         orderBy: {
             date: 'asc'
         },
-        include: {
-            whiskies: { orderBy: { name: 'asc' } },
-            users: { orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }] }
+        select: {
+            id: true,
+            date: true,
+            location: true,
+            quaich: true,
+            status: true,
+            whiskies: {
+                select: {
+                    id: true,
+                    quaich: true,
+                    name: true,
+                    image: true,
+                    description: true,
+                    order: true
+                },
+                orderBy: { order: 'asc' }
+            },
+            users: {
+                select: {
+                    id: true,
+                    image: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true
+                },
+                orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+            }
         }
     });
 
     return { data };
-}
+};
 
 export const getMeeting = async (id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const data = await db.meeting.findUnique({
         where: { id },
-        include: {
-            whiskies: { orderBy: { order: 'asc' } },
+        select: {
+            id: true,
+            date: true,
+            location: true,
+            quaich: true,
+            status: true,
+            whiskies: {
+                select: {
+                    id: true,
+                    quaich: true,
+                    name: true,
+                    image: true,
+                    description: true,
+                    order: true,
+                    meetingId: true
+                },
+                orderBy: { order: 'asc' }
+            },
             users: {
+                select: {
+                    id: true,
+                    image: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true
+                },
                 orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
             }
         }
@@ -46,16 +94,18 @@ export const getMeeting = async (id: string) => {
     }
 
     return { data };
-}
+};
 
-export const createMeeting = async (values: z.infer<typeof MeetingSchemaSubmit>) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+export const createMeeting = async (
+    values: z.infer<typeof MeetingSchemaSubmit>
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     const validatedFields = MeetingSchemaSubmit.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     const data = await db.meeting.create({
@@ -64,21 +114,26 @@ export const createMeeting = async (values: z.infer<typeof MeetingSchemaSubmit>)
         }
     });
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.id}`);
 
-export const updateMeeting = async (values: z.infer<typeof MeetingSchemaSubmit>, id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    return { data };
+};
+
+export const updateMeeting = async (
+    values: z.infer<typeof MeetingSchemaSubmit>,
+    id: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const validatedFields = MeetingSchemaSubmit.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
     const data = await db.meeting.update({
@@ -94,24 +149,29 @@ export const updateMeeting = async (values: z.infer<typeof MeetingSchemaSubmit>,
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.id}`);
 
-export const updateMeetingMembers = async (values: z.infer<typeof MeetingMemberSchema>, id: string) => {
-    const authCheck = await checkAuth(true)
-    if (!authCheck) return {error: 'Not authorised'}
+    return { data };
+};
+
+export const updateMeetingMembers = async (
+    values: z.infer<typeof MeetingMemberSchema>,
+    id: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
-        return { error: "Missing id!" };
+        return { error: 'Missing id!' };
     }
 
     const validatedFields = MeetingMemberSchema.safeParse(values);
 
     if (!validatedFields.success) {
-        return { error: "Invalid fields!" };
+        return { error: 'Invalid fields!' };
     }
 
-    const { members } = validatedFields.data
+    const { members } = validatedFields.data;
 
     const uploadMembers = members.map((member) => {
         return { id: member };
@@ -128,5 +188,34 @@ export const updateMeetingMembers = async (values: z.infer<typeof MeetingMemberS
         return { error: 'Not found' };
     }
 
-    return { data }
-}
+    revalidatePath(`/dashboard/meetings/${data.id}`);
+
+    return { data };
+};
+
+export const closeMeeting = async (id: string) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
+
+    if (!id) {
+        return { error: 'Missing id!' };
+    }
+
+    const data = await db.meeting.update({
+        where: {
+            id
+        },
+        data: {
+            status: 'CLOSED'
+        }
+    });
+
+    if (!data) {
+        return { error: 'Not found' };
+    }
+
+    revalidatePath(`/dashboard/meetings/`);
+    revalidatePath(`/dashboard/meetings/${data.id}`);
+
+    return { data };
+};

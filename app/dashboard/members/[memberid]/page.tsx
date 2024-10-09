@@ -23,8 +23,8 @@ const MemberEditPage = async ({ params }: { params: { memberid: string } }) => {
                 <Breadcrumbs items={breadcrumbItems} />
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Add Member"
-                        description="Create a new member"
+                        title="Edit Member"
+                        description="Edit the below member"
                     />
                 </div>
                 <Separator />

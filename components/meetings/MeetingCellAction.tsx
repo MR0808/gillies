@@ -1,10 +1,13 @@
 'use client';
-import { Edit, MoreHorizontal, Trash } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { InferResponseType } from 'hono';
-import { client } from '@/lib/hono';
 
+import { Edit, MoreHorizontal, Lock } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Meeting } from '@prisma/client';
+import { toast } from 'sonner';
+
+import { closeMeeting } from '@/actions/meetings';
+import AlertModal from '@/components/modal/AlertModal';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,36 +16,33 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
-import AlertModal from '@/components/modal/AlertModal';
 import { Button } from '@/components/ui/button';
-import { useDeleteMember } from '@/features/members/useDeleteMember';
 
-export type ResponseType = InferResponseType<
-    typeof client.api.meetings.$get,
-    200
->['data'][0];
-
-const MeetingCellAction = ({ data }: { data: ResponseType }) => {
-    const [openDelete, setOpenDelete] = useState(false);
+const MeetingCellAction = ({ data }: { data: Meeting }) => {
+    const [openCloseMeeting, setOpenCloseMeeting] = useState(false);
+    const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
-    const deleteMutation = useDeleteMember(data.id);
-
-    const onConfirmDelete = () => {
-        deleteMutation.mutate(undefined, {
-            onSuccess: () => {
-                setOpenDelete(false);
-            }
+    const onConfirmClose = () => {
+        startTransition(() => {
+            closeMeeting(data.id).then((data) => {
+                if (data?.data) {
+                    setOpenCloseMeeting(false);
+                }
+                if (data?.error) {
+                    toast.error(data.error);
+                }
+            });
         });
     };
 
     return (
         <>
             <AlertModal
-                isOpen={openDelete}
-                onClose={() => setOpenDelete(false)}
-                onConfirm={onConfirmDelete}
-                loading={deleteMutation.isPending}
+                isOpen={openCloseMeeting}
+                onClose={() => setOpenCloseMeeting(false)}
+                onConfirm={onConfirmClose}
+                loading={isPending}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -60,8 +60,8 @@ const MeetingCellAction = ({ data }: { data: ResponseType }) => {
                     >
                         <Edit className="mr-2 h-4 w-4" /> Update
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setOpenDelete(true)}>
-                        <Trash className="mr-2 h-4 w-4" /> Delete
+                    <DropdownMenuItem onClick={() => setOpenCloseMeeting(true)}>
+                        <Lock className="mr-2 h-4 w-4" /> Close
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

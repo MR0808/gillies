@@ -1,20 +1,15 @@
 'use client';
-import { InferResponseType } from 'hono';
+
 import { ColumnDef } from '@tanstack/react-table';
-import { client } from '@/lib/hono';
 import { ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
+import { Meeting } from '@prisma/client';
 
 import MeetingCellAction from './MeetingCellAction';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export type ResponseType = InferResponseType<
-    typeof client.api.meetings.$get,
-    200
->['data'][0];
-
-export const MeetingsColumns: ColumnDef<ResponseType>[] = [
+export const MeetingsColumns: ColumnDef<Meeting>[] = [
     {
         accessorKey: 'location',
         header: ({ column }) => {

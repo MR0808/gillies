@@ -1,9 +1,8 @@
 'use client';
 
 import { Edit, MoreHorizontal, Trash } from 'lucide-react';
-import { useState } from 'react';
-import { InferResponseType } from 'hono';
-import { client } from '@/lib/hono';
+import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 
 import {
     DropdownMenu,
@@ -16,24 +15,24 @@ import {
 import AlertModal from '@/components/modal/AlertModal';
 import AddWhiskyModal from '@/components/modal/AddWhiskyModal';
 import { Button } from '@/components/ui/button';
-import { useDeleteWhisky } from '@/features/whiskies/useDeleteWhisky';
+import { MeetingWhiskies } from '@/types';
+import { deleteWhisky } from '@/actions/whiskies';
 
-export type ResponseType = InferResponseType<
-    (typeof client.api.whiskies)[':meetingid']['$get'],
-    200
->['data'][0];
-
-const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
+const WhiskyCellAction = ({ data }: { data: MeetingWhiskies }) => {
     const [openDelete, setOpenDelete] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
-
-    const deleteMutation = useDeleteWhisky(data.id);
+    const [isPending, startTransition] = useTransition();
 
     const onConfirmDelete = () => {
-        deleteMutation.mutate(undefined, {
-            onSuccess: () => {
-                setOpenDelete(false);
-            }
+        startTransition(() => {
+            deleteWhisky(data.id).then((data) => {
+                if (data?.data) {
+                    setOpenDelete(false);
+                }
+                if (data?.error) {
+                    toast.error(data.error);
+                }
+            });
         });
     };
 
@@ -50,14 +49,14 @@ const WhiskyCellAction = ({ data }: { data: ResponseType }) => {
                 isOpen={openDelete}
                 onClose={() => setOpenDelete(false)}
                 onConfirm={onConfirmDelete}
-                loading={deleteMutation.isPending}
+                loading={isPending}
             />
             <AddWhiskyModal
                 isOpen={openEdit}
                 onClose={() => setOpenEdit(false)}
                 defaultValues={defaultValues}
-                edit={true}
-                mutation={{ meetingid: data.meetingId, id: data.id }}
+                meetingid={data.meetingId}
+                id={data.id}
             />
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>

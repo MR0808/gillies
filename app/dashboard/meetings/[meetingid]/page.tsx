@@ -1,8 +1,12 @@
-import React from 'react';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import MeetingFormLayout from '@/components/meetings/MeetingFormLayout';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
+import { Heading } from '@/components/ui/heading';
+import { Separator } from '@/components/ui/separator';
+import { getMeeting } from '@/actions/meetings';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -10,12 +14,31 @@ const breadcrumbItems = [
     { title: 'Update Member', link: '/dashboard/member/new' }
 ];
 
-const MeetingEditPage = () => {
+const MeetingEditPage = async ({
+    params
+}: {
+    params: { meetingid: string };
+}) => {
+    const meeting = await getMeeting(params.meetingid);
+
     return (
         <PageContainer scrollable={true}>
             <div className="space-y-4">
                 <Breadcrumbs items={breadcrumbItems} />
-                <MeetingFormLayout edit={true} />
+                <div className="flex items-center justify-between">
+                    <Heading
+                        title="Edit Member"
+                        description="Edit the below meeting"
+                    />
+                </div>
+                <Separator />
+                <Suspense
+                    fallback={
+                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
+                    }
+                >
+                    <MeetingFormLayout meeting={meeting.data} />
+                </Suspense>
             </div>
         </PageContainer>
     );

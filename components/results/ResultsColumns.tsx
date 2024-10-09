@@ -1,16 +1,8 @@
 'use client';
-import { InferResponseType } from 'hono';
 import { ColumnDef } from '@tanstack/react-table';
-import { client } from '@/lib/hono';
+import { ResultsWhiskies } from '@/types';
 
-import { cn } from '@/lib/utils';
-
-export type ResponseType = InferResponseType<
-    (typeof client.api.results)[':meetingid']['$get'],
-    200
->['data'][0];
-
-export const ResultsColumns: ColumnDef<ResponseType>[] = [
+export const ResultsColumns: ColumnDef<ResultsWhiskies>[] = [
     {
         accessorKey: 'name',
         header: 'Whisky'

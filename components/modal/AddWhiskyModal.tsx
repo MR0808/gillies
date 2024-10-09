@@ -1,9 +1,10 @@
 'use client';
 
 import * as z from 'zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 
 import { SubmitButton } from '@/components/form/Buttons';
 import {
@@ -21,9 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { WhiskySchema } from '@/schemas/whisky';
-import { useEditWhisky } from '@/features/whiskies/useEditWhisky';
-import { useCreateWhisky } from '@/features/whiskies/useCreateWhisky';
-import FormError from '../form/FormError';
+import { updateWhisky, createWhisky } from '@/actions/whiskies';
 
 type FormValues = z.input<typeof WhiskySchema>;
 
@@ -31,23 +30,20 @@ interface AddWhiskyModalProps {
     isOpen: boolean;
     onClose: () => void;
     defaultValues: FormValues;
-    edit: boolean;
-    mutation: { meetingid: string; id?: string };
+    meetingid: string;
+    id?: string;
 }
 
 const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
     isOpen,
     onClose,
     defaultValues,
-    edit,
-    mutation
+    meetingid,
+    id
 }) => {
     const [isMounted, setIsMounted] = useState(false);
-    const [isPending, setIsPending] = useState(false);
-    const action = edit ? 'Update whisky' : 'Create whisky';
-
-    const mutationCreate = useCreateWhisky(mutation.meetingid);
-    const mutationEdit = useEditWhisky(mutation.meetingid, mutation.id);
+    const [isPending, startTransition] = useTransition();
+    const action = id ? 'Update whisky' : 'Create whisky';
 
     const form = useForm<z.infer<typeof WhiskySchema>>({
         resolver: zodResolver(WhiskySchema),
@@ -63,28 +59,30 @@ const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
     }
 
     const onSubmit = (values: z.infer<typeof WhiskySchema>) => {
-        setIsPending(true);
-        edit
-            ? mutationEdit.mutate(values, {
-                  onSuccess: () => {
-                      form.reset();
-                      setIsPending(false);
-                      onClose();
-                  },
-                  onError: () => {
-                      setIsPending(false);
-                  }
-              })
-            : mutationCreate.mutate(values, {
-                  onSuccess: () => {
-                      form.reset();
-                      setIsPending(false);
-                      onClose();
-                  },
-                  onError: () => {
-                      setIsPending(false);
-                  }
-              });
+        startTransition(() => {
+            if (id) {
+                updateWhisky(values, meetingid, id).then((data) => {
+                    console.log(data);
+                    if (data?.data) {
+                        form.reset();
+                        onClose();
+                    }
+                    if (data?.error) {
+                        toast.error(data.error);
+                    }
+                });
+            } else {
+                createWhisky(values, meetingid).then((data) => {
+                    if (data?.data) {
+                        form.reset();
+                        onClose();
+                    }
+                    if (data?.error) {
+                        toast.error(data.error);
+                    }
+                });
+            }
+        });
     };
 
     return (
