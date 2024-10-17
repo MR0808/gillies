@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { AuthError } from 'next-auth';
 import * as OTPAuth from 'otpauth';
 import { compare } from 'bcrypt-ts';
-import { isRedirectError } from "next/dist/client/components/redirect";
+import { isRedirectError } from 'next/dist/client/components/redirect';
 
 import db from '@/lib/db';
 import { signIn } from '@/auth';
@@ -65,18 +65,16 @@ export const login = async (
     }
 
     if (existingUser.otpEnabled && existingUser.email) {
-        const passwordsMatch = await compare(
-            password,
-            existingUser.password
-        );
+        const passwordsMatch = await compare(password, existingUser.password);
 
-        if (!passwordsMatch) return {error: "Email and password combination is invalid"};
+        if (!passwordsMatch)
+            return { error: 'Email and password combination is invalid' };
 
         if (token) {
             let totp = new OTPAuth.TOTP({
-                issuer: "Gillies",
+                issuer: 'Gillies',
                 label: `${existingUser.firstName} ${existingUser.lastName}`,
-                algorithm: "SHA1",
+                algorithm: 'SHA1',
                 digits: 6,
                 secret: existingUser.otpBase32!
             });
@@ -84,7 +82,7 @@ export const login = async (
             let delta = totp.validate({ token, window: 2 });
 
             if (delta === null) {
-                return { error: "Invalid code!" };
+                return { error: 'Invalid code!' };
             }
 
             const existingConfirmation = await getTwoFactorConfirmationByUserId(
@@ -139,7 +137,7 @@ export const login = async (
                     }
                 });
             } else {
-                return { error: "Invalid backup code!" };
+                return { error: 'Invalid backup code!' };
             }
         } else {
             return { twoFactor: true };
@@ -147,23 +145,22 @@ export const login = async (
     }
 
     try {
-        await signIn("credentials", {
+        await signIn('credentials', {
             email,
             password,
             redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT
         });
     } catch (error) {
-        console.log(error);
         if (isRedirectError(error)) {
             throw error;
         }
 
         if (error instanceof AuthError) {
             switch (error.type) {
-                case "CredentialsSignin":
-                    return { error: "Invalid credentials!" };
+                case 'CredentialsSignin':
+                    return { error: 'Invalid credentials!' };
                 default:
-                    return { error: "Something went wrong!" };
+                    return { error: 'Something went wrong!' };
             }
         }
 
