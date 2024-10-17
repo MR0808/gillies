@@ -44,7 +44,7 @@ const RegisterFormLayout = () => {
     useEffect(() => {
         onPageLoad();
     }, [onPageLoad]);
-    
+
     if (!token) {
         return (
             <CardWrapper
@@ -60,11 +60,11 @@ const RegisterFormLayout = () => {
     }
 
     const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
-        setFormError("");
-        setFormSuccess("");
+        setFormError('');
+        setFormSuccess('');
 
         startTransition(() => {
-            registerPassword(values).then((data) => {
+            registerPassword(values, token).then((data) => {
                 setFormError(data.error);
                 setFormSuccess(data.success);
             });
