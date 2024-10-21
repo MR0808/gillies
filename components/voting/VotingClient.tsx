@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import {
     Accordion,
@@ -11,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Whiskies } from '@/types';
+import whiskyImg from '@/public/images/whisky.jpg';
 
 const VotingClient = ({ whiskies }: { whiskies: Whiskies[] }) => {
     const router = useRouter();
@@ -35,8 +37,16 @@ const VotingClient = ({ whiskies }: { whiskies: Whiskies[] }) => {
                         </AccordionTrigger>
                         <AccordionContent>
                             <div className="flex flex-col">
-                                <div>{whisky.description}</div>
-                                <div>
+                                <Image
+                                    src={whisky.image || whiskyImg}
+                                    alt={whisky.name}
+                                    width={100}
+                                    height={100}
+                                />
+                                <div className="whitespace-pre-wrap">
+                                    {whisky.description}
+                                </div>
+                                <div className="mt-3">
                                     <Button
                                         onClick={() =>
                                             router.push(

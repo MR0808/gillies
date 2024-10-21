@@ -54,6 +54,7 @@ export interface Whiskies {
     name: string;
     description: string | null;
     quaich: boolean;
+    image: string | null;
     reviews: {
         id: string;
         userId: string;

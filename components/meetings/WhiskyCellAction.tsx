@@ -40,7 +40,9 @@ const WhiskyCellAction = ({ data }: { data: MeetingWhiskies }) => {
         name: data.name,
         description: data.description || '',
         quaich: data.quaich,
-        order: data.order || -1
+        order: data.order || 0,
+        image: [],
+        imageUrl: data.image || ''
     };
 
     return (

@@ -51,6 +51,7 @@ export const getMeetingWhiskiesByUser = async (meetingId: string) => {
             name: true,
             description: true,
             quaich: true,
+            image: true,
             reviews: { where: { userId: dbUser.id } }
         }
     });

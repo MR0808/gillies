@@ -25,7 +25,9 @@ const WhiskyClient = ({
         name: '',
         description: '',
         quaich: false,
-        order: -1
+        order: 0,
+        image: [],
+        imageUrl: ''
     };
 
     return (
