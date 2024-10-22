@@ -14,11 +14,12 @@ const breadcrumbItems = [
     { title: 'Update Member', link: '/dashboard/member/new' }
 ];
 
-const MeetingEditPage = async ({
-    params
-}: {
-    params: { meetingid: string };
-}) => {
+const MeetingEditPage = async (
+    props: {
+        params: Promise<{ meetingid: string }>;
+    }
+) => {
+    const params = await props.params;
     const meeting = await getMeeting(params.meetingid);
 
     return (

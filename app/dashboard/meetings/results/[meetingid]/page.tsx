@@ -8,7 +8,8 @@ import PageContainer from '@/components/dashboardLayout/PageContainer';
 import ResultsClient from '@/components/results/ResultsClient';
 import { getMeetingResults } from '@/actions/results';
 
-const ResultsPage = async ({ params }: { params: { meetingid: string } }) => {
+const ResultsPage = async (props: { params: Promise<{ meetingid: string }> }) => {
+    const params = await props.params;
     const results = await getMeetingResults(params.meetingid);
 
     const breadcrumbItems = [

@@ -6,7 +6,8 @@ import VotingClient from '@/components/voting/VotingClient';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { getMeetingWhiskiesByUser } from '@/actions/voting';
 
-const VotePage = async ({ params }: { params: { meetingid: string } }) => {
+const VotePage = async (props: { params: Promise<{ meetingid: string }> }) => {
+    const params = await props.params;
     const whiskies = await getMeetingWhiskiesByUser(params.meetingid);
 
     return (

@@ -14,7 +14,8 @@ const breadcrumbItems = [
     { title: 'Update Member', link: '/dashboard/member/new' }
 ];
 
-const MemberEditPage = async ({ params }: { params: { memberid: string } }) => {
+const MemberEditPage = async (props: { params: Promise<{ memberid: string }> }) => {
+    const params = await props.params;
     const member = await getMember(params.memberid);
 
     return (

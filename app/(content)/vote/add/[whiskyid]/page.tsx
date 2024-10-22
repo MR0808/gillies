@@ -6,7 +6,8 @@ import VoteFormLayout from '@/components/voting/VoteFormLayout';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { getWhiskyForVoting } from '@/actions/voting';
 
-const VotePage = async ({ params }: { params: { whiskyid: string } }) => {
+const VotePage = async (props: { params: Promise<{ whiskyid: string }> }) => {
+    const params = await props.params;
     const review = await getWhiskyForVoting(params.whiskyid);
 
     return (
