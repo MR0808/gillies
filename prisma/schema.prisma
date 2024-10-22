@@ -29,6 +29,7 @@ model User {
   password              String?
   role                  UserRole               @default(USER)
   accounts              Account[]
+  reviews               Review[]
   emailOld              String?
   passwordResetToken    String?
   passwordResetExpires  DateTime?
@@ -122,6 +123,7 @@ model Whisky {
 
 model Review {
   id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   rating    Float
   comment   String

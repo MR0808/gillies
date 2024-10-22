@@ -143,3 +143,25 @@ export interface ResultsWhiskies {
     max: number;
     min: number;
 }
+
+export interface Scoreboard {
+    whiskyId: string;
+    whiskyName: string;
+    whiskyImage: string;
+    average: number;
+    count: number;
+    max: number;
+    min: number;
+}
+
+export interface ReviewsScoreboard {
+    user: {
+        id: string;
+        image: string | null;
+        firstName: string | null;
+        lastName: string | null;
+    };
+    id: string;
+    rating: number;
+    comment: string;
+}

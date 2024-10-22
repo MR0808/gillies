@@ -73,7 +73,6 @@ const MeetingFormLayout = ({ meeting }: { meeting?: Meeting }) => {
                                 whiskies={whiskies}
                                 meetingid={meeting.id}
                             />
-                            .
                         </TabsContent>
                         <TabsContent value="members">
                             <MembersClient

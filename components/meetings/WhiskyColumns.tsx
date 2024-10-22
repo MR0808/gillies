@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import WhiskyCellAction from './WhiskyCellAction';
@@ -88,6 +89,18 @@ export const WhiskyColumns: ColumnDef<MeetingWhiskies>[] = [
                 </Button>
             );
         }
+    },
+    {
+        id: 'scorecard',
+        cell: ({ row }) => (
+            <Link
+                href={`/scoreboard/${row.original.id}`}
+                className={cn('hover:underline')}
+                target="_blank"
+            >
+                Scoreboard
+            </Link>
+        )
     },
     {
         id: 'actions',

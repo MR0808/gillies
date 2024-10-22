@@ -24,12 +24,7 @@ const VoteFormLayout = ({ rating }: { rating: Rating }) => {
               comment: ''
           };
 
-    const onSubmit = ({
-        values
-    }: {
-        values: z.infer<typeof VotingSchema>;
-        whiskyid: string;
-    }) => {
+    const onSubmit = ({ values }: { values: z.infer<typeof VotingSchema> }) => {
         startTransition(() => {
             if (rating.id) {
                 updateVote(values, rating.id).then((data) => {
