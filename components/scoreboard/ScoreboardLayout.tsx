@@ -59,14 +59,14 @@ const ScoreboardLayout = ({
                         height={250}
                         alt={whiskyScores.whiskyName}
                     />
-                    <h1 className="align-middle text-6xl font-extrabold">
+                    <h1 className="align-middle text-6xl font-extrabold break-normal">
                         {whiskyScores.whiskyName}
                     </h1>
                 </div>
-                <div className="text-6xl font-bold">{`Number of votes: ${scores.count}`}</div>
-                <div className="text-6xl font-bold">{`Average Score: ${scores.average}`}</div>
-                <div className="text-6xl font-bold">{`Highest score: ${scores.max}`}</div>
-                <div className="text-6xl font-bold">{`Lowest score: ${scores.min}`}</div>
+                <div className="text-6xl font-bold">{`Number of votes: ${Math.round(scores.count * 100) / 100}`}</div>
+                <div className="text-6xl font-bold">{`Average Score: ${Math.round(scores.average * 100) / 100}`}</div>
+                <div className="text-6xl font-bold">{`Highest score: ${Math.round(scores.max * 100) / 100}`}</div>
+                <div className="text-6xl font-bold">{`Lowest score: ${Math.round(scores.min * 100) / 100}`}</div>
             </div>
             <div className="flex flex-col space-y-6 w-2/5 mr-5">
                 {reviews.map((review) => {
