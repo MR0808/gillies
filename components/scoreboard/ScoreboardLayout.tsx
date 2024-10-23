@@ -64,7 +64,7 @@ const ScoreboardLayout = ({
                     </h1>
                 </div>
                 <div className="text-6xl font-bold">{`Number of votes: ${Math.round(scores.count * 100) / 100}`}</div>
-                <div className="text-6xl font-bold">{`Average Score: ${Math.round(scores.average * 100) / 100}`}</div>
+                <div className="text-6xl font-bold">{`Average score: ${Math.round(scores.average * 100) / 100}`}</div>
                 <div className="text-6xl font-bold">{`Highest score: ${Math.round(scores.max * 100) / 100}`}</div>
                 <div className="text-6xl font-bold">{`Lowest score: ${Math.round(scores.min * 100) / 100}`}</div>
             </div>
