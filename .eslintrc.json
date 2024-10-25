@@ -6,6 +6,8 @@
         "prefer-const": "off",
         "@typescript-eslint/no-explicit-any": "off",
         "react-hooks/exhaustive-deps": 0,
-        "react/no-unescaped-entities": 0
+        "react/no-unescaped-entities": 0,
+        "no-unused-expressions": "off",
+        "@typescript-eslint/no-unused-expressions": "off"
     }
 }
