@@ -27,7 +27,11 @@ export const Navbar = () => {
                     <Link href="/settings">Settings</Link>
                 </Button>
                 {user?.role === 'ADMIN' && (
-                    <Button asChild variant="outline">
+                    <Button
+                        asChild
+                        variant="outline"
+                        className="cursor-pointer"
+                    >
                         <Link href="/dashboard">Admin</Link>
                     </Button>
                 )}

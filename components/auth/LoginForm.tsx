@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
 import { useRouter } from 'next/navigation';
+import { isRedirectError } from 'next/dist/client/components/redirect';
 
 import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
@@ -88,7 +89,11 @@ const LoginForm = () => {
                         setShowTwoFactor(true);
                     }
                 })
-                .catch(() => setError('Something went wrong'));
+                .catch((error) => {
+                    if (!isRedirectError(error)) {
+                        setError('Something went wrong');
+                    }
+                });
         });
     };
 
@@ -212,6 +217,7 @@ const LoginForm = () => {
                                                     disabled={isPending}
                                                     placeholder="******"
                                                     type="password"
+                                                    autoComplete="on"
                                                 />
                                             </FormControl>
                                             <Button

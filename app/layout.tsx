@@ -8,7 +8,7 @@ import './globals.css';
 import Providers from '@/providers/Providers';
 import { auth } from '@/auth';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], preload: true });
 
 export const metadata: Metadata = {
     title: 'Gillies Voting System',
