@@ -32,13 +32,15 @@ interface AddMemberMeetingModalProps {
     onClose: () => void;
     defaultValues: FormValues;
     meetingid: string;
+    setDefaultValues: React.Dispatch<React.SetStateAction<FormValues>>;
 }
 
 const AddMemberMeetingModal: React.FC<AddMemberMeetingModalProps> = ({
     isOpen,
     onClose,
     defaultValues,
-    meetingid
+    meetingid,
+    setDefaultValues
 }) => {
     const { data, status } = useQuery({
         queryKey: ['members'],
@@ -60,6 +62,10 @@ const AddMemberMeetingModal: React.FC<AddMemberMeetingModalProps> = ({
         setIsMounted(true);
     }, []);
 
+    useEffect(() => {
+        form.setValue('members', defaultValues.members);
+    }, [defaultValues]);
+
     if (!isMounted) {
         return null;
     }
@@ -68,6 +74,7 @@ const AddMemberMeetingModal: React.FC<AddMemberMeetingModalProps> = ({
         startTransition(() => {
             updateMeetingMembers(values, meetingid).then((data) => {
                 if (data?.data) {
+                    setDefaultValues(values);
                     form.reset();
                     onClose();
                 }

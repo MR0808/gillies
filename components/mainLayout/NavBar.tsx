@@ -10,6 +10,7 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 export const Navbar = () => {
     const pathname = usePathname();
     const user = useCurrentUser();
+    console.log(user);
 
     return (
         <nav className="bg-secondary flex justify-between items-center p-4 rounded-xl w-[320px] sm:w-[600px] shadow-xs">

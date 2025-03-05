@@ -14,7 +14,7 @@ export const WhiskySchema = z.object({
     order: z.coerce.number({ message: 'Please include an order' }),
     image: z
         .array(z.object({ value: z.custom<File>() }))
-        .min(0, { message: 'Please add at least one image.' })
+        .min(1, { message: 'Please add at least one image.' })
         .max(1, { message: 'You can only have one image' }),
     imageUrl: z.optional(z.string())
 });

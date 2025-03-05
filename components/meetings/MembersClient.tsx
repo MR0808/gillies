@@ -22,9 +22,9 @@ const MembersClient = ({
         return member.id;
     });
 
-    const defaultValues = {
+    const [defaultValues, setDefaultValues] = useState({
         members: membersUpload
-    };
+    });
 
     return (
         <>
@@ -33,6 +33,7 @@ const MembersClient = ({
                 onClose={() => setOpenEdit(false)}
                 defaultValues={defaultValues}
                 meetingid={meetingid}
+                setDefaultValues={setDefaultValues}
             />
             <div className="flex sm:flex-row flex-col items-start justify-between mb-6">
                 <Heading title={`Members (${members.length})`} description="" />
