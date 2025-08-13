@@ -12,8 +12,8 @@ import { checkAuthenticated } from '@/lib/auth';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
-    { title: 'Members', link: '/dashboard/members' },
-    { title: 'Update Member', link: '/dashboard/member/new' }
+    { title: 'Meetings', link: '/dashboard/meetings' },
+    { title: 'Update Meeting', link: '/dashboard/member/new' }
 ];
 
 const MeetingEditPage = async (props: {
@@ -32,7 +32,7 @@ const MeetingEditPage = async (props: {
                 <Breadcrumbs items={breadcrumbItems} />
                 <div className="flex items-center justify-between">
                     <Heading
-                        title="Edit Member"
+                        title="Edit Meeting"
                         description="Edit the below meeting"
                     />
                 </div>
