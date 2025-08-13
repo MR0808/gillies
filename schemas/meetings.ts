@@ -11,7 +11,8 @@ export const MeetingSchemaSubmit = z.object({
     location: z.string().min(1, {
         message: 'Location is required'
     }),
-    date: z.string().date('Date is required')
+    // date: z.string().date('Date is required')
+    date: z.iso.date('Date is required')
 });
 
 export const MeetingMemberSchema = z.object({

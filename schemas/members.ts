@@ -4,7 +4,6 @@ import { getUserByEmail } from '@/data/user';
 
 export const MemberSchema = z.object({
     email: z
-        .string()
         .email({
             message: 'Email is required'
         })
@@ -28,7 +27,7 @@ export const MemberSchema = z.object({
 
 export const MemberImportSchema = z.array(
     z.object({
-        email: z.string().email({
+        email: z.email({
             message: 'Email is required'
         }),
         firstName: z.string().min(1, {

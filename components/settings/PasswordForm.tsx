@@ -15,7 +15,7 @@ import { AccountFormInput } from '@/components/form/FormInput';
 import FormError from '@/components/form/FormError';
 import { ResetPasswordSchema } from '@/schemas/auth';
 import { cn } from '@/lib/utils';
-import { updatePassword } from '@/actions/resetPassword';
+import { updatePasswordSettings } from '@/actions/resetPassword';
 
 const PasswordForm = ({ session }: { session: Session | null }) => {
     const [user, setUser] = useState(session?.user);
@@ -46,19 +46,21 @@ const PasswordForm = ({ session }: { session: Session | null }) => {
 
     const onSubmit = (values: z.infer<typeof ResetPasswordSchema>) => {
         startTransition(() => {
-            updatePassword(values).then((data) => {
-                if (data?.success) {
-                    setEdit(false);
-                    update();
-                    setError(undefined);
-                    form.reset(values);
-                    toast.success(data.success)
-                }
-                if (data?.error) {
-                    setError(data.error);
-                }
-            });
-        })
+            if (user?.email) {
+                updatePasswordSettings(values, user.email).then((data) => {
+                    if (data?.success) {
+                        setEdit(false);
+                        update();
+                        setError(undefined);
+                        form.reset(values);
+                        toast.success(data.success);
+                    }
+                    if (data?.error) {
+                        setError(data.error);
+                    }
+                });
+            }
+        });
     };
 
     return (

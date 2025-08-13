@@ -11,7 +11,7 @@ export const WhiskySchema = z.object({
         })
     ),
     quaich: z.boolean(),
-    order: z.coerce.number({ message: 'Please include an order' }),
+    order: z.number({ message: 'Please include an order' }),
     image: z
         .array(z.object({ value: z.custom<File>() }))
         .min(1, { message: 'Please add at least one image.' })

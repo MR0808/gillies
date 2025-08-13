@@ -1,12 +1,12 @@
-import { z, ZodSchema } from 'zod';
+import { z } from 'zod';
 
-export function validateWithZodSchema<T>(
-    schema: ZodSchema<T>,
+export function validateWithZodSchema<T extends z.ZodTypeAny>(
+    schema: T,
     data: unknown
-): T {
+): z.infer<T> {
     const result = schema.safeParse(data);
     if (!result.success) {
-        const errors = result.error.errors.map((error) => error.message);
+        const errors = result.error.issues.map((error) => error.message);
         throw new Error(errors.join(', '));
     }
     return result.data;
