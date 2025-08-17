@@ -44,9 +44,14 @@ const VoteForm = ({
     isPending,
     meetingid
 }: Props) => {
-    const form = useForm<z.infer<typeof VotingSchema>>({
+    type FormData = z.infer<typeof VotingSchema>;
+
+    const form = useForm<FormData>({
         resolver: zodResolver(VotingSchema),
-        defaultValues
+        defaultValues: {
+            rating: 0,
+            comment: ''
+        }
     });
 
     const handleSubmit = (values: FormValues) => {
@@ -94,6 +99,10 @@ const VoteForm = ({
                                     min={0}
                                     step={0.1}
                                     {...field}
+                                    onChange={(e) =>
+                                        field.onChange(Number(e.target.value))
+                                    }
+                                    value={field.value ?? ''}
                                 />
                             </FormControl>
                             <FormMessage />
