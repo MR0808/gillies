@@ -14,20 +14,20 @@ const VoteFormLayout = ({ rating }: { rating: Rating }) => {
     const [isPending, startTransition] = useTransition();
     const [error, setError] = useState<string | undefined>();
 
-    // const defaultValues = rating?.id
-    //     ? {
-    //           rating: (rating.rating as number) || 0,
-    //           comment: rating.comment || ''
-    //       }
-    //     : {
-    //           rating: 0,
-    //           comment: ''
-    //       };
+    const defaultValues = rating?.id
+        ? {
+              rating: (rating.rating as number) || 0,
+              comment: rating.comment || ''
+          }
+        : {
+              rating: 0,
+              comment: ''
+          };
 
-    const defaultValues = {
-        rating: 0,
-        comment: ''
-    };
+    // const defaultValues = {
+    //     rating: 0,
+    //     comment: ''
+    // };
 
     const onSubmit = ({ values }: { values: z.infer<typeof VotingSchema> }) => {
         startTransition(() => {

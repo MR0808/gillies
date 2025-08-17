@@ -48,10 +48,11 @@ const VoteForm = ({
 
     const form = useForm<FormData>({
         resolver: zodResolver(VotingSchema),
-        defaultValues: {
-            rating: 0,
-            comment: ''
-        }
+        // defaultValues: {
+        //     rating: 0,
+        //     comment: ''
+        // }
+        defaultValues
     });
 
     const handleSubmit = (values: FormValues) => {
