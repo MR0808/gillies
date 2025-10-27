@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MemberFormLayout from '@/components/members/MemberFormLayout';
+import MemberUpdateForm from '@/components/members/MemberUpdateForm';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
@@ -42,7 +42,11 @@ const MemberEditPage = async (props: {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MemberFormLayout member={member.data} />
+                    {member.data ? (
+                        <MemberUpdateForm member={member.data} />
+                    ) : (
+                        <div>Member not found</div>
+                    )}
                 </Suspense>
             </div>
         </PageContainer>

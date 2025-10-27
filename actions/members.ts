@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
 import checkAuth from '@/utils/checkAuth';
-import { MemberSchema, MemberImportSchema } from '@/schemas/members';
+import {
+    MemberSchema,
+    MemberImportSchema,
+    MemberUpdateSchema
+} from '@/schemas/members';
 import { generateRegistrationToken } from '@/lib/tokens';
 import { sendRegistrationEmail } from '@/lib/mail';
 import { getRegistrationTokenById } from '@/data/registrationToken';
@@ -127,7 +131,7 @@ export const createMembers = async (
 };
 
 export const updateMember = async (
-    values: z.infer<typeof MemberSchema>,
+    values: z.infer<typeof MemberUpdateSchema>,
     id: string
 ) => {
     const authCheck = await checkAuth(true);
@@ -137,7 +141,7 @@ export const updateMember = async (
         return { error: 'Missing id!' };
     }
 
-    const validatedFields = await MemberSchema.safeParseAsync(values);
+    const validatedFields = await MemberUpdateSchema.safeParseAsync(values);
 
     if (!validatedFields.success) {
         return { error: 'Invalid fields!' };
@@ -146,6 +150,26 @@ export const updateMember = async (
     let { firstName, lastName, email } = validatedFields.data;
 
     email = email.toLocaleLowerCase();
+
+    const currentUser = await db.user.findUnique({
+        where: { id },
+        select: { email: true }
+    });
+
+    if (!currentUser) {
+        return { error: 'User does not exist' };
+    }
+
+    if (email && email !== currentUser.email) {
+        // Check if the new email already exists in the database
+        const existingUser = await db.user.findUnique({
+            where: { email }
+        });
+
+        if (existingUser) {
+            return { error: 'Email address already in use' };
+        }
+    }
 
     const data = await db.user.update({
         where: {

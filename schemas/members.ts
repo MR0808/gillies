@@ -25,6 +25,18 @@ export const MemberSchema = z.object({
     })
 });
 
+export const MemberUpdateSchema = z.object({
+    email: z.email({
+        message: 'Email is required'
+    }),
+    firstName: z.string().min(1, {
+        message: 'First name is required'
+    }),
+    lastName: z.string().min(1, {
+        message: 'Last name is required'
+    })
+});
+
 export const MemberImportSchema = z.array(
     z.object({
         email: z.email({

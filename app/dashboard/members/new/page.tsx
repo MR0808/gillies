@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MemberFormLayout from '@/components/members/MemberFormLayout';
+import MemberForm from '@/components/members/MemberForm';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
@@ -35,7 +35,7 @@ const NewMemberPage = async () => {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MemberFormLayout />
+                    <MemberForm />
                 </Suspense>
             </div>
         </PageContainer>

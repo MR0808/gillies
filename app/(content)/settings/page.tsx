@@ -15,18 +15,7 @@ const SettingsPage = async () => {
     if (!user) {
         redirect('/auth/login');
     }
-    // if (!user) {
-    //     return (
-    //         <Card className="w-[320px] sm:w-[600px]">
-    //             <CardHeader>
-    //                 <p className="text-2xl font-semibold text-center">
-    //                     ⚙️ Settings
-    //                 </p>
-    //             </CardHeader>
-    //             <CardContent>No user found</CardContent>
-    //         </Card>
-    //     );
-    // }
+
     const session = await auth();
 
     return (

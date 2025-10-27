@@ -3,6 +3,8 @@
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 
 import { SubmitButton } from '@/components/form/Buttons';
 import {
@@ -14,39 +16,35 @@ import {
     FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-
 import { MemberSchema } from '@/schemas/members';
+import { createMember } from '@/actions/members';
 
-type FormValues = z.input<typeof MemberSchema>;
+const MemberForm = () => {
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
 
-type Props = {
-    id?: string;
-    defaultValues?: FormValues;
-    onSubmit: (values: FormValues) => void;
-    isPending: boolean;
-    action: string;
-};
-
-const MemberForm = ({
-    id,
-    defaultValues,
-    onSubmit,
-    isPending,
-    action
-}: Props) => {
     const form = useForm<z.infer<typeof MemberSchema>>({
         resolver: zodResolver(MemberSchema),
-        defaultValues
+        defaultValues: {
+            firstName: '',
+            lastName: '',
+            email: ''
+        }
     });
 
-    const handleSubmit = (values: FormValues) => {
-        onSubmit(values);
+    const onSubmit = (values: z.infer<typeof MemberSchema>) => {
+        startTransition(async () => {
+            const data = await createMember(values);
+            if (data?.data) {
+                router.push(`/dashboard/members/`);
+            }
+        });
     };
 
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(handleSubmit)}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className="w-3/4 space-y-8"
             >
                 <div className="gap-8 md:grid md:grid-cols-2">
@@ -105,8 +103,8 @@ const MemberForm = ({
                 </div>
                 <SubmitButton
                     isPending={isPending}
-                    className="ml-auto"
-                    text={action}
+                    className="ml-auto cursor-pointer"
+                    text="Create Member"
                 />
             </form>
         </Form>

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
-import MeetingClient from '@/components/meetings/MeetingClient';
+import MeetingClient from '@/components/meetings-old/MeetingClient';
 import { getMeetings } from '@/actions/meetings';
 import { checkAuthenticated } from '@/lib/auth';
 

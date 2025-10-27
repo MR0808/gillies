@@ -73,23 +73,16 @@ const LoginForm = () => {
         setError('');
         setSuccess('');
 
-        startTransition(() => {
-            login(values, callbackUrl)
-                .then((data) => {
-                    if (data?.error) {
-                        form.reset();
-                        setError(data.error);
-                    }
+        startTransition(async () => {
+            const data = await login(values, callbackUrl);
+            if (data?.error) {
+                form.reset();
+                setError(data.error);
+            }
 
-                    if (data?.twoFactor) {
-                        setShowTwoFactor(true);
-                    }
-                })
-                .catch((error) => {
-                    if (!isRedirectError(error)) {
-                        setError('Something went wrong');
-                    }
-                });
+            if (data?.twoFactor) {
+                setShowTwoFactor(true);
+            }
         });
     };
 

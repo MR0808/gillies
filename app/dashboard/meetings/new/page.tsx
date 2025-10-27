@@ -3,11 +3,11 @@ import { Loader2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MeetingFormLayout from '@/components/meetings/MeetingFormLayout';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { checkAuthenticated } from '@/lib/auth';
+import MeetingForm from '@/components/meetings-old/MeetingForm';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -35,7 +35,7 @@ const NewMeetingPage = async () => {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MeetingFormLayout />
+                    <MeetingForm />
                 </Suspense>
             </div>
         </PageContainer>

@@ -3,12 +3,12 @@ import { Loader2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
-import MeetingFormLayout from '@/components/meetings/MeetingFormLayout';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { getMeeting } from '@/actions/meetings';
 import { checkAuthenticated } from '@/lib/auth';
+import MeetingManager from '@/components/meetings/MeetingManager';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -42,7 +42,11 @@ const MeetingEditPage = async (props: {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MeetingFormLayout meeting={meeting.data} />
+                    {meeting.data ? (
+                        <MeetingManager meeting={meeting.data} />
+                    ) : (
+                        <div>No meeting found</div>
+                    )}
                 </Suspense>
             </div>
         </PageContainer>

@@ -27,7 +27,6 @@ const ForgotPasswordForm = () => {
     const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
 
-
     const form = useForm<z.infer<typeof EmailSchema>>({
         resolver: zodResolver(EmailSchema),
         defaultValues: {
@@ -38,20 +37,17 @@ const ForgotPasswordForm = () => {
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
         setError('');
         setSuccess('');
-        startTransition(() => {
-            resetPassword(values)
-                .then((data) => {
-                    if (data?.error) {
-                        form.reset();
-                        setError(data.error);
-                    }
+        startTransition(async () => {
+            const data = await resetPassword(values);
+            if (data?.error) {
+                form.reset();
+                setError(data.error);
+            }
 
-                    if (data?.success) {
-                        form.reset();
-                        setSuccess(data.success);
-                    }
-                })
-                .catch(() => setError('Something went wrong'));
+            if (data?.success) {
+                form.reset();
+                setSuccess(data.success);
+            }
         });
     };
 

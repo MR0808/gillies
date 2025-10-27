@@ -1,11 +1,13 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+  output          = "../generated/prisma"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 enum UserRole {
@@ -114,8 +116,8 @@ model Whisky {
   name        String
   description String?
   image       String?
-  quaich      Boolean
-  order       Int?
+  quaich      Boolean  @default(false)
+  order       Int      @default(0)
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId   String
   reviews     Review[]

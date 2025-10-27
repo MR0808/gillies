@@ -179,7 +179,7 @@ export const updateWhisky = async (
                     quaich: true
                 }
             });
-            if (existingQuich) {
+            if (existingQuich && existingQuich.id !== id) {
                 return { data: null, error: 'Quaich already selected' };
             }
         }

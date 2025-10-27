@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { WhiskySchema } from '@/schemas/whisky';
 import { updateWhisky, createWhisky } from '@/actions/whiskies';
-import WhiskyImageUpload from '../meetings/WhiskyImageUpload';
+import WhiskyImageUpload from '../meetings-old/WhiskyImageUpload';
 
 type FormValues = z.input<typeof WhiskySchema>;
 
@@ -55,12 +55,16 @@ const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
         setIsMounted(true);
     }, []);
 
+    useEffect(() => {
+        console.log('Form errors:', form.formState.errors);
+    }, [form.formState.errors]);
+
     if (!isMounted) {
         return null;
     }
 
     const onSubmit = (values: z.infer<typeof WhiskySchema>) => {
-        startTransition(() => {
+        startTransition(async () => {
             if (id) {
                 const formData = new FormData();
                 values.image[0] &&
@@ -71,16 +75,14 @@ const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
                     formData.append('description', values.description);
                 formData.append('quaich', String(values.quaich));
                 formData.append('order', String(values.order));
-                updateWhisky(formData, meetingid, id).then((data) => {
-                    console.log(data);
-                    if (data?.data) {
-                        form.reset();
-                        onClose();
-                    }
-                    if (data?.error) {
-                        toast.error(data.error);
-                    }
-                });
+                const data = await updateWhisky(formData, meetingid, id);
+                if (data.data) {
+                    form.reset();
+                    onClose();
+                }
+                if (data.error) {
+                    toast.error(data.error);
+                }
             } else {
                 const formData = new FormData();
                 formData.append('image', values.image[0].value);
@@ -89,15 +91,14 @@ const AddWhiskyModal: React.FC<AddWhiskyModalProps> = ({
                     formData.append('description', values.description);
                 formData.append('quaich', String(values.quaich));
                 formData.append('order', String(values.order));
-                createWhisky(formData, meetingid).then((data) => {
-                    if (data?.data) {
-                        form.reset();
-                        onClose();
-                    }
-                    if (data?.error) {
-                        toast.error(data?.error);
-                    }
-                });
+                const data = await createWhisky(formData, meetingid);
+                if (data.data) {
+                    form.reset();
+                    onClose();
+                }
+                if (data.error) {
+                    toast.error(data?.error);
+                }
             }
         });
     };

@@ -4,7 +4,10 @@ import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
-import { MeetingSchemaSubmit, MeetingMemberSchema } from '@/schemas/meetings';
+import {
+    MeetingSchemaSubmit,
+    MeetingMemberSchema
+} from '@/schemas/meetings-old';
 import checkAuth from '@/utils/checkAuth';
 
 export const getMeetings = async () => {
