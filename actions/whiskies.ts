@@ -161,7 +161,6 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
         });
     }
 
-    // Mock: Handle quaich - only one per meeting
     if (validated.quaich) {
         // Update meeting with new quaich ID
         await db.meeting.update({
