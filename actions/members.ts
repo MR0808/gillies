@@ -19,9 +19,18 @@ export const getMembers = async () => {
     if (!authCheck) return { error: 'Not authorised' };
 
     const data = await db.user.findMany({
-        orderBy: {
-            lastName: 'asc'
-        }
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+    });
+
+    return { data };
+};
+
+export const getMembersFirstName = async () => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
+
+    const data = await db.user.findMany({
+        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }]
     });
 
     return { data };

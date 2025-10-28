@@ -1,6 +1,5 @@
 'use server';
 
-import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 import { Whisky } from '@prisma/client';
 
@@ -11,6 +10,9 @@ import {
     WhiskySchemaFormDataEdit
 } from '@/schemas/whisky';
 import { uploadImage, deleteImage } from '@/utils/supabase';
+import { whiskySchema } from '@/schemas/meetings';
+import { validate } from 'uuid';
+import { error } from 'console';
 
 export const getMeetingWhiskies = async (meetingId: string) => {
     const authCheck = await checkAuth(true);
@@ -49,240 +51,29 @@ export const getMeetingWhisky = async (id: string) => {
     return { data };
 };
 
-export const createWhisky = async (formData: FormData, meetingId: string) => {
-    let data: Whisky;
-    try {
-        const authCheck = await checkAuth(true);
-        if (!authCheck) return { data: null, error: 'Not authorised' };
-
-        if (!meetingId) {
-            return { data: null, error: 'Missing id!' };
-        }
-
-        const { name, description, quaich, order, image } =
-            WhiskySchemaFormData.parse(formData);
-
-        const quaichBool = quaich?.toLowerCase?.() === 'true';
-        const orderNum = parseInt(order);
-
-        const imageFullPath = await uploadImage(image[0], 'images');
-
-        if (quaichBool) {
-            const existingQuich = await db.whisky.findFirst({
-                where: {
-                    meetingId,
-                    quaich: true
-                }
-            });
-            if (existingQuich) {
-                return { data: null, error: 'Quaich already selected' };
-            }
-        }
-
-        data = await db.whisky.create({
-            data: {
-                name,
-                description,
-                meetingId,
-                order: orderNum,
-                quaich: quaichBool,
-                image: imageFullPath
-            }
-        });
-
-        if (!data) {
-            return { data: null, error: 'Not found' };
-        }
-
-        revalidatePath(`/dashboard/meetings/${data.meetingId}`);
-
-        return { data, error: null };
-    } catch (error) {
-        const message = renderError(error);
-        return { data: null, error: message.message };
-    }
-};
-
-// export const createWhisky = async (
-//     values: z.infer<typeof WhiskySchema>,
-//     meetingId: string
-// ) => {
-//     const authCheck = await checkAuth(true);
-//     if (!authCheck) return { error: 'Not authorised' };
-
-//     if (!meetingId) {
-//         return { error: 'Missing id!' };
-//     }
-
-//     const validatedFields = WhiskySchema.safeParse(values);
-
-//     if (!validatedFields.success) {
-//         return { error: 'Invalid fields!' };
-//     }
-
-//     let { name, description, quaich, order } = validatedFields.data;
-
-//     if (quaich) {
-//         const existingQuich = await db.whisky.findFirst({
-//             where: {
-//                 meetingId,
-//                 quaich: true
-//             }
-//         });
-//         if (existingQuich) {
-//             return { error: 'Quaich already selected' };
-//         }
-//     }
-
-//     const data = await db.whisky.create({
-//         data: {
-//             name,
-//             description,
-//             meetingId,
-//             order,
-//             quaich
-//         }
-//     });
-
-//     if (!data) {
-//         return { error: 'Not found' };
-//     }
-
-//     revalidatePath(`/dashboard/meetings/${data.meetingId}`);
-
-//     return { data };
-// };
-
-export const updateWhisky = async (
-    formData: FormData,
-    meetingId: string,
-    id: string
-) => {
-    let data: Whisky;
-    try {
-        const authCheck = await checkAuth(true);
-        if (!authCheck) return { data: null, error: 'Not authorised' };
-
-        if (!meetingId || !id) {
-            return { data: null, error: 'Missing id!' };
-        }
-        const { name, description, quaich, order, image, imageUrl } =
-            WhiskySchemaFormDataEdit.parse(formData);
-
-        const quaichBool = quaich?.toLowerCase?.() === 'true';
-        const orderNum = parseInt(order);
-
-        if (quaichBool) {
-            const existingQuich = await db.whisky.findFirst({
-                where: {
-                    meetingId,
-                    quaich: true
-                }
-            });
-            if (existingQuich && existingQuich.id !== id) {
-                return { data: null, error: 'Quaich already selected' };
-            }
-        }
-
-        let updateData: {
-            name: string;
-            description: string;
-            order: number;
-            quaich: boolean;
-            image?: string;
-        } = {
-            name,
-            description,
-            order: orderNum,
-            quaich: quaichBool
-        };
-
-        if (image[0]) {
-            const imageFullPath = await uploadImage(image[0], 'images');
-            await deleteImage(imageUrl, 'images');
-            updateData = { ...updateData, image: imageFullPath };
-        }
-
-        data = await db.whisky.update({
-            where: {
-                id
-            },
-            data: updateData
-        });
-
-        if (!data) {
-            return { data: null, error: 'Not found' };
-        }
-
-        revalidatePath(`/dashboard/meetings/${data.meetingId}`);
-
-        return { data, error: null };
-    } catch (error) {
-        const message = renderError(error);
-        return { data: null, error: message.message };
-    }
-};
-
-// export const updateWhisky = async (
-//     values: z.infer<typeof WhiskySchema>,
-//     meetingId: string,
-//     id: string
-// ) => {
-//     const authCheck = await checkAuth(true);
-//     if (!authCheck) return { error: 'Not authorised' };
-
-//     if (!meetingId || !id) {
-//         return { error: 'Missing id!' };
-//     }
-
-//     const validatedFields = WhiskySchema.safeParse(values);
-
-//     if (!validatedFields.success) {
-//         return { error: 'Invalid fields!' };
-//     }
-
-//     let { name, description, quaich, order } = validatedFields.data;
-
-//     if (quaich) {
-//         const existingQuaich = await db.whisky.findFirst({
-//             where: {
-//                 meetingId,
-//                 quaich: true
-//             }
-//         });
-
-//         if (existingQuaich && existingQuaich.id !== id) {
-//             return { error: 'Quaich already selected' };
-//         }
-//     }
-
-//     const data = await db.whisky.update({
-//         where: {
-//             id
-//         },
-//         data: {
-//             name,
-//             description,
-//             quaich,
-//             order
-//         }
-//     });
-
-//     if (!data) {
-//         return { error: 'Not found' };
-//     }
-
-//     revalidatePath(`/dashboard/meetings/${data.meetingId}`);
-
-//     return { data };
-// };
-
 export const deleteWhisky = async (id: string) => {
     const authCheck = await checkAuth(true);
     if (!authCheck) return { error: 'Not authorised' };
 
     if (!id) {
         return { error: 'Missing id!' };
+    }
+
+    const whisky = await db.whisky.findUnique({ where: { id } });
+
+    if (!whisky) {
+        return { error: 'Missing whisky' };
+    }
+
+    if (whisky.image) {
+        await deleteImage(whisky.image, 'images');
+    }
+
+    if (whisky.quaich) {
+        await db.meeting.update({
+            where: { id: whisky.meetingId },
+            data: { quaich: null }
+        });
     }
 
     const data = await db.whisky.delete({
@@ -298,6 +89,89 @@ export const deleteWhisky = async (id: string) => {
     revalidatePath(`/dashboard/meetings/${data.meetingId}`);
 
     return { data };
+};
+
+export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
+    const validated = whiskySchema.parse(data);
+
+    const existingWhiskies = await db.whisky.findMany({
+        where: { meetingId },
+        orderBy: { order: 'asc' }
+    });
+
+    // Mock: Handle order conflicts - push existing whiskies up
+    const conflictingWhiskies = existingWhiskies.filter(
+        (w) => w.order >= validated.order && w.id !== validated.id
+    );
+
+    for (const whisky of conflictingWhiskies) {
+        await db.whisky.update({
+            where: { id: whisky.id },
+            data: { order: whisky.order + 1 }
+        });
+    }
+
+    // Mock: Handle quaich - only one per meeting
+    if (validated.quaich) {
+        // Unmark all other whiskies as quaich
+        await db.whisky.updateMany({
+            where: { meetingId, id: { not: validated.id } },
+            data: { quaich: false }
+        });
+    }
+
+    let whisky: Whisky;
+
+    // Mock: Create or update whisky
+    if (validated.id) {
+        const oldWhisky = await db.whisky.findUnique({
+            where: { id: validated.id }
+        });
+
+        if (!oldWhisky) {
+            return { error: 'Whisky not found' };
+        }
+
+        if (oldWhisky.image && validated.image !== oldWhisky.image) {
+            await deleteImage(oldWhisky.image, 'images');
+        }
+
+        whisky = await db.whisky.update({
+            where: { id: validated.id },
+            data: {
+                name: validated.name,
+                description: validated.description,
+                image: validated.image,
+                order: validated.order,
+                quaich: validated.quaich
+            }
+        });
+    } else {
+        whisky = await db.whisky.create({
+            data: {
+                name: validated.name,
+                description: validated.description,
+                image: validated.image,
+                order: validated.order,
+                quaich: validated.quaich,
+                meetingId
+            }
+        });
+    }
+
+    // Mock: Handle quaich - only one per meeting
+    if (validated.quaich) {
+        // Update meeting with new quaich ID
+        await db.meeting.update({
+            where: { id: meetingId },
+            data: { quaich: whisky.id }
+        });
+    }
+
+    revalidatePath(`/dashboard/meetings/${meetingId}`);
+    return { success: true };
 };
 
 const renderError = (error: unknown): { message: string } => {

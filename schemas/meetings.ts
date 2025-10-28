@@ -11,7 +11,7 @@ export const whiskySchema = z.object({
     description: z.string().min(1, 'Description is required'),
     image: z.string().optional(),
     order: z.number().int().min(1, 'Order must be at least 1'),
-    quaich: z.boolean().default(false)
+    quaich: z.boolean()
 });
 
 export type UpdateMeetingInput = z.infer<typeof updateMeetingSchema>;

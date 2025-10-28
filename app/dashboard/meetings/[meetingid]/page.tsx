@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { getMeeting } from '@/actions/meetings';
 import { checkAuthenticated } from '@/lib/auth';
 import MeetingManager from '@/components/meetings/MeetingManager';
+import { getMembersFirstName } from '@/actions/members';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -25,6 +26,31 @@ const MeetingEditPage = async (props: {
     }
     const params = await props.params;
     const meeting = await getMeeting(params.meetingid);
+    const allMembers = await getMembersFirstName();
+
+    if (!allMembers.data) {
+        return (
+            <PageContainer scrollable={true}>
+                <div className="space-y-4">
+                    <Breadcrumbs items={breadcrumbItems} />
+                    <div className="flex items-center justify-between">
+                        <Heading
+                            title="Edit Meeting"
+                            description="Edit the below meeting"
+                        />
+                    </div>
+                    <Separator />
+                    <Suspense
+                        fallback={
+                            <Loader2 className="size-4 text-muted-foreground animate-spin" />
+                        }
+                    >
+                        <div>No members found</div>
+                    </Suspense>
+                </div>
+            </PageContainer>
+        );
+    }
 
     return (
         <PageContainer scrollable={true}>
@@ -43,7 +69,10 @@ const MeetingEditPage = async (props: {
                     }
                 >
                     {meeting.data ? (
-                        <MeetingManager meeting={meeting.data} />
+                        <MeetingManager
+                            meeting={meeting.data}
+                            members={allMembers.data}
+                        />
                     ) : (
                         <div>No meeting found</div>
                     )}

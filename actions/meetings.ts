@@ -222,3 +222,40 @@ export const closeMeeting = async (id: string) => {
 
     return { data };
 };
+
+export const addMemberToMeeting = async (meetingId: string, userId: string) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
+    // Mock: Add user to meeting
+    await db.meeting.update({
+        where: { id: meetingId },
+        data: {
+            users: {
+                connect: { id: userId }
+            }
+        }
+    });
+
+    revalidatePath(`/dashboard/meetings/${meetingId}`);
+    return { success: true };
+};
+
+export const removeMemberFromMeeting = async (
+    meetingId: string,
+    userId: string
+) => {
+    const authCheck = await checkAuth(true);
+    if (!authCheck) return { error: 'Not authorised' };
+    // Mock: Remove user from meeting
+    await db.meeting.update({
+        where: { id: meetingId },
+        data: {
+            users: {
+                disconnect: { id: userId }
+            }
+        }
+    });
+
+    revalidatePath(`/dashboard/meetings/${meetingId}`);
+    return { success: true };
+};

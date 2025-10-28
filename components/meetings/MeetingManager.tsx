@@ -10,11 +10,12 @@ import {
     CardTitle
 } from '@/components/ui/card';
 import MeetingDetailsForm from '@/components/meetings/MeetingDetailsForm';
-// import { WhiskiesManager } from '@/components/whiskies-manager';
+import WhiskyManager from '@/components/meetings/whiskies/WhiskyManager';
 // import { MembersManager } from '@/components/members-manager';
-import { Meeting } from '@/types/meeting';
+import { MeeetingManagerProps, Meeting } from '@/types/meeting';
+import MemberManager from '@/components/meetings/members/MemberManager';
 
-const MeetingManager = ({ meeting }: { meeting: Meeting }) => {
+const MeetingManager = ({ meeting, members }: MeeetingManagerProps) => {
     const [activeTab, setActiveTab] = useState('whiskies');
 
     return (
@@ -31,7 +32,7 @@ const MeetingManager = ({ meeting }: { meeting: Meeting }) => {
                 </CardContent>
             </Card>
 
-            {/* <Tabs
+            <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
                 className="w-full"
@@ -46,13 +47,13 @@ const MeetingManager = ({ meeting }: { meeting: Meeting }) => {
                 </TabsList>
 
                 <TabsContent value="whiskies" className="space-y-4">
-                    <WhiskiesManager meeting={meeting} />
+                    <WhiskyManager meeting={meeting} />
                 </TabsContent>
 
                 <TabsContent value="members" className="space-y-4">
-                    <MembersManager meeting={meeting} />
+                    <MemberManager meeting={meeting} members={members} />
                 </TabsContent>
-            </Tabs> */}
+            </Tabs>
         </div>
     );
 };
