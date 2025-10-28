@@ -31,7 +31,8 @@ export const getMeetings = async () => {
                     name: true,
                     image: true,
                     description: true,
-                    order: true
+                    order: true,
+                    meetingId: true
                 },
                 orderBy: { order: 'asc' }
             },
@@ -99,6 +100,29 @@ export const getMeeting = async (id: string) => {
     return { data };
 };
 
+// export const createMeeting = async (
+//     values: z.infer<typeof MeetingSchemaSubmit>
+// ) => {
+//     const authCheck = await checkAuth(true);
+//     if (!authCheck) return { error: 'Not authorised' };
+
+//     const validatedFields = MeetingSchemaSubmit.safeParse(values);
+
+//     if (!validatedFields.success) {
+//         return { error: 'Invalid fields!' };
+//     }
+
+//     const data = await db.meeting.create({
+//         data: {
+//             ...values
+//         }
+//     });
+
+//     revalidatePath(`/dashboard/meetings/${data.id}`);
+
+//     return { data };
+// };
+
 export const createMeeting = async (
     values: z.infer<typeof MeetingSchemaSubmit>
 ) => {
@@ -116,6 +140,10 @@ export const createMeeting = async (
             ...values
         }
     });
+
+    if (!data) {
+        return { error: 'Not found' };
+    }
 
     revalidatePath(`/dashboard/meetings/${data.id}`);
 

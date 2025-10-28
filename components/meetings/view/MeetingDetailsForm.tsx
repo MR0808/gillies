@@ -1,7 +1,6 @@
 'use client';
 
 import * as z from 'zod';
-import { add } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -33,11 +32,6 @@ const MeetingDetailsForm = ({ meeting }: { meeting: Meeting }) => {
     });
 
     const onSubmit = (values: z.infer<typeof updateMeetingSchema>) => {
-        // const newDate = add(values.date, { days: 1 });
-        // const newValues = {
-        //     ...values,
-        //     date: newDate.toISOString().substring(0, 10)
-        // };
         startTransition(async () => {
             const data = await updateMeeting(values, meeting.id);
             if (data.data) {

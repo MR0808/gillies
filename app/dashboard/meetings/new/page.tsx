@@ -7,7 +7,7 @@ import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { checkAuthenticated } from '@/lib/auth';
-import MeetingForm from '@/components/meetings-old/MeetingForm';
+import MeetingCreateForm from '@/components/meetings/create/MeetingCreateForm';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -35,7 +35,7 @@ const NewMeetingPage = async () => {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MeetingForm />
+                    <MeetingCreateForm />
                 </Suspense>
             </div>
         </PageContainer>

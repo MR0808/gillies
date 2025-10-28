@@ -32,6 +32,10 @@ export type Members = Extract<
     { data: unknown }
 >['data'];
 
+export interface MeetingsTableProps {
+    meetings: Meeting[];
+}
+
 export interface MeeetingManagerProps {
     meeting: Meeting;
     members: Members;

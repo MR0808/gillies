@@ -8,7 +8,7 @@ import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { getMeeting } from '@/actions/meetings';
 import { checkAuthenticated } from '@/lib/auth';
-import MeetingManager from '@/components/meetings/MeetingManager';
+import MeetingManager from '@/components/meetings/view/MeetingManager';
 import { getMembersFirstName } from '@/actions/members';
 
 const breadcrumbItems = [

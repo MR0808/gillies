@@ -9,11 +9,10 @@ import {
     CardHeader,
     CardTitle
 } from '@/components/ui/card';
-import MeetingDetailsForm from '@/components/meetings/MeetingDetailsForm';
-import WhiskyManager from '@/components/meetings/whiskies/WhiskyManager';
-// import { MembersManager } from '@/components/members-manager';
-import { MeeetingManagerProps, Meeting } from '@/types/meeting';
-import MemberManager from '@/components/meetings/members/MemberManager';
+import MeetingDetailsForm from '@/components/meetings/view/MeetingDetailsForm';
+import WhiskyManager from '@/components/meetings/view/whiskies/WhiskyManager';
+import { MeeetingManagerProps } from '@/types/meeting';
+import MemberManager from '@/components/meetings/view/members/MemberManager';
 
 const MeetingManager = ({ meeting, members }: MeeetingManagerProps) => {
     const [activeTab, setActiveTab] = useState('whiskies');

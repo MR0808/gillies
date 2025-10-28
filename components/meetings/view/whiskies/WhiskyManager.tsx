@@ -10,8 +10,8 @@ import {
     CardHeader,
     CardTitle
 } from '@/components/ui/card';
-import WhiskyCard from '@/components/meetings/whiskies/WhiskyCard';
-import WhiskyDialog from '@/components/meetings/whiskies/WhiskyDialog';
+import WhiskyCard from '@/components/meetings/view/whiskies/WhiskyCard';
+import WhiskyDialog from '@/components/meetings/view/whiskies/WhiskyDialog';
 import { Whisky, WhiskyManagerProps } from '@/types/meeting';
 
 const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {

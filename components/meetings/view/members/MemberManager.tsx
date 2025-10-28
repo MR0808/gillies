@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UserPlus, UserMinus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,7 +13,6 @@ import {
     CardTitle
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getMembersFirstName } from '@/actions/members';
 import { MemberManagerProps } from '@/types/meeting';
 import { Member } from '@/types/meeting';
 import {
