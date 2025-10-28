@@ -9,6 +9,7 @@ import {
     MeetingMemberSchema
 } from '@/schemas/meetings-old';
 import checkAuth from '@/utils/checkAuth';
+import { createMeetingSchema } from '@/schemas/meetings';
 
 export const getMeetings = async () => {
     const authCheck = await checkAuth(true);
@@ -123,8 +124,35 @@ export const getMeeting = async (id: string) => {
 //     return { data };
 // };
 
+// export const createMeeting = async (
+//     values: z.infer<typeof MeetingSchemaSubmit>
+// ) => {
+//     const authCheck = await checkAuth(true);
+//     if (!authCheck) return { error: 'Not authorised' };
+
+//     const validatedFields = MeetingSchemaSubmit.safeParse(values);
+
+//     if (!validatedFields.success) {
+//         return { error: 'Invalid fields!' };
+//     }
+
+//     const data = await db.meeting.create({
+//         data: {
+//             ...values
+//         }
+//     });
+
+//     if (!data) {
+//         return { error: 'Not found' };
+//     }
+
+//     revalidatePath(`/dashboard/meetings/${data.id}`);
+
+//     return { data };
+// };
+
 export const createMeeting = async (
-    values: z.infer<typeof MeetingSchemaSubmit>
+    values: z.infer<typeof createMeetingSchema>
 ) => {
     const authCheck = await checkAuth(true);
     if (!authCheck) return { error: 'Not authorised' };
@@ -145,7 +173,7 @@ export const createMeeting = async (
         return { error: 'Not found' };
     }
 
-    revalidatePath(`/dashboard/meetings/${data.id}`);
+    revalidatePath(`/dashboard/meetings`);
 
     return { data };
 };

@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MeetingsTableProps } from '@/types/meeting';
+import { CreateMeetingDialog } from '@/components/meetings/create/MeetingCreateDialog';
 
 const MeetingsList = ({ meetings }: MeetingsTableProps) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +94,7 @@ const MeetingsList = ({ meetings }: MeetingsTableProps) => {
                             <SelectItem value="all">All</SelectItem>
                         </SelectContent>
                     </Select>
+                    <CreateMeetingDialog />
                 </div>
             </div>
 
@@ -108,7 +110,7 @@ const MeetingsList = ({ meetings }: MeetingsTableProps) => {
                             <TableHead className="text-right">
                                 Whiskies
                             </TableHead>
-                            <TableHead className="w-[100px]"></TableHead>
+                            <TableHead className="w-[180px]"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -153,17 +155,30 @@ const MeetingsList = ({ meetings }: MeetingsTableProps) => {
                                         {meeting.whiskies.length}
                                     </TableCell>
                                     <TableCell>
-                                        <Button
-                                            asChild
-                                            variant="ghost"
-                                            size="sm"
-                                        >
-                                            <Link
-                                                href={`/dashboard/meetings/${meeting.id}`}
+                                        <div className="flex gap-2">
+                                            <Button
+                                                asChild
+                                                variant="ghost"
+                                                size="sm"
                                             >
-                                                View
-                                            </Link>
-                                        </Button>
+                                                <Link
+                                                    href={`/dashboard/meetings/${meeting.id}`}
+                                                >
+                                                    View
+                                                </Link>
+                                            </Button>
+                                            <Button
+                                                asChild
+                                                variant="ghost"
+                                                size="sm"
+                                            >
+                                                <Link
+                                                    href={`/dashboard/meetings/${meeting.id}/results`}
+                                                >
+                                                    Results
+                                                </Link>
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))

@@ -5,6 +5,11 @@ export const updateMeetingSchema = z.object({
     location: z.string().min(1, 'Location is required')
 });
 
+export const createMeetingSchema = z.object({
+    date: z.string().min(1, 'Date is required'),
+    location: z.string().min(1, 'Location is required')
+});
+
 export const whiskySchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Name is required'),
@@ -16,3 +21,4 @@ export const whiskySchema = z.object({
 
 export type UpdateMeetingInput = z.infer<typeof updateMeetingSchema>;
 export type WhiskyInput = z.infer<typeof whiskySchema>;
+export type CreateMeetingFormData = z.infer<typeof createMeetingSchema>;
