@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Meeting } from '@/generated/prisma';
+import { Meeting } from '@prisma/client';
 
 import {
     Table,

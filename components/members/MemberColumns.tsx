@@ -1,7 +1,7 @@
 'use client';
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
-import { User } from '@/generated/prisma';
+import { User } from '@prisma/client';
 
 import MemberCellAction from './MemberCellAction';
 import { Button } from '@/components/ui/button';

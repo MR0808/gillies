@@ -9,10 +9,5 @@
         "react/no-unescaped-entities": 0,
         "no-unused-expressions": "off",
         "@typescript-eslint/no-unused-expressions": "off"
-    },
-    "settings": {
-        "import/resolver": {
-            "typescript": {}
-        }
     }
 }

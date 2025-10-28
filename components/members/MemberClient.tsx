@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { User } from '@/generated/prisma';
+import { User } from '@prisma/client';
 
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';

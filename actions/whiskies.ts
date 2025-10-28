@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { Whisky } from '@/generated/prisma';
+import { Whisky } from '@prisma/client';
 
 import db from '@/lib/db';
 import checkAuth from '@/utils/checkAuth';
