@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Meeting } from '@prisma/client';
+import { Meeting } from '@/generated/prisma';
 
 import {
     Table,
@@ -12,10 +12,9 @@ import {
     TableRow
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-const MainClient = ({meetings}: {meetings: Meeting[]}) => {
-
+const MainClient = ({ meetings }: { meetings: Meeting[] }) => {
     if (meetings.length === 0) {
-        return (<div>No meetings available</div>)
+        return <div>No meetings available</div>;
     }
 
     return (
@@ -38,13 +37,9 @@ const MainClient = ({meetings}: {meetings: Meeting[]}) => {
                             <TableCell>{meeting.location}</TableCell>
                             <TableCell>
                                 {meeting.status === 'OPEN' ? (
-                                    <Badge variant="success">
-                                        Open
-                                    </Badge>
+                                    <Badge variant="success">Open</Badge>
                                 ) : (
-                                    <Badge variant="destructive">
-                                        Closed
-                                    </Badge>
+                                    <Badge variant="destructive">Closed</Badge>
                                 )}
                             </TableCell>
                             <TableCell>

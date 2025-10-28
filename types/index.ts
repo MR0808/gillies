@@ -1,4 +1,4 @@
-import { User, Status } from '@prisma/client';
+import { User, Status } from '@/generated/prisma';
 
 import { Icons } from '@/components/global/Icons';
 
