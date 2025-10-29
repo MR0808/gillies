@@ -54,7 +54,11 @@ export function ProfileButton({
     isPending
 }: ProfileButtonProps) {
     return (
-        <Button type="submit" disabled={!newImage || isPending}>
+        <Button
+            type="submit"
+            disabled={!newImage || isPending}
+            className="cursor-pointer"
+        >
             {isPending ? (
                 <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />

@@ -1,14 +1,12 @@
 'use client';
 
 import * as z from 'zod';
-import { useState, useRef, useEffect, useTransition } from 'react';
-import type { Session } from 'next-auth';
-import { useSession } from 'next-auth/react';
-import { Camera } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useTransition, useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import { Camera } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Form,
     FormControl,
@@ -16,29 +14,30 @@ import {
     FormItem,
     FormMessage
 } from '@/components/ui/form';
-import { toast } from 'sonner';
 
+import { authClient, useSession } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
+import { ProfilePictureSchema } from '@/schemas/settings';
 import Image from 'next/image';
 import profile from '@/public/images/profile.jpg';
 import { Input } from '@/components/ui/input';
 import { ProfileButton } from '@/components/form/Buttons';
-import { ProfilePictureSchema } from '@/schemas/settings';
-import { updateProfilePicture } from '@/actions/settings';
+import { SessionProps } from '@/types/session';
+import { uploadAvatar, deleteAvatar } from '@/actions/supabase';
 
-const ProfilePictureForm = ({ session }: { session: Session | null }) => {
-    const [user, setUser] = useState(session?.user);
-    const { data: newSession, update } = useSession();
+const ProfilePictureForm = ({ userSession }: SessionProps) => {
+    const { data: currentUser, refetch } = useSession();
+    const [user, setUser] = useState(userSession?.user);
     const [newImage, setNewImage] = useState(false);
     const imageRef = useRef<HTMLInputElement | null>(null);
-    const [image, setImage] = useState<string | undefined>(user?.image);
+    const [image, setImage] = useState<string | null | undefined>(user?.image);
     const [isPending, startTransition] = useTransition();
 
     useEffect(() => {
-        if (newSession && newSession.user) {
-            setUser(newSession?.user);
+        if (currentUser && currentUser.user) {
+            setUser(currentUser?.user);
         }
-    }, [newSession]);
+    }, [currentUser]);
 
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files[0]) {
@@ -64,118 +63,109 @@ const ProfilePictureForm = ({ session }: { session: Session | null }) => {
     };
 
     const onSubmit = (values: z.infer<typeof ProfilePictureSchema>) => {
-        startTransition(() => {
+        startTransition(async () => {
             const formData = new FormData();
             formData.append('image', values.image[0]);
-
-            updateProfilePicture(formData)
-                .then((data) => {
-                    if (!data?.result) {
-                        toast.error(data.message);
-                    }
-
-                    if (data?.result) {
-                        update();
-                        form.reset(values);
+            formData.append('bucket', 'images');
+            const image = await uploadAvatar(formData);
+            if (user?.image)
+                await deleteAvatar({
+                    imageUrl: user?.image,
+                    bucket: 'images'
+                });
+            await authClient.updateUser({
+                image: image.publicUrl,
+                fetchOptions: {
+                    onError: (ctx) => {
+                        toast.error(ctx.error.message);
+                    },
+                    onSuccess: async () => {
+                        refetch({ query: { disableCookieCache: true } });
                         toast.success('Profile picture successfully updated');
+                        form.reset(values);
                     }
-                })
-                .catch(() => toast.error('Something went wrong!'));
+                }
+            });
         });
     };
 
     return (
-        <div className="px-4 w-full flex justify-center items-center">
-            <Card className={cn('sm:w-[400px] w-full mb-6')}>
-                <CardHeader>
-                    <CardTitle>
-                        <div className="flex flex-row justify-center">
-                            <div className="text-xl font-semibold items-center">
-                                Profile Picture
+        <div className="mt-8 border-b border-b-gray-200 pb-8">
+            <div className="w-full md:w-3/5 flex flex-col gap-5">
+                <div className="flex justify-between">
+                    <h3 className="text-base font-semibold">Profile Picture</h3>
+                </div>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="flex flex-row space-x-10 items-center justify-start">
+                            <div className="relative h-[120px] max-h-[120px] w-[120px] max-w-[120px] rounded-full border-2 border-solid border-white shadow-[0_8px_24px_0px_rgba(149,157,165,0.2)]">
+                                <Image
+                                    src={image || profile}
+                                    alt={`${user?.name} ${user?.lastName}}`}
+                                    fill
+                                    className={cn('w-full rounded-full')}
+                                />
+                                <div
+                                    className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#585C5480] bg-white text-xs leading-7 text-black hover:bg-primary hover:text-white"
+                                    onClick={handleClick}
+                                >
+                                    <Camera className="h-4 w-4" />
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="image"
+                                    render={({ field }) => {
+                                        return (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input
+                                                        type="file"
+                                                        placeholder="shadcn"
+                                                        {...fileRef}
+                                                        onChange={(event) => {
+                                                            fileRef.onChange(
+                                                                event
+                                                            );
+                                                            onImageChange(
+                                                                event
+                                                            );
+                                                        }}
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        ref={(e) => {
+                                                            ref(e);
+                                                            imageRef.current =
+                                                                e; // you can still assign to ref
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        );
+                                    }}
+                                />
+                            </div>
+                            <div className="mt-5 flex flex-col items-center justify-center">
+                                {newImage && (
+                                    <div
+                                        className="cursor-pointer pb-2 text-sm text-gray-700 hover:underline"
+                                        onClick={removeImage}
+                                    >
+                                        Remove
+                                    </div>
+                                )}
+                                <div>
+                                    <ProfileButton
+                                        text="Save"
+                                        newImage={newImage}
+                                        isPending={isPending}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className={cn('p-0')}>
-                    <Form {...form}>
-                        <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="w-full p-1"
-                        >
-                            <div className="flex flex-col justify-center items-center">
-                                <div className="w-[120px] h-[120px] max-h-[120px] max-w-[120px] border-2 border-solid border-white rounded-full shadow-[0_8px_24px_0px_rgba(149,157,165,0.2)] relative">
-                                    <Image
-                                        src={image || profile}
-                                        alt={`${user?.firstName} ${user?.lastName}}`}
-                                        fill
-                                        className={cn('w-full rounded-full')}
-                                    />
-                                    <>
-                                        <div
-                                            className="flex w-8 h-8 leading-7 text-xs border border-[#585C5480] border-solid bg-white absolute text-black rounded-full items-center justify-center right-0 bottom-0 cursor-pointer hover:bg-primary"
-                                            onClick={handleClick}
-                                        >
-                                            <Camera className="w-4 h-4" />
-                                        </div>
-                                        <FormField
-                                            control={form.control}
-                                            name="image"
-                                            render={({ field }) => {
-                                                return (
-                                                    <FormItem>
-                                                        <FormControl>
-                                                            <Input
-                                                                type="file"
-                                                                placeholder="shadcn"
-                                                                {...fileRef}
-                                                                onChange={(
-                                                                    event
-                                                                ) => {
-                                                                    fileRef.onChange(
-                                                                        event
-                                                                    );
-                                                                    onImageChange(
-                                                                        event
-                                                                    );
-                                                                }}
-                                                                className="hidden"
-                                                                accept="image/*"
-                                                                ref={(e) => {
-                                                                    ref(e);
-                                                                    imageRef.current =
-                                                                        e; // you can still assign to ref
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                );
-                                            }}
-                                        />
-                                    </>
-                                </div>
-                                <div className="mt-5 flex flex-col justify-center items-center">
-                                    {newImage && (
-                                        <div
-                                            className="cursor-pointer hover:underline pb-2 text-sm text-gray-700"
-                                            onClick={removeImage}
-                                        >
-                                            Remove
-                                        </div>
-                                    )}
-                                    <div className="pb-2">
-                                        <ProfileButton
-                                            text="Save"
-                                            newImage={newImage}
-                                            isPending={isPending}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
+                    </form>
+                </Form>
+            </div>
         </div>
     );
 };

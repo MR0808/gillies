@@ -1,17 +1,10 @@
 'use client';
 import React from 'react';
-import { SessionProvider, SessionProviderProps } from 'next-auth/react';
 
 import ThemeProvider from '@/components/dashboardLayout/ThemeToggle/ThemeProvider';
 import { QueryProvider } from './QueryProvider';
 
-const Providers = ({
-    session,
-    children
-}: {
-    session: SessionProviderProps['session'];
-    children: React.ReactNode;
-}) => {
+const Providers = ({ children }: { children: React.ReactNode }) => {
     return (
         <>
             <QueryProvider>
@@ -20,9 +13,7 @@ const Providers = ({
                     defaultTheme="system"
                     enableSystem
                 >
-                    <SessionProvider session={session}>
-                        {children}
-                    </SessionProvider>
+                    {children}
                 </ThemeProvider>
             </QueryProvider>
         </>

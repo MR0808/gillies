@@ -1,13 +1,16 @@
 'use server';
 
 import db from '@/lib/db';
-import checkAuth from '@/utils/checkAuth';
 import { Scoreboard } from '@/types';
 import whiskyImg from '@/public/images/whisky.jpg';
+import { authCheckServer } from '@/lib/authCheck';
 
 export const getWhisky = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -48,7 +51,7 @@ export const getWhisky = async (id: string) => {
             user: {
                 select: {
                     id: true,
-                    firstName: true,
+                    name: true,
                     lastName: true,
                     image: true
                 }

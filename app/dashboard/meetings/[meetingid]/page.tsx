@@ -7,7 +7,7 @@ import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { getMeeting } from '@/actions/meetings';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 import MeetingManager from '@/components/meetings/view/MeetingManager';
 import { getMembersFirstName } from '@/actions/members';
 
@@ -20,12 +20,12 @@ const breadcrumbItems = [
 const MeetingEditPage = async (props: {
     params: Promise<{ meetingid: string }>;
 }) => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
     const params = await props.params;
+    const userSession = await authCheckAdmin(
+        `/dashboard/meetings/${params.meetingid}`
+    );
     const meeting = await getMeeting(params.meetingid);
+
     const allMembers = await getMembersFirstName();
 
     if (!allMembers.data) {

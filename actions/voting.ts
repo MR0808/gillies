@@ -4,12 +4,17 @@ import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
-import { currentUser } from '@/lib/auth';
 import { VotingSchema } from '@/schemas/voting';
+import { authCheckServer } from '@/lib/authCheck';
 
 export const getUserMeetings = async () => {
-    const user = await currentUser();
-    if (!user) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession) {
+        return { error: 'Not authorised' };
+    }
+
+    const { user } = userSession;
 
     // const data = await db.user.findUnique({
     //     where: { id: user.id },
@@ -28,8 +33,13 @@ export const getUserMeetings = async () => {
 };
 
 export const getMeetingWhiskiesByUser = async (meetingId: string) => {
-    const user = await currentUser();
-    if (!user) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession) {
+        return { error: 'Not authorised' };
+    }
+
+    const { user } = userSession;
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -64,8 +74,13 @@ export const getMeetingWhiskiesByUser = async (meetingId: string) => {
 };
 
 export const getWhiskyForVoting = async (whiskyId: string) => {
-    const user = await currentUser();
-    if (!user) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession) {
+        return { error: 'Not authorised' };
+    }
+
+    const { user } = userSession;
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -113,8 +128,13 @@ export const createVote = async (
     values: z.infer<typeof VotingSchema>,
     whiskyId: string
 ) => {
-    const user = await currentUser();
-    if (!user) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession) {
+        return { error: 'Not authorised' };
+    }
+
+    const { user } = userSession;
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }
@@ -160,8 +180,13 @@ export const updateVote = async (
     values: z.infer<typeof VotingSchema>,
     id: string
 ) => {
-    const user = await currentUser();
-    if (!user) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession) {
+        return { error: 'Not authorised' };
+    }
+
+    const { user } = userSession;
 
     const dbUser = await db.user.findUnique({
         where: { id: user.id }

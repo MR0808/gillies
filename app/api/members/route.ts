@@ -1,31 +1,33 @@
-import db from '@/lib/db';
-import checkAuth from '@/utils/checkAuth';
+// import { authCheckServer } from '@/lib/authCheck';
+// import db from '@/lib/db';
 
-export async function GET() {
-    try {
-        const authCheck = await checkAuth(true);
-        if (!authCheck)
-            return Response.json({ error: 'Unauthorised' }, { status: 401 });
+// export async function GET() {
+//     try {
+//         const userSession = await authCheckServer();
 
-        const members = await db.user.findMany({
-            orderBy: {
-                lastName: 'asc'
-            }
-        });
+//         if (!userSession || userSession.user.role !== 'ADMIN') {
+//             return Response.json({ error: 'Unauthorised' }, { status: 401 });
+//         }
 
-        if (!members) {
-            return Response.json(
-                { error: 'Members not found' },
-                { status: 404 }
-            );
-        }
+//         const members = await db.user.findMany({
+//             orderBy: {
+//                 lastName: 'asc'
+//             }
+//         });
 
-        return Response.json(members);
-    } catch (error) {
-        console.error(error);
-        return Response.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
-}
+//         if (!members) {
+//             return Response.json(
+//                 { error: 'Members not found' },
+//                 { status: 404 }
+//             );
+//         }
+
+//         return Response.json(members);
+//     } catch (error) {
+//         console.error(error);
+//         return Response.json(
+//             { error: 'Internal server error' },
+//             { status: 500 }
+//         );
+//     }
+// }

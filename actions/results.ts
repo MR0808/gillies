@@ -1,11 +1,14 @@
 'use server';
 
+import { authCheckServer } from '@/lib/authCheck';
 import db from '@/lib/db';
-import checkAuth from '@/utils/checkAuth';
 
 export const getMeetingResults = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };

@@ -8,12 +8,15 @@ import {
     MeetingSchemaSubmit,
     MeetingMemberSchema
 } from '@/schemas/meetings-old';
-import checkAuth from '@/utils/checkAuth';
 import { createMeetingSchema } from '@/schemas/meetings';
+import { authCheckServer } from '@/lib/authCheck';
 
 export const getMeetings = async () => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const data = await db.meeting.findMany({
         orderBy: {
@@ -41,11 +44,11 @@ export const getMeetings = async () => {
                 select: {
                     id: true,
                     image: true,
-                    firstName: true,
+                    name: true,
                     lastName: true,
                     email: true
                 },
-                orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+                orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
             }
         }
     });
@@ -54,8 +57,11 @@ export const getMeetings = async () => {
 };
 
 export const getMeeting = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -85,11 +91,11 @@ export const getMeeting = async (id: string) => {
                 select: {
                     id: true,
                     image: true,
-                    firstName: true,
+                    name: true,
                     lastName: true,
                     email: true
                 },
-                orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+                orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
             }
         }
     });
@@ -101,61 +107,14 @@ export const getMeeting = async (id: string) => {
     return { data };
 };
 
-// export const createMeeting = async (
-//     values: z.infer<typeof MeetingSchemaSubmit>
-// ) => {
-//     const authCheck = await checkAuth(true);
-//     if (!authCheck) return { error: 'Not authorised' };
-
-//     const validatedFields = MeetingSchemaSubmit.safeParse(values);
-
-//     if (!validatedFields.success) {
-//         return { error: 'Invalid fields!' };
-//     }
-
-//     const data = await db.meeting.create({
-//         data: {
-//             ...values
-//         }
-//     });
-
-//     revalidatePath(`/dashboard/meetings/${data.id}`);
-
-//     return { data };
-// };
-
-// export const createMeeting = async (
-//     values: z.infer<typeof MeetingSchemaSubmit>
-// ) => {
-//     const authCheck = await checkAuth(true);
-//     if (!authCheck) return { error: 'Not authorised' };
-
-//     const validatedFields = MeetingSchemaSubmit.safeParse(values);
-
-//     if (!validatedFields.success) {
-//         return { error: 'Invalid fields!' };
-//     }
-
-//     const data = await db.meeting.create({
-//         data: {
-//             ...values
-//         }
-//     });
-
-//     if (!data) {
-//         return { error: 'Not found' };
-//     }
-
-//     revalidatePath(`/dashboard/meetings/${data.id}`);
-
-//     return { data };
-// };
-
 export const createMeeting = async (
     values: z.infer<typeof createMeetingSchema>
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const validatedFields = MeetingSchemaSubmit.safeParse(values);
 
@@ -182,8 +141,11 @@ export const updateMeeting = async (
     values: z.infer<typeof MeetingSchemaSubmit>,
     id: string
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -217,8 +179,11 @@ export const updateMeetingMembers = async (
     values: z.infer<typeof MeetingMemberSchema>,
     id: string
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -253,8 +218,11 @@ export const updateMeetingMembers = async (
 };
 
 export const closeMeeting = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -280,8 +248,12 @@ export const closeMeeting = async (id: string) => {
 };
 
 export const addMemberToMeeting = async (meetingId: string, userId: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
+
     // Mock: Add user to meeting
     await db.meeting.update({
         where: { id: meetingId },
@@ -300,8 +272,12 @@ export const removeMemberFromMeeting = async (
     meetingId: string,
     userId: string
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
+
     // Mock: Remove user from meeting
     await db.meeting.update({
         where: { id: meetingId },

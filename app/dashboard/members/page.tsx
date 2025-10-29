@@ -6,7 +6,7 @@ import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import MemberClient from '@/components/members/MemberClient';
 import { getMembers } from '@/actions/members';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -14,10 +14,7 @@ const breadcrumbItems = [
 ];
 
 const MembersPage = async () => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheckAdmin('/dashboard/members');
     const members = await getMembers();
     return (
         <PageContainer>

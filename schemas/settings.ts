@@ -1,9 +1,11 @@
 import * as z from 'zod';
 
-import { validateImageFile } from '.';
+export const ProfilePictureSchema = z.object({
+    image: typeof window === 'undefined' ? z.any() : z.instanceof(FileList)
+});
 
 export const NameSchema = z.object({
-    firstName: z.string().min(1, {
+    name: z.string().min(1, {
         message: 'First name is required'
     }),
     lastName: z.string().min(1, {
@@ -11,28 +13,36 @@ export const NameSchema = z.object({
     })
 });
 
-export const ProfilePictureSchema = z.object({
-    image: typeof window === 'undefined' ? z.any() : z.instanceof(FileList)
-});
-
-export const ProfilePictureSchemaFile = z.object({
-    image: validateImageFile()
-});
-
-export const EmailSchema = z.object({
-    email: z.string().email({
-        message: 'Email is required'
+export const ChangeEmailSchema = z.object({
+    currentEmail: z.email({
+        message: 'Email must be valid'
+    }),
+    newEmail: z.email({
+        message: 'Email must be valid'
     })
 });
 
-export const ResetPasswordSchema = z
+export const VerifyEmailChangeOTPSchema = z.object({
+    currentEmail: z.email({
+        message: 'Email must be valid'
+    }),
+    newEmail: z.email({
+        message: 'Email must be valid'
+    }),
+    otp: z.string().length(6, {
+        message: 'Verification code must be 6 characters long'
+    })
+});
+
+export const UpdatePasswordSchema = z
     .object({
+        currentPassword: z.string().min(6, {
+            message: 'Password must be at least 6 characters'
+        }),
         password: z.string().min(6, {
             message: 'Password must be at least 6 characters'
         }),
-        confirmPassword: z
-            .string()
-            .min(6, { message: 'Password must be at least 6 characters' })
+        confirmPassword: z.string()
     })
     .refine((data) => data.password === data.confirmPassword, {
         path: ['confirmPassword'],
@@ -48,7 +58,7 @@ export const ResetPasswordSchema = z
             countOfNumbers = 0,
             countOfSpecialChar = 0;
         for (let i = 0; i < password.length; i++) {
-            let ch = password.charAt(i);
+            const ch = password.charAt(i);
             if (!isNaN(+ch)) countOfNumbers++;
             else if (containsUppercase(ch)) countOfUpperCase++;
             else if (containsLowercase(ch)) countOfLowerCase++;

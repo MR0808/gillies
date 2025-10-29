@@ -1,11 +1,13 @@
 'use client';
 
 import * as z from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitErrorHandler } from 'react-hook-form';
 import { useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ReloadIcon } from '@radix-ui/react-icons';
+import { toast } from 'sonner';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
     Form,
     FormControl,
@@ -17,14 +19,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmailSchema } from '@/schemas/auth';
-import FormError from '@/components/form/FormError';
-import FormSuccess from '@/components/form/FormSuccess';
-import CardWrapper from './CardWrapper';
-import { resetPassword } from '@/actions/resetPassword';
+import { forgetPassword } from '@/lib/auth-client';
 
 const ForgotPasswordForm = () => {
-    const [error, setError] = useState<string | undefined>('');
-    const [success, setSuccess] = useState<string | undefined>('');
+    const [success, setSuccess] = useState(false);
     const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof EmailSchema>>({
@@ -35,38 +33,47 @@ const ForgotPasswordForm = () => {
     });
 
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
-        setError('');
-        setSuccess('');
+        setSuccess(false);
         startTransition(async () => {
-            const data = await resetPassword(values);
-            if (data?.error) {
-                form.reset();
-                setError(data.error);
-            }
+            await forgetPassword({
+                email: values.email,
+                redirectTo: '/auth/reset-password',
+                fetchOptions: {
+                    onError: (ctx) => {
+                        toast.error(ctx.error.message);
+                    },
+                    onSuccess: async () => {
+                        setSuccess(true);
+                        toast.success(
+                            'Reset password email sent successfully!'
+                        );
+                    }
+                }
+            });
+        });
+    };
 
-            if (data?.success) {
-                form.reset();
-                setSuccess(data.success);
-            }
+    const onError: SubmitErrorHandler<z.infer<typeof EmailSchema>> = (
+        errors
+    ) => {
+        toast.dismiss();
+
+        toast.error('Please enter a valid email', {
+            position: 'top-center',
+            closeButton: true,
+            duration: Infinity
         });
     };
 
     return (
-        <CardWrapper
-            headerLabel="Forgot password"
-            backButtonLabel="Remember your password?"
-            backButtonHref="/auth/login"
-            backButton={true}
-        >
-            {success ? (
-                <FormSuccess message={success} />
-            ) : (
+        <>
+            {!success ? (
                 <Form {...form}>
                     <form
-                        className="space-y-6"
-                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4"
+                        onSubmit={form.handleSubmit(onSubmit, onError)}
                     >
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -81,31 +88,38 @@ const ForgotPasswordForm = () => {
                                                 type="email"
                                             />
                                         </FormControl>
-                                        <FormMessage />
+                                        <FormMessage className="text-sm text-destructive" />
                                     </FormItem>
                                 )}
                             />
                         </div>
 
-                        <FormError message={error} />
                         <Button
                             disabled={isPending}
                             type="submit"
-                            className="w-full"
+                            className="w-full cursor-pointer"
                         >
                             {isPending ? (
                                 <>
-                                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Please wait...
                                 </>
                             ) : (
-                                'Submit'
+                                'Send reset link'
                             )}
                         </Button>
                     </form>
                 </Form>
+            ) : (
+                <Alert>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <AlertDescription>
+                        If an account exists with that email, you'll receive a
+                        password reset link shortly.
+                    </AlertDescription>
+                </Alert>
             )}
-        </CardWrapper>
+        </>
     );
 };
 export default ForgotPasswordForm;

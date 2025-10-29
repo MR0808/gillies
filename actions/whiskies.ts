@@ -4,19 +4,16 @@ import { revalidatePath } from 'next/cache';
 import { Whisky } from '@prisma/client';
 
 import db from '@/lib/db';
-import checkAuth from '@/utils/checkAuth';
-import {
-    WhiskySchemaFormData,
-    WhiskySchemaFormDataEdit
-} from '@/schemas/whisky';
-import { uploadImage, deleteImage } from '@/utils/supabase';
+import { deleteImage } from '@/utils/supabase';
 import { whiskySchema } from '@/schemas/meetings';
-import { validate } from 'uuid';
-import { error } from 'console';
+import { authCheckServer } from '@/lib/authCheck';
 
 export const getMeetingWhiskies = async (meetingId: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!meetingId) {
         return { error: 'Bad request' };
@@ -33,8 +30,11 @@ export const getMeetingWhiskies = async (meetingId: string) => {
 };
 
 export const getMeetingWhisky = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Bad request' };
@@ -52,8 +52,11 @@ export const getMeetingWhisky = async (id: string) => {
 };
 
 export const deleteWhisky = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -92,8 +95,12 @@ export const deleteWhisky = async (id: string) => {
 };
 
 export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
+
     const validated = whiskySchema.parse(data);
 
     const existingWhiskies = await db.whisky.findMany({
@@ -171,11 +178,4 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
 
     revalidatePath(`/dashboard/meetings/${meetingId}`);
     return { success: true };
-};
-
-const renderError = (error: unknown): { message: string } => {
-    console.log(error);
-    return {
-        message: error instanceof Error ? error.message : 'An error occurred'
-    };
 };

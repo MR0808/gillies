@@ -8,7 +8,7 @@ import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
 import { getMember } from '@/actions/members';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -19,11 +19,10 @@ const breadcrumbItems = [
 const MemberEditPage = async (props: {
     params: Promise<{ memberid: string }>;
 }) => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
     const params = await props.params;
+    const userSession = await authCheckAdmin(
+        `/dashboard/members/${params.memberid}`
+    );
     const member = await getMember(params.memberid);
 
     return (

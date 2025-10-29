@@ -2,14 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { UserButton } from '@/components/mainLayout/UserButton';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useSession } from '@/lib/auth-client';
 
 export const Navbar = () => {
     const pathname = usePathname();
-    const user = useCurrentUser();
+    const { data: userSession } = useSession();
+
+    const role = userSession?.user?.role;
 
     return (
         <nav className="bg-secondary flex justify-between items-center p-4 rounded-xl w-[320px] sm:w-[600px] shadow-xs">
@@ -26,7 +29,7 @@ export const Navbar = () => {
                 >
                     <Link href="/settings">Settings</Link>
                 </Button>
-                {user?.role === 'ADMIN' && (
+                {role === 'ADMIN' && (
                     <Button
                         asChild
                         variant="outline"

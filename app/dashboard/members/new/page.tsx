@@ -7,7 +7,7 @@ import MemberForm from '@/components/members/MemberForm';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -15,10 +15,8 @@ const breadcrumbItems = [
     { title: 'Create Member', link: '/dashboard/member/new' }
 ];
 const NewMemberPage = async () => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheckAdmin('/dashboard/members/new');
+
     return (
         <PageContainer scrollable={true}>
             <div className="space-y-4">

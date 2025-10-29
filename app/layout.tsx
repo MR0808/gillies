@@ -6,7 +6,6 @@ import { Toaster } from '@/components/ui/sonner';
 import type { Metadata } from 'next';
 import './globals.css';
 import Providers from '@/providers/Providers';
-import { auth } from '@/auth';
 
 const inter = Inter({ subsets: ['latin'], preload: true });
 
@@ -20,7 +19,6 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const session = await auth();
     return (
         <html lang="en" suppressHydrationWarning>
             <body
@@ -28,7 +26,7 @@ export default async function RootLayout({
                 suppressHydrationWarning={true}
             >
                 <NextTopLoader showSpinner={false} />
-                <Providers session={session}>
+                <Providers>
                     {children}
                     <Toaster richColors />
                     {/* <SpeedInsights /> */}

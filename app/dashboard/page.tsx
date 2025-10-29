@@ -1,17 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { redirect } from 'next/navigation';
 
 import CalendarDateRangePicker from '@/components/global/DateRangePicker';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 
 const DashboardMainPage = async () => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheckAdmin('/dashboard');
+
     return (
         <PageContainer scrollable={true}>
             <div className="space-y-2">

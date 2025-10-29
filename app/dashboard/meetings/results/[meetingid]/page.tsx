@@ -8,16 +8,15 @@ import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import ResultsClient from '@/components/results/ResultsClient';
 import { getMeetingResults } from '@/actions/results';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 
 const ResultsPage = async (props: {
     params: Promise<{ meetingid: string }>;
 }) => {
     const params = await props.params;
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheckAdmin(
+        `/dashboard/results/${params.meetingid}`
+    );
     const results = await getMeetingResults(params.meetingid);
 
     const breadcrumbItems = [

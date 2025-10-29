@@ -1,16 +1,16 @@
 'use client';
 
 import * as z from 'zod';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitErrorHandler } from 'react-hook-form';
+import { toast } from 'sonner';
 import { useState, useTransition } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp';
-import { useRouter } from 'next/navigation';
-import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
+import Link from 'next/link';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,230 +20,165 @@ import {
     FormField,
     FormItem,
     FormLabel,
-    FormMessage,
-    FormDescription
+    FormMessage
 } from '@/components/ui/form';
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-    InputOTPSeparator
-} from '@/components/ui/input-otp';
+import { Checkbox } from '@/components/ui/checkbox';
 import { login } from '@/actions/login';
-import CardWrapper from './CardWrapper';
-import FormError from '@/components/form/FormError';
 import { cn } from '@/lib/utils';
 
-enum VARIANT {
-    LOGIN = 'LOGIN',
-    TWOFACTOR = 'TWOFACTOR',
-    BACKUP = 'BACKUP'
-}
-
 const LoginForm = () => {
-    const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get('callbackUrl');
-    const router = useRouter();
-
-    const [showTwoFactor, setShowTwoFactor] = useState(false);
-    const [showBackupCode, setShowBackupCode] = useState(false);
-    const [variant, setVariant] = useState<VARIANT>(VARIANT.LOGIN);
-    const [error, setError] = useState<string | undefined>('');
-    const [success, setSuccess] = useState<string | undefined>('');
     const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackURL = searchParams.get('callbackURL') || '/';
+    const [error, setError] = useState<string | null>(null);
 
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
-        defaultValues: { email: '', password: '', rememberMe: true }
+        defaultValues: {
+            email: '',
+            password: '',
+            rememberMe: true
+        }
     });
 
-    const backupCode = () => {
-        setShowTwoFactor(false);
-        setShowBackupCode(true);
-        form.resetField('token');
-    };
-
-    const phoneCode = () => {
-        setShowTwoFactor(true);
-        setShowBackupCode(false);
-        form.resetField('backupCode');
-    };
-
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-        setError('');
-        setSuccess('');
-
         startTransition(async () => {
-            const data = await login(values, callbackUrl);
-            if (data?.error) {
-                form.reset();
-                setError(data.error);
-            }
-
-            if (data?.twoFactor) {
-                setShowTwoFactor(true);
+            const data = await login(values);
+            const { error, emailVerified } = data;
+            if (error) {
+                toast.error(error, { position: 'top-center' });
+            } else {
+                toast.success('Log in successful', { position: 'top-center' });
+                if (!emailVerified) {
+                    router.push('/auth/verify-email');
+                } else if (emailVerified) {
+                    router.push(callbackURL);
+                }
             }
         });
     };
 
+    const onError: SubmitErrorHandler<z.infer<typeof LoginSchema>> = (
+        errors
+    ) => {
+        const errorMessages = Object.entries(errors).map(([field, error]) => (
+            <li key={field}>{error.message || `Invalid ${field}`}</li>
+        ));
+
+        toast.dismiss();
+
+        toast.error('There were errors in your login', {
+            position: 'top-center',
+            description: (
+                <ul className="list-disc ml-4 space-y-1">{errorMessages}</ul>
+            ),
+            closeButton: true,
+            duration: Infinity
+        });
+    };
+
     return (
-        <CardWrapper
-            headerLabel="Welcome back"
-            backButtonLabel="Don't have an account?"
-            backButtonHref="/auth/register"
-        >
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-6"
-                >
-                    <div className="space-y-4">
-                        {showTwoFactor && (
-                            <FormField
-                                control={form.control}
-                                name="token"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <InputOTP
-                                                maxLength={6}
-                                                {...field}
-                                                className={cn(
-                                                    'flex items-center justify-center'
-                                                )}
-                                            >
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot index={0} />
-                                                    <InputOTPSlot index={1} />
-                                                    <InputOTPSlot index={2} />
-                                                </InputOTPGroup>
-                                                <InputOTPSeparator />
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot index={3} />
-                                                    <InputOTPSlot index={4} />
-                                                    <InputOTPSlot index={5} />
-                                                </InputOTPGroup>
-                                            </InputOTP>
-                                        </FormControl>
-                                        <FormDescription>
-                                            Please enter the one-time password
-                                            sent to your phone.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit, onError)}
+                className="space-y-4"
+            >
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+                <div className="space-y-2">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        disabled={isPending}
+                                        placeholder="john.doe@example.com"
+                                        type="email"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center justify-between">
+                                    <FormLabel>Password</FormLabel>
+                                    <Link
+                                        href="/auth/forgot-password"
+                                        className="text-sm text-muted-foreground hover:text-primary"
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        disabled={isPending}
+                                        placeholder="******"
+                                        type="password"
+                                        autoComplete="on"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <FormField
+                        control={form.control}
+                        name="rememberMe"
+                        render={({ field }) => (
+                            <FormItem
+                                className={cn(
+                                    'flex flex-row items-center space-x-2'
                                 )}
-                            />
-                        )}
-                        {showBackupCode && (
-                            <FormField
-                                control={form.control}
-                                name="backupCode"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <InputOTP
-                                                maxLength={6}
-                                                {...field}
-                                                className={cn(
-                                                    'flex items-center justify-center'
-                                                )}
-                                                pattern={
-                                                    REGEXP_ONLY_DIGITS_AND_CHARS
-                                                }
-                                            >
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot index={0} />
-                                                    <InputOTPSlot index={1} />
-                                                    <InputOTPSlot index={2} />
-                                                </InputOTPGroup>
-                                                <InputOTPSeparator />
-                                                <InputOTPGroup>
-                                                    <InputOTPSlot index={3} />
-                                                    <InputOTPSlot index={4} />
-                                                    <InputOTPSlot index={5} />
-                                                </InputOTPGroup>
-                                            </InputOTP>
-                                        </FormControl>
-                                        <FormDescription>
-                                            Please enter one of your backup
-                                            codes. This code will no longer be
-                                            able to be used after login.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-                        {!showTwoFactor && !showBackupCode && (
-                            <>
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    disabled={isPending}
-                                                    placeholder="john.doe@example.com"
-                                                    type="email"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
+                            >
+                                <FormControl>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        className="my-auto peer rounded border-gray-300 dark:border-gray-600 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-500"
+                                    />
+                                </FormControl>
+                                <FormLabel
+                                    className={cn(
+                                        'flex cursor-pointer items-center gap-2 text-xs font-medium leading-none text-gray-700 dark:text-gray-200'
                                     )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    disabled={isPending}
-                                                    placeholder="******"
-                                                    type="password"
-                                                    autoComplete="on"
-                                                />
-                                            </FormControl>
-                                            <Button
-                                                size="sm"
-                                                variant="link"
-                                                asChild
-                                                className="px-0 font-normal"
-                                            >
-                                                <Link href="/auth/forgotpassword">
-                                                    Forgot password?
-                                                </Link>
-                                            </Button>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </>
+                                >
+                                    Keep me signed in
+                                </FormLabel>
+                            </FormItem>
                         )}
-                    </div>
-                    <FormError message={error} />
-                    <Button
-                        disabled={isPending}
-                        type="submit"
-                        className="w-full"
-                    >
-                        {isPending ? (
-                            <>
-                                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                                Please wait...
-                            </>
-                        ) : (
-                            <>{showTwoFactor ? 'Confirm' : 'Login'}</>
-                        )}
-                    </Button>
-                </form>
-            </Form>
-        </CardWrapper>
+                    />
+                </div>
+                <Button disabled={isPending} type="submit" className="w-full">
+                    {isPending ? (
+                        <>
+                            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                            Please wait...
+                        </>
+                    ) : (
+                        'Login'
+                    )}
+                </Button>
+            </form>
+        </Form>
     );
 };
 

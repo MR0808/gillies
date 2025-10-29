@@ -1,27 +1,94 @@
-import { auth } from '@/auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
+import { createAuthMiddleware } from 'better-auth/api';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { nextCookies } from 'better-auth/next-js';
+import { UserRole } from '@/generated/prisma';
+import { customSession, openAPI } from 'better-auth/plugins';
 
-export const currentUser = async () => {
-    const session = await auth();
+import db from '@/lib/db';
+import { hashPassword, verifyPassword } from '@/lib/argon2';
+import { sendResetEmail, sendVerificationEmail } from '@/lib/mail';
 
-    return session?.user;
-};
+const options = {
+    database: prismaAdapter(db, {
+        provider: 'postgresql' // or "mysql", "postgresql", ...etc
+    }),
+    emailAndPassword: {
+        enabled: true,
+        password: {
+            hash: hashPassword,
+            verify: verifyPassword
+        },
+        autoSignIn: false,
+        requireEmailVerification: false,
+        sendResetPassword: async ({ user, url }) => {
+            await sendResetEmail({
+                email: user.email,
+                link: url,
+                name: user.name
+            });
+        }
+    },
+    advanced: {
+        database: {
+            generateId: false
+        }
+    },
+    user: {
+        changeEmail: {
+            enabled: true,
+            sendChangeEmailVerification: async (
+                { user, newEmail, url, token },
+                request
+            ) => {
+                // await sendVerificationEmail({
+                //     email: newEmail,
+                //     otp: token,
+                //     name: user.name
+                // });
+            }
+        },
+        additionalFields: {
+            lastName: {
+                type: 'string',
+                required: true
+            },
+            role: {
+                type: ['USER', 'ADMIN'] as Array<UserRole>
+            },
+            emailVerified: {
+                type: 'boolean',
+                required: false
+            }
+        }
+    },
+    session: {
+        expiresIn: 30 * 24 * 60 * 60,
+        cookieCache: {
+            enabled: true,
+            maxAge: 5 * 60
+        }
+    },
+    account: {
+        accountLinking: {
+            enabled: false
+        }
+    },
+    plugins: [nextCookies()]
+} satisfies BetterAuthOptions;
 
-export const currentRole = async () => {
-    const session = await auth();
+export const auth = betterAuth({
+    ...options,
+    plugins: [
+        ...(options.plugins ?? []),
+        customSession(async ({ user, session }, ctx) => {
+            return {
+                session,
+                user
+            };
+        }, options),
+        openAPI()
+    ]
+});
 
-    return session?.user?.role;
-};
-
-export const checkAuthenticated = async (admin = false) => {
-    const user = await currentUser();
-
-    if (!user) {
-        return null;
-    }
-
-    if (admin && user.role !== 'ADMIN') {
-        return null;
-    }
-
-    return user;
-};
+export type ErrorCode = keyof typeof auth.$ERROR_CODES | 'UNKNOWN';

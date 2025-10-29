@@ -1,39 +1,25 @@
-import { redirect } from 'next/navigation';
-
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-
-import { auth } from '@/auth';
-import { currentUser } from '@/lib/auth';
-import { cn } from '@/lib/utils';
-import ProfilePictureForm from '@/components/settings/ProfilePictureForm';
-import NameForm from '@/components/settings/NameForm';
-import PasswordForm from '@/components/settings/PasswordForm';
-import EmailForm from '@/components/settings/EmailForm';
+import PortalLayout from '@/components/portalLayout/PortalLayout';
+import SettingsTabs from '@/components/settings/SettingsTabs';
+import { authCheck } from '@/lib/authCheck';
 
 const SettingsPage = async () => {
-    const user = await currentUser();
-    if (!user) {
-        redirect('/auth/login');
-    }
-
-    const session = await auth();
+    const userSession = await authCheck('/settings');
 
     return (
-        <Card className="w-[320px] sm:w-[600px] mb-8">
-            <CardHeader>
-                <p className="text-2xl font-semibold text-center">
-                    ⚙️ Settings
-                </p>
-            </CardHeader>
-            <CardContent
-                className={cn('p-0 flex flex-col justify-center items-center')}
-            >
-                <ProfilePictureForm session={session} />
-                <NameForm session={session} />
-                <PasswordForm session={session} />
-                <EmailForm session={session} />
-            </CardContent>
-        </Card>
+        <PortalLayout userSession={userSession}>
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Settings
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                        Manage your account settings and preferences
+                    </p>
+                </div>
+
+                <SettingsTabs userSession={userSession} />
+            </div>
+        </PortalLayout>
     );
 };
 

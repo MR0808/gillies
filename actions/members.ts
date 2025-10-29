@@ -4,7 +4,6 @@ import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
-import checkAuth from '@/utils/checkAuth';
 import {
     MemberSchema,
     MemberImportSchema,
@@ -13,32 +12,42 @@ import {
 import { generateRegistrationToken } from '@/lib/tokens';
 import { sendRegistrationEmail } from '@/lib/mail';
 import { getRegistrationTokenById } from '@/data/registrationToken';
+import { authCheckServer } from '@/lib/authCheck';
 
 export const getMembers = async () => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const data = await db.user.findMany({
-        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+        orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
     });
 
     return { data };
 };
 
 export const getMembersFirstName = async () => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const data = await db.user.findMany({
-        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }]
+        orderBy: [{ name: 'asc' }, { lastName: 'asc' }]
     });
 
     return { data };
 };
 
 export const getMember = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -54,8 +63,11 @@ export const getMember = async (id: string) => {
 };
 
 export const createMember = async (values: z.infer<typeof MemberSchema>) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const validatedFields = await MemberSchema.safeParseAsync(values);
 
@@ -63,18 +75,19 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
         return { error: 'Invalid fields!' };
     }
 
-    let { firstName, lastName, email } = validatedFields.data;
+    let { name, lastName, email } = validatedFields.data;
 
     email = email.toLocaleLowerCase();
 
     const data = await db.user.create({
         data: {
-            firstName,
+            name,
             lastName,
-            email
+            email,
+            emailVerified: false
         },
         select: {
-            firstName: true,
+            name: true,
             lastName: true,
             email: true
         }
@@ -99,8 +112,11 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
 export const createMembers = async (
     values: z.infer<typeof MemberImportSchema>
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     const validatedFields = MemberImportSchema.safeParse(values);
 
@@ -117,13 +133,13 @@ export const createMembers = async (
         (member) => list.includes(member.email) === false
     );
 
-    const data = await db.user.createMany({
-        data: upload
-    });
+    // const data = await db.user.createMany({
+    //     data: upload
+    // });
 
-    if (!data) {
-        return { error: 'Not found' };
-    }
+    // if (!data) {
+    //     return { error: 'Not found' };
+    // }
 
     upload.forEach(async (member) => {
         const registrationToken = await generateRegistrationToken(member.email);
@@ -136,15 +152,18 @@ export const createMembers = async (
 
     revalidatePath('/dashboard/members');
 
-    return { data };
+    return { data: true };
 };
 
 export const updateMember = async (
     values: z.infer<typeof MemberUpdateSchema>,
     id: string
 ) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -156,7 +175,7 @@ export const updateMember = async (
         return { error: 'Invalid fields!' };
     }
 
-    let { firstName, lastName, email } = validatedFields.data;
+    let { name, lastName, email } = validatedFields.data;
 
     email = email.toLocaleLowerCase();
 
@@ -185,7 +204,7 @@ export const updateMember = async (
             id
         },
         data: {
-            firstName,
+            name,
             lastName,
             email
         }
@@ -201,8 +220,11 @@ export const updateMember = async (
 };
 
 export const resendInvite = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };
@@ -223,8 +245,11 @@ export const resendInvite = async (id: string) => {
 };
 
 export const deleteMember = async (id: string) => {
-    const authCheck = await checkAuth(true);
-    if (!authCheck) return { error: 'Not authorised' };
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
     if (!id) {
         return { error: 'Missing id!' };

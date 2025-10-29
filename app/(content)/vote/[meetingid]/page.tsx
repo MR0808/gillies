@@ -1,19 +1,16 @@
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 import { Separator } from '@radix-ui/react-dropdown-menu';
-import { redirect } from 'next/navigation';
 
 import VotingClient from '@/components/voting/VotingClient';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { getMeetingWhiskiesByUser } from '@/actions/voting';
-import { currentUser } from '@/lib/auth';
+import { authCheck } from '@/lib/authCheck';
 
 const VotePage = async (props: { params: Promise<{ meetingid: string }> }) => {
-    const user = await currentUser();
-    if (!user) {
-        redirect('/auth/login');
-    }
     const params = await props.params;
+    const session = await authCheck(`/vote/${params.meetingid}`);
+
     const whiskies = await getMeetingWhiskiesByUser(params.meetingid);
 
     return (

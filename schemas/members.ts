@@ -17,7 +17,7 @@ export const MemberSchema = z.object({
             },
             { message: 'Email is already in use' }
         ),
-    firstName: z.string().min(1, {
+    name: z.string().min(1, {
         message: 'First name is required'
     }),
     lastName: z.string().min(1, {
@@ -29,7 +29,7 @@ export const MemberUpdateSchema = z.object({
     email: z.email({
         message: 'Email is required'
     }),
-    firstName: z.string().min(1, {
+    name: z.string().min(1, {
         message: 'First name is required'
     }),
     lastName: z.string().min(1, {
@@ -42,7 +42,7 @@ export const MemberImportSchema = z.array(
         email: z.email({
             message: 'Email is required'
         }),
-        firstName: z.string().min(1, {
+        name: z.string().min(1, {
             message: 'First name is required'
         }),
         lastName: z.string().min(1, {

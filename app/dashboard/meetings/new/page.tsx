@@ -6,7 +6,7 @@ import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
-import { checkAuthenticated } from '@/lib/auth';
+import { authCheckAdmin } from '@/lib/authCheck';
 import MeetingCreateForm from '@/components/meetings/create/MeetingCreateForm';
 
 const breadcrumbItems = [
@@ -15,10 +15,7 @@ const breadcrumbItems = [
     { title: 'Create Meeting', link: '/dashboard/meetings/new' }
 ];
 const NewMeetingPage = async () => {
-    const user = await checkAuthenticated(true);
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheckAdmin('/dashboard/meetings/new');
     return (
         <PageContainer scrollable={true}>
             <div className="space-y-4">

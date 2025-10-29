@@ -1,44 +1,27 @@
-import { Suspense } from 'react';
-import { redirect } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { Separator } from '@radix-ui/react-dropdown-menu';
-
-import MainClient from '@/components/mainPage/MainClient';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { getUserMeetings } from '@/actions/voting';
-import { currentUser } from '@/lib/auth';
+import { authCheck } from '@/lib/authCheck';
+import PortalLayout from '@/components/portalLayout/PortalLayout';
 
 const SettingsPage = async () => {
-    const user = await currentUser();
-    if (!user) {
-        redirect('/auth/login');
-    }
+    const userSession = await authCheck('/');
+
     const meetings = await getUserMeetings();
 
     return (
-        <Card className="w-[320px] sm:w-[600px]">
-            <CardHeader>
-                <p className="text-2xl font-semibold text-center">
-                    🥃 Gillies Voting System
-                </p>
-            </CardHeader>
-            <CardContent>
-                Welcome to the Gillies Voting System. Please choose your meeting
-                to review or vote for.
-                <Separator className="mb-4" />
-                <Suspense
-                    fallback={
-                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
-                    }
-                >
-                    {!meetings.data ? (
-                        <div>No meetings found</div>
-                    ) : (
-                        <MainClient meetings={meetings.data} />
-                    )}
-                </Suspense>
-            </CardContent>
-        </Card>
+        <PortalLayout userSession={userSession}>
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Welcome back, {userSession.user.name}!
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                        Select a meeting to vote on whiskies
+                    </p>
+                </div>
+
+                {/* <MeetingSelector meetings={meetings} /> */}
+            </div>
+        </PortalLayout>
     );
 };
 
