@@ -22,7 +22,9 @@ export const getUserMeetings = async () => {
     // });
 
     const data = await db.meeting.findMany({
-        where: { users: { some: { id: { contains: user.id } } } }
+        where: { users: { some: { id: { contains: user.id } } } },
+        include: { whiskies: true },
+        orderBy: { date: 'asc' }
     });
 
     if (!data) {
@@ -32,7 +34,7 @@ export const getUserMeetings = async () => {
     return { data };
 };
 
-export const getMeetingWhiskiesByUser = async (meetingId: string) => {
+export const getMeetingWhiskies = async (meetingId: string) => {
     const userSession = await authCheckServer();
 
     if (!userSession) {
@@ -56,12 +58,7 @@ export const getMeetingWhiskiesByUser = async (meetingId: string) => {
     const data = await db.whisky.findMany({
         where: { meetingId },
         orderBy: [{ order: 'asc' }],
-        select: {
-            id: true,
-            name: true,
-            description: true,
-            quaich: true,
-            image: true,
+        include: {
             reviews: { where: { userId: dbUser.id } }
         }
     });
@@ -73,161 +70,161 @@ export const getMeetingWhiskiesByUser = async (meetingId: string) => {
     return { data };
 };
 
-export const getWhiskyForVoting = async (whiskyId: string) => {
-    const userSession = await authCheckServer();
+// export const getWhiskyForVoting = async (whiskyId: string) => {
+//     const userSession = await authCheckServer();
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
-    }
+//     if (!userSession) {
+//         return { error: 'Not authorised' };
+//     }
 
-    const { user } = userSession;
+//     const { user } = userSession;
 
-    const dbUser = await db.user.findUnique({
-        where: { id: user.id }
-    });
+//     const dbUser = await db.user.findUnique({
+//         where: { id: user.id }
+//     });
 
-    if (!dbUser) {
-        return { error: 'Unauthorised' };
-    }
+//     if (!dbUser) {
+//         return { error: 'Unauthorised' };
+//     }
 
-    if (!whiskyId) {
-        return { error: 'Bad request' };
-    }
+//     if (!whiskyId) {
+//         return { error: 'Bad request' };
+//     }
 
-    const data = await db.review.findFirst({
-        where: {
-            AND: {
-                userId: user.id,
-                whiskyId
-            }
-        },
-        select: {
-            whisky: true,
-            rating: true,
-            comment: true,
-            id: true
-        }
-    });
+//     const data = await db.review.findFirst({
+//         where: {
+//             AND: {
+//                 userId: user.id,
+//                 whiskyId
+//             }
+//         },
+//         select: {
+//             whisky: true,
+//             rating: true,
+//             comment: true,
+//             id: true
+//         }
+//     });
 
-    if (!data) {
-        const whisky = await db.whisky.findUnique({
-            where: { id: whiskyId }
-        });
-        if (whisky) {
-            return {
-                data: { whisky, rating: 0, comment: '', id: '' }
-            };
-        }
-        return { error: 'Bad request' };
-    }
+//     if (!data) {
+//         const whisky = await db.whisky.findUnique({
+//             where: { id: whiskyId }
+//         });
+//         if (whisky) {
+//             return {
+//                 data: { whisky, rating: 0, comment: '', id: '' }
+//             };
+//         }
+//         return { error: 'Bad request' };
+//     }
 
-    return { data };
-};
+//     return { data };
+// };
 
-export const createVote = async (
-    values: z.infer<typeof VotingSchema>,
-    whiskyId: string
-) => {
-    const userSession = await authCheckServer();
+// export const createVote = async (
+//     values: z.infer<typeof VotingSchema>,
+//     whiskyId: string
+// ) => {
+//     const userSession = await authCheckServer();
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
-    }
+//     if (!userSession) {
+//         return { error: 'Not authorised' };
+//     }
 
-    const { user } = userSession;
+//     const { user } = userSession;
 
-    const dbUser = await db.user.findUnique({
-        where: { id: user.id }
-    });
+//     const dbUser = await db.user.findUnique({
+//         where: { id: user.id }
+//     });
 
-    if (!dbUser) {
-        return { error: 'Unauthorised' };
-    }
+//     if (!dbUser) {
+//         return { error: 'Unauthorised' };
+//     }
 
-    if (!whiskyId) {
-        return { error: 'Bad request' };
-    }
+//     if (!whiskyId) {
+//         return { error: 'Bad request' };
+//     }
 
-    const validatedFields = VotingSchema.safeParse(values);
+//     const validatedFields = VotingSchema.safeParse(values);
 
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields' };
-    }
+//     if (!validatedFields.success) {
+//         return { error: 'Invalid fields' };
+//     }
 
-    let { rating, comment } = validatedFields.data;
+//     let { rating, comment } = validatedFields.data;
 
-    const data = await db.review.create({
-        data: {
-            userId: dbUser.id,
-            whiskyId,
-            rating,
-            comment: comment || ''
-        }
-    });
+//     const data = await db.review.create({
+//         data: {
+//             userId: dbUser.id,
+//             whiskyId,
+//             rating,
+//             comment: comment || ''
+//         }
+//     });
 
-    if (!data) {
-        return { error: 'Not found' };
-    }
+//     if (!data) {
+//         return { error: 'Not found' };
+//     }
 
-    const meeting = await db.whisky.findUnique({ where: { id: whiskyId } });
+//     const meeting = await db.whisky.findUnique({ where: { id: whiskyId } });
 
-    revalidatePath(`/vote/${meeting?.meetingId}`);
+//     revalidatePath(`/vote/${meeting?.meetingId}`);
 
-    return { success: data };
-};
+//     return { success: data };
+// };
 
-export const updateVote = async (
-    values: z.infer<typeof VotingSchema>,
-    id: string
-) => {
-    const userSession = await authCheckServer();
+// export const updateVote = async (
+//     values: z.infer<typeof VotingSchema>,
+//     id: string
+// ) => {
+//     const userSession = await authCheckServer();
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
-    }
+//     if (!userSession) {
+//         return { error: 'Not authorised' };
+//     }
 
-    const { user } = userSession;
+//     const { user } = userSession;
 
-    const dbUser = await db.user.findUnique({
-        where: { id: user.id }
-    });
+//     const dbUser = await db.user.findUnique({
+//         where: { id: user.id }
+//     });
 
-    if (!dbUser) {
-        return { error: 'Unauthorised' };
-    }
+//     if (!dbUser) {
+//         return { error: 'Unauthorised' };
+//     }
 
-    if (!id) {
-        return { error: 'Bad request' };
-    }
+//     if (!id) {
+//         return { error: 'Bad request' };
+//     }
 
-    const validatedFields = VotingSchema.safeParse(values);
+//     const validatedFields = VotingSchema.safeParse(values);
 
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields' };
-    }
+//     if (!validatedFields.success) {
+//         return { error: 'Invalid fields' };
+//     }
 
-    let { rating, comment } = validatedFields.data;
+//     let { rating, comment } = validatedFields.data;
 
-    const data = await db.review.update({
-        where: {
-            id
-        },
-        data: {
-            rating,
-            comment: comment || ''
-        }
-    });
+//     const data = await db.review.update({
+//         where: {
+//             id
+//         },
+//         data: {
+//             rating,
+//             comment: comment || ''
+//         }
+//     });
 
-    if (!data) {
-        return { error: 'Not found' };
-    }
+//     if (!data) {
+//         return { error: 'Not found' };
+//     }
 
-    const meeting = await db.review.findUnique({
-        where: { id },
-        select: { whisky: true }
-    });
+//     const meeting = await db.review.findUnique({
+//         where: { id },
+//         select: { whisky: true }
+//     });
 
-    revalidatePath(`/vote/${meeting?.whisky.meetingId}`);
+//     revalidatePath(`/vote/${meeting?.whisky.meetingId}`);
 
-    return { success: data };
-};
+//     return { success: data };
+// };

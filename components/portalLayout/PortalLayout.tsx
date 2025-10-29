@@ -39,7 +39,7 @@ const PortalLayout = ({ userSession, children }: PortalLayoutProps) => {
         <div className="min-h-screen bg-background">
             <header className="border-b">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <Link href="/portal" className="text-xl font-bold">
+                    <Link href="/" className="text-xl font-bold">
                         Whisky Portal
                     </Link>
 

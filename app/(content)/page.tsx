@@ -1,6 +1,7 @@
 import { getUserMeetings } from '@/actions/voting';
 import { authCheck } from '@/lib/authCheck';
 import PortalLayout from '@/components/portalLayout/PortalLayout';
+import { MeetingSelector } from '@/components/mainpage/MeetingSelector';
 
 const SettingsPage = async () => {
     const userSession = await authCheck('/');
@@ -19,7 +20,7 @@ const SettingsPage = async () => {
                     </p>
                 </div>
 
-                {/* <MeetingSelector meetings={meetings} /> */}
+                <MeetingSelector meetings={meetings.data} />
             </div>
         </PortalLayout>
     );
