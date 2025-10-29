@@ -6,7 +6,6 @@ import { BeatLoader } from 'react-spinners';
 import { useSearchParams } from 'next/navigation';
 import { RegisterSchema } from '@/schemas/auth';
 
-import CardWrapper from './CardWrapper';
 import FormError from '@/components/form/FormError';
 import FormSuccess from '../form/FormSuccess';
 import RegisterForm from './RegisterForm';
@@ -47,15 +46,9 @@ const RegisterFormLayout = () => {
 
     if (!token) {
         return (
-            <CardWrapper
-                headerLabel="Welcome to the Gillies Voting System"
-                backButtonLabel="Already registered? Login"
-                backButtonHref="/auth/login"
-            >
-                <div className="flex flex-col items-center w-full justify-center">
-                    <FormError message="Missing token" />
-                </div>
-            </CardWrapper>
+            <div className="flex flex-col items-center w-full justify-center">
+                <FormError message="Missing token" />
+            </div>
         );
     }
 
@@ -72,12 +65,7 @@ const RegisterFormLayout = () => {
     };
 
     return (
-        <CardWrapper
-            headerLabel="Welcome to the Gillies Voting System"
-            backButtonLabel="Already registered? Login"
-            backButtonHref="/auth/login"
-            backButton={true}
-        >
+        <>
             {!tokenSuccess && !tokenError ? (
                 <div className="flex flex-col items-center w-full justify-center">
                     <BeatLoader />
@@ -95,7 +83,7 @@ const RegisterFormLayout = () => {
                     error={formError}
                 />
             )}
-        </CardWrapper>
+        </>
     );
 };
 
