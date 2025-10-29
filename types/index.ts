@@ -158,7 +158,7 @@ export interface ReviewsScoreboard {
     user: {
         id: string;
         image: string | null;
-        firstName: string | null;
+        name: string | null;
         lastName: string | null;
     };
     id: string;

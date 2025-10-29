@@ -82,7 +82,7 @@ const ScoreboardLayout = ({
                                             src={
                                                 review.user.image || profileImg
                                             }
-                                            alt={`${review.user.firstName} ${review.user.lastName}`}
+                                            alt={`${review.user.name} ${review.user.lastName}`}
                                             height={70}
                                             width={70}
                                             className="w-16 h-16 object-cover rounded-2xl"
@@ -90,7 +90,7 @@ const ScoreboardLayout = ({
                                     </div>
                                     <div className="flex flex-col ml-3 space-y-2">
                                         <div className="font-medium leading-none text-slate-600">
-                                            {`${review.user.firstName} ${review.user.lastName}`}
+                                            {`${review.user.name} ${review.user.lastName}`}
                                         </div>
                                         <div className="font-medium leading-none text-slate-600">
                                             {review.rating}
