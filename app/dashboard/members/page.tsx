@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { redirect } from 'next/navigation';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { Whisky } from '@prisma/client';
+import { Whisky } from '@/generated/prisma';
 
 import db from '@/lib/db';
 import { deleteImage } from '@/utils/supabase';

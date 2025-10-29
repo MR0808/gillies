@@ -2,7 +2,7 @@
 import { Edit, MoreHorizontal, Trash, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { User } from '@prisma/client';
+import { User } from '@/generated/prisma';
 import { toast } from 'sonner';
 
 import {
@@ -87,14 +87,14 @@ const MemberCellAction = ({ data }: { data: ResponseType }) => {
                             <Trash className="mr-2 h-4 w-4" /> Delete
                         </DropdownMenuItem>
                     )}
-                    {!data.registered && (
+                    {/* {!data.registered && (
                         <DropdownMenuItem
                             onClick={handleResend}
                             className="cursor-pointer"
                         >
                             <RefreshCw className="mr-2 h-4 w-4" /> Resend Invite
                         </DropdownMenuItem>
-                    )}
+                    )} */}
                 </DropdownMenuContent>
             </DropdownMenu>
         </>

@@ -1,7 +1,7 @@
 'use client';
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { ArrowUpDown } from 'lucide-react';
-import { User } from '@prisma/client';
+import { User } from '@/generated/prisma';
 
 import MemberCellAction from './MemberCellAction';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ const multiColumnFilterFn: FilterFn<ResponseType> = (
     filterValue
 ) => {
     // Concatenate the values from multiple columns into a single string
-    const searchableRowContent = `${row.original.firstName} ${row.original.lastName} ${row.original.email}`;
+    const searchableRowContent = `${row.original.name} ${row.original.lastName} ${row.original.email}`;
 
     // Perform a case-insensitive comparison
     return searchableRowContent
