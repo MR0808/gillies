@@ -43,7 +43,7 @@ const MemberManager = ({ meeting, members }: MemberManagerProps) => {
     };
 
     const getUserInitials = (user: Member) => {
-        const first = user.firstName?.[0] || '';
+        const first = user.name?.[0] || '';
         const last = user.lastName?.[0] || '';
         return (
             (first + last).toUpperCase() ||
@@ -53,8 +53,8 @@ const MemberManager = ({ meeting, members }: MemberManagerProps) => {
     };
 
     const getUserName = (user: Member) => {
-        if (user.firstName || user.lastName) {
-            return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+        if (user.name || user.lastName) {
+            return `${user.name || ''} ${user.lastName || ''}`.trim();
         }
         return user.email || 'Unknown User';
     };
