@@ -29,7 +29,7 @@ const MemberUpdateForm = ({ member }: { member: User }) => {
     const form = useForm<z.infer<typeof MemberUpdateSchema>>({
         resolver: zodResolver(MemberUpdateSchema),
         defaultValues: {
-            firstName: member.firstName || '',
+            name: member.name || '',
             lastName: member.lastName || '',
             email: member.email || ''
         }
@@ -58,7 +58,7 @@ const MemberUpdateForm = ({ member }: { member: User }) => {
                 <div className="gap-8 md:grid md:grid-cols-2">
                     <FormField
                         control={form.control}
-                        name="firstName"
+                        name="name"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>First Name</FormLabel>
