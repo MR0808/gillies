@@ -4,11 +4,7 @@ import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
-import {
-    MeetingSchemaSubmit,
-    MeetingMemberSchema
-} from '@/schemas/meetings-old';
-import { createMeetingSchema } from '@/schemas/meetings';
+import { CreateMeetingSchema, UpdateMeetingSchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 
 export const getMeetings = async () => {
@@ -108,7 +104,7 @@ export const getMeeting = async (id: string) => {
 };
 
 export const createMeeting = async (
-    values: z.infer<typeof createMeetingSchema>
+    values: z.infer<typeof CreateMeetingSchema>
 ) => {
     const userSession = await authCheckServer();
 
@@ -116,7 +112,7 @@ export const createMeeting = async (
         return { error: 'Not authorised' };
     }
 
-    const validatedFields = MeetingSchemaSubmit.safeParse(values);
+    const validatedFields = CreateMeetingSchema.safeParse(values);
 
     if (!validatedFields.success) {
         return { error: 'Invalid fields!' };
@@ -138,7 +134,7 @@ export const createMeeting = async (
 };
 
 export const updateMeeting = async (
-    values: z.infer<typeof MeetingSchemaSubmit>,
+    values: z.infer<typeof UpdateMeetingSchema>,
     id: string
 ) => {
     const userSession = await authCheckServer();
@@ -151,7 +147,7 @@ export const updateMeeting = async (
         return { error: 'Missing id!' };
     }
 
-    const validatedFields = MeetingSchemaSubmit.safeParse(values);
+    const validatedFields = UpdateMeetingSchema.safeParse(values);
 
     if (!validatedFields.success) {
         return { error: 'Invalid fields!' };
@@ -163,48 +159,6 @@ export const updateMeeting = async (
         },
         data: {
             ...values
-        }
-    });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    revalidatePath(`/dashboard/meetings/${data.id}`);
-
-    return { data };
-};
-
-export const updateMeetingMembers = async (
-    values: z.infer<typeof MeetingMemberSchema>,
-    id: string
-) => {
-    const userSession = await authCheckServer();
-
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
-
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
-
-    const validatedFields = MeetingMemberSchema.safeParse(values);
-
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields!' };
-    }
-
-    const { members } = validatedFields.data;
-
-    const uploadMembers = members.map((member) => {
-        return { id: member };
-    });
-
-    const data = await db.meeting.update({
-        where: { id },
-        data: {
-            users: { set: uploadMembers }
         }
     });
 

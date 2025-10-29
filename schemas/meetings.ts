@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
-export const updateMeetingSchema = z.object({
+export const UpdateMeetingSchema = z.object({
     date: z.string().min(1, 'Date is required'),
     location: z.string().min(1, 'Location is required')
 });
 
-export const createMeetingSchema = z.object({
+export const CreateMeetingSchema = z.object({
     date: z.string().min(1, 'Date is required'),
     location: z.string().min(1, 'Location is required')
 });
 
-export const whiskySchema = z.object({
+export const WhiskySchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Name is required'),
     description: z.string().min(1, 'Description is required'),
@@ -19,6 +19,6 @@ export const whiskySchema = z.object({
     quaich: z.boolean()
 });
 
-export type UpdateMeetingInput = z.infer<typeof updateMeetingSchema>;
-export type WhiskyInput = z.infer<typeof whiskySchema>;
-export type CreateMeetingFormData = z.infer<typeof createMeetingSchema>;
+export type UpdateMeetingInput = z.infer<typeof UpdateMeetingSchema>;
+export type WhiskyInput = z.infer<typeof WhiskySchema>;
+export type CreateMeetingFormData = z.infer<typeof CreateMeetingSchema>;

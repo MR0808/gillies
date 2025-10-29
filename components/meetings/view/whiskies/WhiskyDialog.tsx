@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { whiskySchema, type WhiskyInput } from '@/schemas/meetings';
+import { WhiskySchema, type WhiskyInput } from '@/schemas/meetings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -66,7 +66,7 @@ const WhiskyDialog = ({
         watch,
         setValue
     } = useForm<WhiskyInput>({
-        resolver: zodResolver(whiskySchema),
+        resolver: zodResolver(WhiskySchema),
         defaultValues: whisky
             ? {
                   id: whisky.id,

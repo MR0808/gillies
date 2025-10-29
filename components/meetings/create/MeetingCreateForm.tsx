@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useTransition } from 'react';
 
 import {
-    updateMeetingSchema,
+    UpdateMeetingSchema,
     type UpdateMeetingInput
 } from '@/schemas/meetings';
 import { Button } from '@/components/ui/button';
@@ -23,14 +23,14 @@ const MeetingCreateForm = () => {
         handleSubmit,
         formState: { errors, isSubmitting }
     } = useForm<UpdateMeetingInput>({
-        resolver: zodResolver(updateMeetingSchema),
+        resolver: zodResolver(UpdateMeetingSchema),
         defaultValues: {
             date: '',
             location: ''
         }
     });
 
-    const onSubmit = (values: z.infer<typeof updateMeetingSchema>) => {
+    const onSubmit = (values: z.infer<typeof UpdateMeetingSchema>) => {
         startTransition(async () => {
             const data = await createMeeting(values);
             if (data.data) {

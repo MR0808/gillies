@@ -27,14 +27,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { createMeeting } from '@/actions/meetings';
-import { CreateMeetingFormData, createMeetingSchema } from '@/schemas/meetings';
+import { CreateMeetingFormData, CreateMeetingSchema } from '@/schemas/meetings';
 
 export function CreateMeetingDialog() {
     const [open, setOpen] = useState(false);
     const router = useRouter();
 
     const form = useForm<CreateMeetingFormData>({
-        resolver: zodResolver(createMeetingSchema),
+        resolver: zodResolver(CreateMeetingSchema),
         defaultValues: {
             date: '',
             location: ''

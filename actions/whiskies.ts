@@ -5,7 +5,7 @@ import { Whisky } from '@/generated/prisma';
 
 import db from '@/lib/db';
 import { deleteImage } from '@/utils/supabase';
-import { whiskySchema } from '@/schemas/meetings';
+import { WhiskySchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 
 export const getMeetingWhiskies = async (meetingId: string) => {
@@ -101,7 +101,7 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
         return { error: 'Not authorised' };
     }
 
-    const validated = whiskySchema.parse(data);
+    const validated = WhiskySchema.parse(data);
 
     const existingWhiskies = await db.whisky.findMany({
         where: { meetingId },
