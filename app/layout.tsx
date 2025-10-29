@@ -29,7 +29,7 @@ export default async function RootLayout({
                 <Providers>
                     {children}
                     <Toaster richColors />
-                    {/* <SpeedInsights /> */}
+                    <SpeedInsights />
                 </Providers>
             </body>
         </html>
