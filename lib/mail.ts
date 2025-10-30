@@ -3,6 +3,7 @@
 import EmailOTPEmailTemplate from '@/emails/email-otp';
 import PasswordResetConfirmationEmailTemplate from '@/emails/password-reset-confirmation';
 import ResetPasswordEmailTemplate from '@/emails/reset-password';
+import WelcomeEmailTemplate from '@/emails/welcome-email';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -61,15 +62,17 @@ export const sendPasswordResetNotificationEmail = async ({
     });
 };
 
-// Old Emails, check at end
-
-export const sendRegistrationEmail = async (email: string, token: string) => {
+export const sendRegistrationEmail = async (
+    email: string,
+    token: string,
+    name: string
+) => {
     const confirmLink = `${domain}/auth/register?token=${token}`;
 
     await resend.emails.send({
-        from: process.env.NEXT_PUBLIC_APP_EMAIL as string,
+        from,
         to: email,
         subject: 'Gillies Voting System - Register your account',
-        html: `<p>Click <a href="${confirmLink}">here</a> to register your account and create a password.</p>`
+        react: WelcomeEmailTemplate({ name, link: confirmLink })
     });
 };

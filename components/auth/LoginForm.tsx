@@ -7,9 +7,9 @@ import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, Loader2 } from 'lucide-react';
-
+import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LoginSchema } from '@/schemas/auth';
 import { Input } from '@/components/ui/input';
@@ -50,11 +50,7 @@ const LoginForm = () => {
                 toast.error(error, { position: 'top-center' });
             } else {
                 toast.success('Log in successful', { position: 'top-center' });
-                if (!emailVerified) {
-                    router.push('/auth/verify-email');
-                } else if (emailVerified) {
-                    router.push(callbackURL);
-                }
+                router.push(callbackURL);
             }
         });
     };

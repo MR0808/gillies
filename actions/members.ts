@@ -4,11 +4,7 @@ import * as z from 'zod';
 import { revalidatePath } from 'next/cache';
 
 import db from '@/lib/db';
-import {
-    MemberSchema,
-    MemberImportSchema,
-    MemberUpdateSchema
-} from '@/schemas/members';
+import { MemberSchema, MemberImportSchema } from '@/schemas/members';
 import { generateRegistrationToken } from '@/lib/tokens';
 import { sendRegistrationEmail } from '@/lib/mail';
 import { getRegistrationTokenById } from '@/data/registrationToken';
@@ -87,6 +83,7 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
             emailVerified: false
         },
         select: {
+            id: true,
             name: true,
             lastName: true,
             email: true
@@ -97,11 +94,20 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
         return { error: 'Not found' };
     }
 
+    await db.account.create({
+        data: {
+            accountId: data.id,
+            providerId: 'credential',
+            userId: data.id
+        }
+    });
+
     const registrationToken = await generateRegistrationToken(email);
 
     await sendRegistrationEmail(
         registrationToken.email,
-        registrationToken.token
+        registrationToken.token,
+        data.name
     );
 
     revalidatePath('/dashboard/members');
@@ -146,7 +152,8 @@ export const createMembers = async (
 
         await sendRegistrationEmail(
             registrationToken.email,
-            registrationToken.token
+            registrationToken.token,
+            member.name
         );
     });
 
@@ -237,9 +244,15 @@ export const resendInvite = async (id: string) => {
         return { error: 'Not found' };
     }
 
+    const user = await db.user.findUnique({ where: { id } });
+    if (!user) {
+        return { error: 'Not found' };
+    }
+
     await sendRegistrationEmail(
         registrationToken.email,
-        registrationToken.token
+        registrationToken.token,
+        user.name
     );
 
     return { success: registrationToken };

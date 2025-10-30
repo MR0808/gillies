@@ -35,12 +35,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         if (err instanceof APIError) {
             const errCode = err.body ? (err.body.code as ErrorCode) : 'UNKNOWN';
 
-            switch (errCode) {
-                case 'EMAIL_NOT_VERIFIED':
-                    redirect('/auth/verify-email');
-                default:
-                    return { error: err.message };
-            }
+            return { error: err.message };
         }
         return { error: 'Internal Server Error' };
     }

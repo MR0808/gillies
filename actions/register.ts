@@ -58,7 +58,14 @@ export const registerPassword = async (
 
     const hashedPassword = await hash(password, 10);
 
-    const data = await db.user.update({
+    await db.account.updateMany({
+        where: { userId: existingUser.id },
+        data: {
+            password: hashedPassword
+        }
+    });
+
+    await db.user.update({
         where: { id: existingUser.id },
         data: {
             emailVerified: true

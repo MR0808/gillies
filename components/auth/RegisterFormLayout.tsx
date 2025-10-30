@@ -10,6 +10,7 @@ import FormError from '@/components/form/FormError';
 import FormSuccess from '../form/FormSuccess';
 import RegisterForm from './RegisterForm';
 import { registerVerification, registerPassword } from '@/actions/register';
+import Link from 'next/link';
 
 const RegisterFormLayout = () => {
     const [tokenError, setTokenError] = useState<string | undefined>();
@@ -22,7 +23,7 @@ const RegisterFormLayout = () => {
 
     const token = searchParams.get('token');
 
-    const onPageLoad = useCallback(() => {
+    const onPageLoad = useCallback(async () => {
         if (tokenSuccess || tokenError) return;
 
         if (!token) {
@@ -30,14 +31,9 @@ const RegisterFormLayout = () => {
             return;
         }
 
-        registerVerification(token)
-            .then((data) => {
-                setTokenSuccess(data.success);
-                setTokenError(data.error);
-            })
-            .catch(() => {
-                setTokenError('Something went wrong!');
-            });
+        const data = await registerVerification(token);
+        setTokenSuccess(data.success);
+        setTokenError(data.error);
     }, [token, tokenSuccess, tokenError]);
 
     useEffect(() => {
@@ -56,11 +52,10 @@ const RegisterFormLayout = () => {
         setFormError('');
         setFormSuccess('');
 
-        startTransition(() => {
-            registerPassword(values, token).then((data) => {
-                setFormError(data.error);
-                setFormSuccess(data.success);
-            });
+        startTransition(async () => {
+            const data = await registerPassword(values, token);
+            setFormError(data.error);
+            setFormSuccess(data.success);
         });
     };
 
@@ -73,8 +68,9 @@ const RegisterFormLayout = () => {
             ) : tokenError ? (
                 <FormError message="Sorry, there was an issue loading your registration, please try again" />
             ) : formSuccess ? (
-                <div className="flex flex-col items-center w-full justify-center">
+                <div className="flex flex-col items-center w-full justify-center gap-2">
                     <FormSuccess message={formSuccess} />
+                    <Link href="/auth/login">Login now</Link>
                 </div>
             ) : (
                 <RegisterForm

@@ -8,11 +8,17 @@ import {
     UserPlus,
     Pencil,
     Trash2,
-    Filter
+    Filter,
+    Mail
 } from 'lucide-react';
 import { User } from '@/generated/prisma';
 
 import { Input } from '@/components/ui/input';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
+} from '@/components/ui/tooltip';
 import {
     Table,
     TableBody,
@@ -41,6 +47,8 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { UsersTableProps } from '@/types/members';
+import MemberResendDialog from '@/components/members/MembersResendDialog';
+import MemberDeleteDialog from '@/components/members/MemberDeleteDialog';
 
 const MembersTable = ({ users }: UsersTableProps) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -55,6 +63,7 @@ const MembersTable = ({ users }: UsersTableProps) => {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [memberId, setMemberId] = useState('');
 
     // Filter users based on search query and filters
     const filteredUsers = useMemo(() => {
@@ -327,6 +336,23 @@ const MembersTable = ({ users }: UsersTableProps) => {
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            setMemberId(user.id)
+                                                        }
+                                                        className="cursor-pointer"
+                                                    >
+                                                        <Mail className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Resend Invite</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -430,11 +456,16 @@ const MembersTable = ({ users }: UsersTableProps) => {
                 onOpenChange={(open) => !open && setEditingUser(null)}
                 user={editingUser || undefined}
             />
-            {/*  <DeleteUserDialog
+            <MemberResendDialog
+                open={!!memberId}
+                onOpenChange={(open) => !open && setMemberId('')}
+                memberId={memberId}
+            />
+            <MemberDeleteDialog
                 open={!!deletingUser}
                 onOpenChange={(open) => !open && setDeletingUser(null)}
                 user={deletingUser || undefined}
-            /> */}
+            />
         </div>
     );
 };
