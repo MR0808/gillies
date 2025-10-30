@@ -10,6 +10,7 @@ import {
     Cell
 } from 'recharts';
 import { Trophy, TrendingUp, Award } from 'lucide-react';
+
 import {
     Card,
     CardContent,
@@ -20,7 +21,8 @@ import {
 import {
     ChartContainer,
     ChartTooltip,
-    ChartTooltipContent
+    ChartTooltipContent,
+    CustomTooltipProps
 } from '@/components/ui/chart';
 import { ResultsChartsProps, Review } from '@/types/results';
 
@@ -149,7 +151,14 @@ export function ResultsCharts({ whiskies }: ResultsChartsProps) {
                                     ]}
                                 />
                                 <ChartTooltip
-                                    content={<ChartTooltipContent />}
+                                    cursor={false}
+                                    content={(props: CustomTooltipProps) => (
+                                        <ChartTooltipContent
+                                            {...props}
+                                            hideIndicator
+                                            hideLabel
+                                        />
+                                    )}
                                 />
                                 <Bar dataKey="average" radius={[8, 8, 0, 0]}>
                                     {chartData.map((entry, index) => (

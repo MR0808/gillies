@@ -38,25 +38,25 @@ export const getMembersFirstName = async () => {
     return { data };
 };
 
-export const getMember = async (id: string) => {
-    const userSession = await authCheckServer();
+// export const getMember = async (id: string) => {
+//     const userSession = await authCheckServer();
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
+//     if (!userSession || userSession.user.role !== 'ADMIN') {
+//         return { error: 'Not authorised' };
+//     }
 
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
+//     if (!id) {
+//         return { error: 'Missing id!' };
+//     }
 
-    const data = await db.user.findUnique({ where: { id } });
+//     const data = await db.user.findUnique({ where: { id } });
 
-    if (!data) {
-        return { error: 'Not found' };
-    }
+//     if (!data) {
+//         return { error: 'Not found' };
+//     }
 
-    return { data };
-};
+//     return { data };
+// };
 
 export const createMember = async (values: z.infer<typeof MemberSchema>) => {
     const userSession = await authCheckServer();
