@@ -18,19 +18,24 @@ export default async function MeetingVotingPage({
 
     return (
         <PortalLayout userSession={userSession}>
-            <div className="space-y-6 mx-auto">
-                <div className="flex gap-4">
-                    <Button variant="ghost" size="icon" asChild>
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
+                        className="flex-shrink-0"
+                    >
                         <Link href="/portal">
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                     </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Vote on Whiskies
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Rate Whiskies
                         </h1>
-                        <p className="text-muted-foreground mt-1">
-                            Rate each whisky from 0-10 and leave your thoughts
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Swipe through and rate each whisky
                         </p>
                     </div>
                 </div>

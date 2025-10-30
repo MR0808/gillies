@@ -1,9 +1,18 @@
+import { headers } from 'next/headers';
+
 import ThemeToggle from '@/components/dashboardLayout/ThemeToggle/ThemeToggle';
 import { cn } from '@/lib/utils';
 import MobileSidebar from './MobileSidebar';
 import UserNav from './UserNav';
+import { auth } from '@/lib/auth';
 
-const Header = () => {
+const Header = async () => {
+    const headerList = await headers();
+
+    const userSession = await auth.api.getSession({
+        headers: headerList
+    });
+
     return (
         <header className="sticky inset-x-0 top-0 w-full">
             <nav className="flex items-center justify-between px-4 py-2 md:justify-end">
@@ -11,7 +20,7 @@ const Header = () => {
                     <MobileSidebar />
                 </div>
                 <div className="flex items-center gap-2">
-                    <UserNav />
+                    <UserNav userSession={userSession} />
                     <ThemeToggle />
                 </div>
             </nav>

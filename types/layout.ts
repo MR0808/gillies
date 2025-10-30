@@ -5,3 +5,7 @@ export interface PortalLayoutProps {
     userSession: SessionType;
     children: ReactNode;
 }
+
+export interface UserNavProps {
+    userSession: SessionType;
+}
