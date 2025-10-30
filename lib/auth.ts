@@ -1,5 +1,4 @@
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
-import { createAuthMiddleware } from 'better-auth/api';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { nextCookies } from 'better-auth/next-js';
 import { UserRole } from '@/generated/prisma';
