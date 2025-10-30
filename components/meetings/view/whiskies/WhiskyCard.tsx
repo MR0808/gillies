@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { toast } from 'sonner';
 
-import { Edit, Trash2, Award } from 'lucide-react';
+import { Edit, Trash2, Award, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { WhiskyCardProps } from '@/types/meeting';
 import { deleteWhisky } from '@/actions/whiskies';
+import Link from 'next/link';
 
 const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
     const handleDelete = async () => {
@@ -75,43 +76,62 @@ const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
                     {whisky.description || 'No description'}
                 </p>
             </CardContent>
-            <CardFooter className="p-4 pt-0 gap-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 bg-transparent cursor-pointer"
-                    onClick={() => onEdit(whisky)}
-                >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                </Button>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
+            <CardFooter className="px-4 pt-0 gap-2">
+                <div className="flex flex-col space-y-5">
+                    <div className="flex flex-row space-x-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 bg-transparent  cursor-pointer"
+                            className="flex-1 bg-transparent cursor-pointer"
+                            onClick={() => onEdit(whisky)}
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
                         </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Whisky</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Are you sure you want to delete "{whisky.name}"?
-                                This action cannot be undone.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDelete}>
-                                Delete
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 bg-transparent  cursor-pointer"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        Delete Whisky
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to delete "
+                                        {whisky.name}"? This action cannot be
+                                        undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete}>
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                    <Link href={`/live/${whisky.id}`} target="_blank">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="cursor-pointer"
+                        >
+                            <Radio className="mr-2 h-4 w-4" />
+                            Live scores
+                        </Button>
+                    </Link>
+                </div>
             </CardFooter>
         </Card>
     );
