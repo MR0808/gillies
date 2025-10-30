@@ -115,51 +115,112 @@ export const createMember = async (values: z.infer<typeof MemberSchema>) => {
     return { data };
 };
 
-export const createMembers = async (
-    values: z.infer<typeof MemberImportSchema>
-) => {
+export const createMembersFromCSV = async (csvContent: string) => {
     const userSession = await authCheckServer();
 
     if (!userSession || userSession.user.role !== 'ADMIN') {
         return { error: 'Not authorised' };
     }
 
-    const validatedFields = MemberImportSchema.safeParse(values);
+    const lines = csvContent.trim().split('\n');
 
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields!' };
+    if (lines.length < 2) {
+        return { success: false, error: 'CSV file is empty or invalid' };
     }
 
-    const emails = await db.user.findMany({ select: { email: true } });
-    const list = emails.map((email) => {
-        return email.email;
-    });
+    // Get headers and validate
+    const headers = lines[0]
+        .toLowerCase()
+        .split(',')
+        .map((h) => h.trim());
+    const nameIndex = headers.indexOf('name');
+    const lastNameIndex = headers.indexOf('lastname');
+    const emailIndex = headers.indexOf('email');
 
-    const upload = values.filter(
-        (member) => list.includes(member.email) === false
-    );
+    if (nameIndex === -1 || lastNameIndex === -1 || emailIndex === -1) {
+        return {
+            success: false,
+            error: "CSV must contain 'name', 'lastname', and 'email' columns"
+        };
+    }
 
-    // const data = await db.user.createMany({
-    //     data: upload
-    // });
+    const results = {
+        total: 0,
+        success: 0,
+        failed: 0,
+        errors: [] as string[]
+    };
 
-    // if (!data) {
-    //     return { error: 'Not found' };
-    // }
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue; // Skip empty lines
 
-    upload.forEach(async (member) => {
-        const registrationToken = await generateRegistrationToken(member.email);
+        results.total++;
 
-        await sendRegistrationEmail(
-            registrationToken.email,
-            registrationToken.token,
-            member.name
-        );
-    });
+        const values = line.split(',').map((v) => v.trim());
+        const name = values[nameIndex];
+        const lastName = values[lastNameIndex];
+        const email = values[emailIndex];
+
+        // Validate row data
+        if (!name || !lastName || !email) {
+            results.failed++;
+            results.errors.push(`Row ${i + 1}: Missing required fields`);
+            continue;
+        }
+
+        // Create user with default role USER and emailVerified false
+        const userData = {
+            name,
+            lastName,
+            email,
+            role: 'USER' as const,
+            emailVerified: false
+        };
+
+        try {
+            // Mock: Create user and generate registration token
+            const user = await db.user.create({
+                data: {
+                    name: userData.name,
+                    lastName: userData.lastName,
+                    email: userData.email,
+                    role: userData.role,
+                    emailVerified: false
+                }
+            });
+
+            await db.account.create({
+                data: {
+                    accountId: user.id,
+                    providerId: 'credential',
+                    userId: user.id
+                }
+            });
+
+            const registrationToken = await generateRegistrationToken(email);
+
+            await sendRegistrationEmail(
+                registrationToken.email,
+                registrationToken.token,
+                user.name
+            );
+
+            results.success++;
+        } catch (error) {
+            results.failed++;
+            results.errors.push(
+                `Row ${i + 1} (${email}): Failed to create user`
+            );
+        }
+    }
 
     revalidatePath('/dashboard/members');
 
-    return { data: true };
+    return {
+        success: true,
+        results
+    };
 };
 
 export const updateMember = async (

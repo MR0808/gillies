@@ -9,7 +9,10 @@ import {
     Pencil,
     Trash2,
     Filter,
-    Mail
+    Mail,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { User } from '@/generated/prisma';
 
@@ -37,7 +40,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import MemberDialog from '@/components/members/MemberDialog';
-// import { DeleteUserDialog } from '@/components/delete-user-dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -49,6 +51,18 @@ import {
 import { UsersTableProps } from '@/types/members';
 import MemberResendDialog from '@/components/members/MembersResendDialog';
 import MemberDeleteDialog from '@/components/members/MemberDeleteDialog';
+import MembersCSVUploadDialog from '@/components/members/MembersCSVUploadDialog';
+
+type SortColumn =
+    | 'name'
+    | 'lastName'
+    | 'email'
+    | 'role'
+    | 'emailVerified'
+    | 'createdAt'
+    | 'updatedAt'
+    | null;
+type SortDirection = 'asc' | 'desc';
 
 const MembersTable = ({ users }: UsersTableProps) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -65,11 +79,32 @@ const MembersTable = ({ users }: UsersTableProps) => {
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
     const [memberId, setMemberId] = useState('');
 
+    const [sortColumn, setSortColumn] = useState<SortColumn>(null);
+    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(column);
+            setSortDirection('desc');
+        }
+    };
+
+    const formatDate = (date: Date) => {
+        return new Intl.DateTimeFormat('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(new Date(date));
+    };
+
     // Filter users based on search query and filters
     const filteredUsers = useMemo(() => {
         let filtered = users;
 
-        // Search filter
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(
@@ -80,12 +115,10 @@ const MembersTable = ({ users }: UsersTableProps) => {
             );
         }
 
-        // Role filter
         if (roleFilter !== 'ALL') {
             filtered = filtered.filter((user) => user.role === roleFilter);
         }
 
-        // Email verified filter
         if (emailVerifiedFilter !== 'all') {
             const isVerified = emailVerifiedFilter === 'true';
             filtered = filtered.filter(
@@ -93,8 +126,48 @@ const MembersTable = ({ users }: UsersTableProps) => {
             );
         }
 
+        if (sortColumn) {
+            filtered = [...filtered].sort((a, b) => {
+                let comparison = 0;
+
+                switch (sortColumn) {
+                    case 'name':
+                    case 'lastName':
+                    case 'email':
+                        comparison = a[sortColumn].localeCompare(b[sortColumn]);
+                        break;
+                    case 'role':
+                        comparison = a.role.localeCompare(b.role);
+                        break;
+                    case 'emailVerified':
+                        comparison =
+                            a.emailVerified === b.emailVerified
+                                ? 0
+                                : a.emailVerified
+                                  ? 1
+                                  : -1;
+                        break;
+                    case 'createdAt':
+                    case 'updatedAt':
+                        comparison =
+                            new Date(a[sortColumn]).getTime() -
+                            new Date(b[sortColumn]).getTime();
+                        break;
+                }
+
+                return sortDirection === 'asc' ? comparison : -comparison;
+            });
+        }
+
         return filtered;
-    }, [users, searchQuery, roleFilter, emailVerifiedFilter]);
+    }, [
+        users,
+        searchQuery,
+        roleFilter,
+        emailVerifiedFilter,
+        sortColumn,
+        sortDirection
+    ]);
 
     // Calculate pagination
     const totalPages =
@@ -131,6 +204,26 @@ const MembersTable = ({ users }: UsersTableProps) => {
         roleFilter !== 'ALL',
         emailVerifiedFilter !== 'all'
     ].filter(Boolean).length;
+
+    const renderSortableHeader = (column: SortColumn, label: string) => (
+        <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 hover:bg-transparent"
+            onClick={() => handleSort(column)}
+        >
+            {label}
+            {sortColumn === column ? (
+                sortDirection === 'asc' ? (
+                    <ArrowUp className="ml-2 h-4 w-4" />
+                ) : (
+                    <ArrowDown className="ml-2 h-4 w-4" />
+                )
+            ) : (
+                <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+            )}
+        </Button>
+    );
 
     return (
         <div className="space-y-4">
@@ -248,6 +341,8 @@ const MembersTable = ({ users }: UsersTableProps) => {
                         </Select>
                     </div>
 
+                    <MembersCSVUploadDialog />
+
                     <Button onClick={() => setIsAddDialogOpen(true)}>
                         <UserPlus className="h-4 w-4 mr-2" />
                         Add User
@@ -260,11 +355,36 @@ const MembersTable = ({ users }: UsersTableProps) => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>First Name</TableHead>
-                            <TableHead>Last Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Email Verified</TableHead>
+                            <TableHead>
+                                {renderSortableHeader('name', 'First Name')}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader('lastName', 'Last Name')}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader('email', 'Email')}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader('role', 'Role')}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader(
+                                    'emailVerified',
+                                    'Email Verified'
+                                )}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader(
+                                    'createdAt',
+                                    'Date Created'
+                                )}
+                            </TableHead>
+                            <TableHead>
+                                {renderSortableHeader(
+                                    'updatedAt',
+                                    'Date Updated'
+                                )}
+                            </TableHead>
                             <TableHead className="w-[120px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -272,7 +392,7 @@ const MembersTable = ({ users }: UsersTableProps) => {
                         {paginatedUsers.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={6}
+                                    colSpan={8}
                                     className="text-center py-8"
                                 >
                                     <p className="text-muted-foreground">
@@ -313,6 +433,12 @@ const MembersTable = ({ users }: UsersTableProps) => {
                                                 ? 'Verified'
                                                 : 'Not Verified'}
                                         </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                        {formatDate(user.createdAt)}
+                                    </TableCell>
+                                    <TableCell className="text-sm text-muted-foreground">
+                                        {formatDate(user.updatedAt)}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
