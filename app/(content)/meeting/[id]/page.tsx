@@ -24,9 +24,9 @@ export default async function MeetingVotingPage({
                         variant="ghost"
                         size="icon"
                         asChild
-                        className="flex-shrink-0"
+                        className="shrink-0"
                     >
-                        <Link href="/portal">
+                        <Link href="/">
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                     </Button>

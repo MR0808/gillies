@@ -1,43 +1,47 @@
+import { authCheck } from '@/lib/authCheck';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 import { format } from 'date-fns';
 
-import { Heading } from '@/components/ui/heading';
-import { Separator } from '@/components/ui/separator';
-import Breadcrumbs from '@/components/global/Breadcrumbs';
-import PageContainer from '@/components/dashboardLayout/PageContainer';
-import { getMeetingResults } from '@/actions/results';
-import { authCheckAdmin } from '@/lib/authCheck';
+import PortalLayout from '@/components/portalLayout/PortalLayout';
+import WhiskyVoting from '@/components/voting/WhiskyVoting';
+import { Button } from '@/components/ui/button';
+import { getMeetingWhiskies } from '@/actions/voting';
 import { ResultsCharts } from '@/components/results/ResultsChart';
 import { ResultsTable } from '@/components/results/ResultsTable';
+import { getMeetingResults } from '@/actions/results';
 
-const ResultsPage = async ({
+export default async function MeetingVotingPage({
     params
 }: {
-    params: Promise<{ meetingid: string }>;
-}) => {
-    const { meetingid } = await params;
-    const userSession = await authCheckAdmin(`/dashboard/${meetingid}/results`);
-    const results = await getMeetingResults(meetingid);
-
-    const breadcrumbItems = [
-        { title: 'Dashboard', link: '/dashboard' },
-        { title: 'Meetings', link: '/dashboard/meetings' },
-        { title: 'Meeting', link: `/dashboard/meetings/${meetingid}` },
-        {
-            title: 'Results',
-            link: `/dashboard/meetings/${meetingid}/results/`
-        }
-    ];
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
+    const userSession = await authCheck(`/meetings/${id}`);
+    const results = await getMeetingResults(id);
 
     return (
-        <PageContainer>
-            <div className="space-y-2">
-                <Breadcrumbs items={breadcrumbItems} />
-                <div className="flex sm:flex-row flex-col items-start justify-between">
-                    <Heading title={`Meeting Results`} description="" />
+        <PortalLayout userSession={userSession}>
+            <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        asChild
+                        className="shrink-0"
+                    >
+                        <Link href="/">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Link>
+                    </Button>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                            Whisky Results
+                        </h1>
+                    </div>
                 </div>
-                <Separator />
                 <Suspense
                     fallback={
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
@@ -71,8 +75,6 @@ const ResultsPage = async ({
                     )}
                 </Suspense>
             </div>
-        </PageContainer>
+        </PortalLayout>
     );
-};
-
-export default ResultsPage;
+}

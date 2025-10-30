@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 
 import {
     UpdateMeetingSchema,
@@ -15,9 +15,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Meeting } from '@/types/meeting';
 import { updateMeeting } from '@/actions/meetings';
+import Link from 'next/link';
+import CloseMeetingDialog from '@/components/meetings/view/CloseMeetingDialog';
 
 const MeetingDetailsForm = ({ meeting }: { meeting: Meeting }) => {
     const [isPending, startTransition] = useTransition();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const {
         register,
@@ -75,13 +78,39 @@ const MeetingDetailsForm = ({ meeting }: { meeting: Meeting }) => {
                 )}
             </div>
 
-            <Button
-                type="submit"
-                disabled={isPending}
-                className="cursor-pointer"
-            >
-                {isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className="flex flex-row gap-5">
+                <Button
+                    type="submit"
+                    disabled={isPending}
+                    className="cursor-pointer"
+                >
+                    {isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+                <Link href={`/dashboard/meetings/${meeting.id}/results`}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="cursor-pointer"
+                    >
+                        View Results
+                    </Button>
+                </Link>
+                {meeting.status === 'OPEN' && (
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        className="cursor-pointer"
+                        onClick={() => setIsDialogOpen(true)}
+                    >
+                        Close Meeting
+                    </Button>
+                )}
+            </div>
+            <CloseMeetingDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                meetingId={meeting.id}
+            />
         </form>
     );
 };

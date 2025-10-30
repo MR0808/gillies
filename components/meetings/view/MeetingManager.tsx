@@ -13,6 +13,7 @@ import MeetingDetailsForm from '@/components/meetings/view/MeetingDetailsForm';
 import WhiskyManager from '@/components/meetings/view/whiskies/WhiskyManager';
 import { MeeetingManagerProps } from '@/types/meeting';
 import MemberManager from '@/components/meetings/view/members/MemberManager';
+import { Badge } from '@/components/ui/badge';
 
 const MeetingManager = ({ meeting, members }: MeeetingManagerProps) => {
     const [activeTab, setActiveTab] = useState('whiskies');
@@ -21,7 +22,18 @@ const MeetingManager = ({ meeting, members }: MeeetingManagerProps) => {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Meeting Details</CardTitle>
+                    <CardTitle>
+                        Meeting Details{' '}
+                        <Badge
+                            variant={
+                                meeting.status === 'OPEN'
+                                    ? 'default'
+                                    : 'secondary'
+                            }
+                        >
+                            {meeting.status}
+                        </Badge>
+                    </CardTitle>
                     <CardDescription>
                         Update the meeting date and location
                     </CardDescription>

@@ -6,7 +6,7 @@ import db from '@/lib/db';
 export const getMeetingResults = async (meetingId: string) => {
     const userSession = await authCheckServer();
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
+    if (!userSession) {
         return { error: 'Not authorised' };
     }
 

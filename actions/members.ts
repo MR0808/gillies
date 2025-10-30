@@ -22,7 +22,7 @@ export const getMembers = async () => {
     }
 
     const data = await db.user.findMany({
-        orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
+        orderBy: [{ name: 'asc' }, { lastName: 'asc' }]
     });
 
     return { data };
@@ -156,7 +156,7 @@ export const createMembers = async (
 };
 
 export const updateMember = async (
-    values: z.infer<typeof MemberUpdateSchema>,
+    values: z.infer<typeof MemberSchema>,
     id: string
 ) => {
     const userSession = await authCheckServer();
@@ -169,13 +169,13 @@ export const updateMember = async (
         return { error: 'Missing id!' };
     }
 
-    const validatedFields = await MemberUpdateSchema.safeParseAsync(values);
+    const validatedFields = await MemberSchema.safeParseAsync(values);
 
     if (!validatedFields.success) {
         return { error: 'Invalid fields!' };
     }
 
-    let { name, lastName, email } = validatedFields.data;
+    let { name, lastName, email, role } = validatedFields.data;
 
     email = email.toLocaleLowerCase();
 
@@ -206,7 +206,8 @@ export const updateMember = async (
         data: {
             name,
             lastName,
-            email
+            email,
+            role
         }
     });
 

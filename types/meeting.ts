@@ -63,3 +63,9 @@ export interface MemberManagerProps {
     meeting: Meeting;
     members: Members;
 }
+
+export interface CloseMeetingDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    meetingId: string;
+}

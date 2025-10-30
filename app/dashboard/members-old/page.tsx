@@ -3,10 +3,9 @@ import { Loader2 } from 'lucide-react';
 
 import Breadcrumbs from '@/components/global/Breadcrumbs';
 import PageContainer from '@/components/dashboardLayout/PageContainer';
-import { Skeleton } from '@/components/ui/skeleton';
+import MemberClient from '@/components/members/MemberClient';
 import { getMembers } from '@/actions/members';
 import { authCheckAdmin } from '@/lib/authCheck';
-import MembersTable from '@/components/members/MembersTable';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -22,13 +21,14 @@ const MembersPage = async () => {
                 <Breadcrumbs items={breadcrumbItems} />
                 <Suspense
                     fallback={
-                        <div className="space-y-4">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-[400px] w-full" />
-                        </div>
+                        <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    <MembersTable users={members.data || []} />
+                    {!members.data ? (
+                        <div>No meetings found</div>
+                    ) : (
+                        <MemberClient members={members.data} />
+                    )}
                 </Suspense>
             </div>
         </PageContainer>
