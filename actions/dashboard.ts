@@ -214,11 +214,13 @@ export const getDashboardStats = createCached(
     'dashboard-stats',
     async () => {
         // --- Parallel aggregate queries ---
+
+        const totalUsers = await db.user.count();
+        const totalMeetings = await db.meeting.count();
+        const totalWhiskies = await db.whisky.count();
+        const totalReviews = await db.review.count();
+
         const [
-            totalUsers,
-            totalMeetings,
-            totalWhiskies,
-            totalReviews,
             adminCount,
             verifiedUsers,
             openMeetings,
@@ -229,10 +231,6 @@ export const getDashboardStats = createCached(
             reviewRatings,
             meetingsByMonthRaw
         ] = await Promise.all([
-            db.user.count(),
-            db.meeting.count(),
-            db.whisky.count(),
-            db.review.count(),
             db.user.count({ where: { role: 'ADMIN' } }),
             db.user.count({ where: { emailVerified: { not: false } } }),
             db.meeting.count({ where: { status: 'OPEN' } }),
