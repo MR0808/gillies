@@ -6,9 +6,7 @@ import { Suspense } from 'react';
 import { format } from 'date-fns';
 
 import PortalLayout from '@/components/portalLayout/PortalLayout';
-import WhiskyVoting from '@/components/voting/WhiskyVoting';
 import { Button } from '@/components/ui/button';
-import { getMeetingWhiskies } from '@/actions/voting';
 import { ResultsCharts } from '@/components/results/ResultsChart';
 import { ResultsTable } from '@/components/results/ResultsTable';
 import { getMeetingResults } from '@/actions/results';

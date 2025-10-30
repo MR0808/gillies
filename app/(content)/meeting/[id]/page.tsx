@@ -6,6 +6,17 @@ import PortalLayout from '@/components/portalLayout/PortalLayout';
 import WhiskyVoting from '@/components/voting/WhiskyVoting';
 import { Button } from '@/components/ui/button';
 import { getMeetingWhiskies } from '@/actions/voting';
+import { getAllMeetings } from '@/actions/meetings';
+
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+    const meetings = await getAllMeetings();
+
+    return meetings.map((w) => ({
+        id: w.id
+    }));
+}
 
 export default async function MeetingVotingPage({
     params

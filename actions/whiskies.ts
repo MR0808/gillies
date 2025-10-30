@@ -8,6 +8,14 @@ import { deleteImage } from '@/utils/supabase';
 import { WhiskySchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 
+export const getAllWhiskies = async () => {
+    const whiskies = await db.whisky.findMany({
+        select: { id: true }
+    });
+
+    return whiskies;
+};
+
 export const getMeetingWhiskies = async (meetingId: string) => {
     const userSession = await authCheckServer();
 

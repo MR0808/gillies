@@ -7,6 +7,14 @@ import db from '@/lib/db';
 import { CreateMeetingSchema, UpdateMeetingSchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 
+export const getAllMeetings = async () => {
+    const meetings = await db.meeting.findMany({
+        select: { id: true }
+    });
+
+    return meetings;
+};
+
 export const getMeetings = async () => {
     const userSession = await authCheckServer();
 
