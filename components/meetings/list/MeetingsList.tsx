@@ -110,7 +110,7 @@ const MeetingsList = ({ meetings }: MeetingsTableProps) => {
                             <TableHead className="text-right">
                                 Whiskies
                             </TableHead>
-                            <TableHead className="w-[180px]"></TableHead>
+                            <TableHead className="w-[180px]">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

@@ -1,6 +1,5 @@
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
-import { redirect } from 'next/navigation';
 
 import { Heading } from '@/components/ui/heading';
 import { Separator } from '@/components/ui/separator';
@@ -10,21 +9,23 @@ import ResultsClient from '@/components/results/ResultsClient';
 import { getMeetingResults } from '@/actions/results';
 import { authCheckAdmin } from '@/lib/authCheck';
 
-const ResultsPage = async (props: {
+const ResultsPage = async ({
+    params
+}: {
     params: Promise<{ meetingid: string }>;
 }) => {
-    const params = await props.params;
-    const userSession = await authCheckAdmin(
-        `/dashboard/results/${params.meetingid}`
-    );
-    const results = await getMeetingResults(params.meetingid);
+    const { meetingid } = await params;
+    const userSession = await authCheckAdmin(`/dashboard/${meetingid}/results`);
+    const results = await getMeetingResults(meetingid);
+    console.log(results);
 
     const breadcrumbItems = [
         { title: 'Dashboard', link: '/dashboard' },
         { title: 'Meetings', link: '/dashboard/meetings' },
+        { title: 'Meeting', link: `/dashboard/meetings/${meetingid}` },
         {
             title: 'Results',
-            link: `/dashboard/meetings/results/${params.meetingid}`
+            link: `/dashboard/meetings/${meetingid}/results/`
         }
     ];
 
@@ -41,10 +42,11 @@ const ResultsPage = async (props: {
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    {!results.data ? (
-                        <div>No meetings found</div>
+                    {!results.meeting ? (
+                        <div>No meeting results found</div>
                     ) : (
-                        <ResultsClient results={results.data} />
+                        // <ResultsClient results={results.data} />
+                        <></>
                     )}
                 </Suspense>
             </div>
