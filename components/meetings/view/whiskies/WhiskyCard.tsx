@@ -79,7 +79,7 @@ const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
                 <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-transparent"
+                    className="flex-1 bg-transparent cursor-pointer"
                     onClick={() => onEdit(whisky)}
                 >
                     <Edit className="mr-2 h-4 w-4" />
@@ -90,7 +90,7 @@ const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 bg-transparent"
+                            className="flex-1 bg-transparent  cursor-pointer"
                         >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
