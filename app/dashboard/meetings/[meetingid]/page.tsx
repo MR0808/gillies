@@ -28,7 +28,7 @@ const MeetingEditPage = async (props: {
 
     const allMembers = await getMembersFirstName();
 
-    if (!allMembers.data) {
+    if (!allMembers.data || !meeting) {
         return (
             <PageContainer scrollable={true}>
                 <div className="space-y-4">

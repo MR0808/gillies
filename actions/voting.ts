@@ -55,13 +55,34 @@ export const getMeetingWhiskies = async (meetingId: string) => {
         return { error: 'Bad request' };
     }
 
-    const data = await db.whisky.findMany({
+    // const data = await db.whisky.findMany({
+    //     where: { meetingId },
+    //     orderBy: [{ order: 'asc' }],
+    //     include: {
+    //         reviews: { where: { userId: dbUser.id } }
+    //     }
+    // });
+
+    const whiskies = await db.whisky.findMany({
         where: { meetingId },
-        orderBy: [{ order: 'asc' }],
-        include: {
-            reviews: { where: { userId: dbUser.id } }
+        orderBy: { order: 'asc' }
+    });
+
+    if (!whiskies.length) return { data: [] };
+
+    // Step 2: fetch this user’s reviews separately
+    const reviews = await db.review.findMany({
+        where: {
+            userId: dbUser.id,
+            whiskyId: { in: whiskies.map((w) => w.id) }
         }
     });
+
+    // Step 3: merge manually
+    const data = whiskies.map((whisky) => ({
+        ...whisky,
+        reviews: reviews.filter((r) => r.whiskyId === whisky.id)
+    }));
 
     if (!data) {
         return { error: 'Not found' };
