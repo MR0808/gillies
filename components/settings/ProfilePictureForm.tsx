@@ -33,6 +33,8 @@ const ProfilePictureForm = ({ userSession }: SessionProps) => {
     const [image, setImage] = useState<string | null | undefined>(user?.image);
     const [isPending, startTransition] = useTransition();
 
+    console.log('image', image);
+
     useEffect(() => {
         if (currentUser && currentUser.user) {
             setUser(currentUser?.user);
@@ -101,9 +103,10 @@ const ProfilePictureForm = ({ userSession }: SessionProps) => {
                             <div className="relative h-[120px] max-h-[120px] w-[120px] max-w-[120px] rounded-full border-2 border-solid border-white shadow-[0_8px_24px_0px_rgba(149,157,165,0.2)]">
                                 <Image
                                     src={image || profile}
-                                    alt={`${user?.name} ${user?.lastName}}`}
+                                    alt={`${user?.name} ${user?.lastName}`}
                                     fill
                                     className={cn('w-full rounded-full')}
+                                    unoptimized
                                 />
                                 <div
                                     className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-solid border-[#585C5480] bg-white text-xs leading-7 text-black hover:bg-primary hover:text-white"
