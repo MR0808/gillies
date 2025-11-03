@@ -3,7 +3,9 @@ import { getMembersFirstName } from '@/actions/members';
 
 export type GetMeetingReturn = Awaited<ReturnType<typeof getMeeting>>;
 
-export type Meeting = Extract<GetMeetingReturn, { data: unknown }>['data'];
+export type Meeting = NonNullable<
+    Extract<GetMeetingReturn, { data: unknown }>['data']
+>;
 
 export type Whisky =
     Awaited<ReturnType<typeof getMeeting>> extends infer R

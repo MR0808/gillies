@@ -24,7 +24,7 @@ const ResetPasswordPage = async ({
 
     const verifyToken = await verifyPasswordToken(token);
 
-    if (!verifyToken) {
+    if (!verifyToken.valid) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
                 <Card className="w-full max-w-md">

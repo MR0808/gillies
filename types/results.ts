@@ -1,14 +1,10 @@
 import { getMeetingResults } from '@/actions/results';
 
-export type Whisky = Extract<
-    Awaited<ReturnType<typeof getMeetingResults>>,
-    { meeting: { whiskies: any[] } }
->['meeting']['whiskies'][number];
+export type MeetingResults = Awaited<ReturnType<typeof getMeetingResults>>;
 
-export type Review = Extract<
-    Awaited<ReturnType<typeof getMeetingResults>>,
-    { meeting: any }
->['meeting']['whiskies'][number]['reviews'][number];
+export type Whisky = NonNullable<MeetingResults['data']>['whiskies'][number];
+
+export type Review = Whisky['reviewers'][number];
 
 export type ResultsTableProps = {
     whiskies: Whisky[];

@@ -93,7 +93,7 @@ const MemberDialog = ({ open, onOpenChange, user }: MemberDialogProps) => {
                 form.reset();
                 onOpenChange(false);
             } else {
-                toast.error(result.error || 'Failed to save user');
+                toast.error(result.error.toString() || 'Failed to save user');
             }
         } catch (error) {
             toast.error('An unexpected error occurred');

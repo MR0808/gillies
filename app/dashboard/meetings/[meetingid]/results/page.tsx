@@ -43,16 +43,16 @@ const ResultsPage = async ({
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    {!results.meeting ? (
+                    {!results.data ? (
                         <div>No meeting results found</div>
                     ) : (
                         <>
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-muted-foreground mt-2">
-                                        {results.meeting.location} •{' '}
+                                        {results.data.meetingName} •{' '}
                                         {format(
-                                            new Date(results.meeting.date),
+                                            new Date(results.data.meetingDate),
                                             'MMMM dd, yyyy'
                                         )}
                                     </p>
@@ -60,11 +60,11 @@ const ResultsPage = async ({
                             </div>
                             <div className="space-y-6">
                                 <ResultsCharts
-                                    whiskies={results.meeting.whiskies}
+                                    whiskies={results.data.whiskies}
                                 />
                                 <ResultsTable
-                                    whiskies={results.meeting.whiskies}
-                                    quaichId={results.meeting.quaich}
+                                    whiskies={results.data.whiskies}
+                                    quaichId={results.data.meetingQuaich}
                                 />
                             </div>
                         </>

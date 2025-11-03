@@ -157,4 +157,6 @@ model Review {
   updatedAt DateTime @updatedAt
   whisky    Whisky   @relation(fields: [whiskyId], references: [id], onDelete: Cascade)
   whiskyId  String
+
+  @@unique([userId, whiskyId])
 }

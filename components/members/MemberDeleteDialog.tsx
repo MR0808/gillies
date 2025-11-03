@@ -34,7 +34,7 @@ const MemberDeleteDialog = ({
                 toast.success('User deleted successfully');
                 onOpenChange(false);
             } else {
-                toast.error(result.error || 'Failed to delete user');
+                toast.error(result.error.toString() || 'Failed to delete user');
             }
         } catch (error) {
             toast.error('An unexpected error occurred');

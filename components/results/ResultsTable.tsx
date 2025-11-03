@@ -32,8 +32,8 @@ export function ResultsTable({ whiskies, quaichId }: ResultsTableProps) {
 
     // Sort whiskies by average rating (descending)
     const sortedWhiskies = [...whiskies].sort((a, b) => {
-        const avgA = calculateStats(a.reviews).avg;
-        const avgB = calculateStats(b.reviews).avg;
+        const avgA = calculateStats(a.reviewers).avg;
+        const avgB = calculateStats(b.reviewers).avg;
         return avgB - avgA;
     });
 
@@ -68,7 +68,7 @@ export function ResultsTable({ whiskies, quaichId }: ResultsTableProps) {
                 </TableHeader>
                 <TableBody>
                     {sortedWhiskies.map((whisky, index) => {
-                        const stats = calculateStats(whisky.reviews);
+                        const stats = calculateStats(whisky.reviewers);
                         const isQuaich = whisky.id === quaichId;
 
                         return (
@@ -130,7 +130,7 @@ export function ResultsTable({ whiskies, quaichId }: ResultsTableProps) {
                                                     Individual Votes
                                                 </h4>
                                                 <div className="space-y-2">
-                                                    {whisky.reviews.map(
+                                                    {whisky.reviewers.map(
                                                         (review) => (
                                                             <div
                                                                 key={review.id}

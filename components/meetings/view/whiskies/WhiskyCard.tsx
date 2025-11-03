@@ -32,7 +32,7 @@ const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
     const handleDelete = async () => {
         try {
             const data = await deleteWhisky(whisky.id);
-            if (data.data) {
+            if (data.success) {
                 toast.success('Whisky deleted successfully');
             }
             if (data.error) {

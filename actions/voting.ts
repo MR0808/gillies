@@ -1,156 +1,162 @@
 'use server';
 
-import * as z from 'zod';
-import { revalidatePath } from 'next/cache';
+import { unstable_cache, revalidatePath, revalidateTag } from 'next/cache';
 
 import db from '@/lib/db';
 import { authCheckServer } from '@/lib/authCheck';
-import {
-    ReviewSchema,
-    ReviewServerInput,
-    ReviewServerSchema
-} from '@/schemas/voting';
-import { Review } from '@/generated/prisma';
+import { ReviewServerInput, ReviewServerSchema } from '@/schemas/voting';
+import { revalidateMeetingResults } from '@/cache/revalidate';
+import { TAGS } from '@/cache/tags';
 
-export const getUserMeetings = async () => {
-    const userSession = await authCheckServer();
+export async function getUserMeetings(userId: string) {
+    return unstable_cache(
+        async () => {
+            const session = await authCheckServer();
+            if (!session) return { error: 'Not authorised' };
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
-    }
+            const { user } = session;
 
-    const { user } = userSession;
+            try {
+                // Fetch meetings joined by this user
+                const meetings = await db.meeting.findMany({
+                    where: { users: { some: { id: user.id } } },
+                    orderBy: { date: 'desc' },
+                    select: {
+                        id: true,
+                        date: true,
+                        location: true,
+                        status: true
+                    }
+                });
 
-    const data = await db.meeting.findMany({
-        where: { users: { some: { id: { contains: user.id } } } },
-        include: { whiskies: true },
-        orderBy: { date: 'desc' }
-    });
+                if (!meetings.length) return { data: [] };
 
-    if (!data) {
-        return { error: 'Unauthorised' };
-    }
+                // Fetch whiskies per meeting in one go
+                const whiskies = await db.whisky.findMany({
+                    where: { meetingId: { in: meetings.map((m) => m.id) } },
+                    orderBy: { order: 'asc' },
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                        order: true,
+                        meetingId: true
+                    }
+                });
 
-    return { data };
-};
+                // Merge manually (Accelerate-safe)
+                const data = meetings.map((m) => ({
+                    ...m,
+                    whiskies: whiskies.filter((w) => w.meetingId === m.id)
+                }));
+
+                return { data };
+            } catch (err) {
+                return { error: 'Internal server error' };
+            }
+        },
+        [`meetings`],
+        { revalidate: 120, tags: [TAGS.meetings] }
+    )();
+}
 
 export const getMeetingWhiskies = async (meetingId: string) => {
-    const userSession = await authCheckServer();
+    const session = await authCheckServer();
+    if (!session) return { error: 'Not authorised' };
+    if (!meetingId) return { error: 'Missing meeting ID' };
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
+    const { user } = session;
+
+    try {
+        const dbUser = await db.user.findUnique({ where: { id: user.id } });
+        if (!dbUser) return { error: 'Unauthorised' };
+
+        // Fetch whiskies first
+        const whiskies = await db.whisky.findMany({
+            where: { meetingId },
+            orderBy: { order: 'asc' },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                image: true,
+                order: true,
+                quaich: true
+            }
+        });
+
+        if (!whiskies.length) return { data: [] };
+
+        // Fetch this user's reviews for these whiskies
+        const reviews = await db.review.findMany({
+            where: {
+                userId: dbUser.id,
+                whiskyId: { in: whiskies.map((w) => w.id) }
+            },
+            select: {
+                id: true,
+                rating: true,
+                comment: true,
+                whiskyId: true
+            }
+        });
+
+        // Merge manually
+        const data = whiskies.map((w) => ({
+            ...w,
+            reviews: reviews.filter((r) => r.whiskyId === w.id)
+        }));
+
+        return { data };
+    } catch (err) {
+        console.error('[getMeetingWhiskies]', err);
+        return { error: 'Internal server error' };
     }
-
-    const { user } = userSession;
-
-    const dbUser = await db.user.findUnique({
-        where: { id: user.id }
-    });
-
-    if (!dbUser) {
-        return { error: 'Unauthorised' };
-    }
-
-    if (!meetingId) {
-        return { error: 'Bad request' };
-    }
-
-    // const data = await db.whisky.findMany({
-    //     where: { meetingId },
-    //     orderBy: [{ order: 'asc' }],
-    //     include: {
-    //         reviews: { where: { userId: dbUser.id } }
-    //     }
-    // });
-
-    const whiskies = await db.whisky.findMany({
-        where: { meetingId },
-        orderBy: { order: 'asc' }
-    });
-
-    if (!whiskies.length) return { data: [] };
-
-    // Step 2: fetch this user’s reviews separately
-    const reviews = await db.review.findMany({
-        where: {
-            userId: dbUser.id,
-            whiskyId: { in: whiskies.map((w) => w.id) }
-        }
-    });
-
-    // Step 3: merge manually
-    const data = whiskies.map((whisky) => ({
-        ...whisky,
-        reviews: reviews.filter((r) => r.whiskyId === whisky.id)
-    }));
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    return { data };
 };
 
 export const createVote = async (values: ReviewServerInput) => {
-    const userSession = await authCheckServer();
+    const session = await authCheckServer();
+    if (!session) return { error: 'Not authorised' };
 
-    if (!userSession) {
-        return { error: 'Not authorised' };
-    }
+    const { user } = session;
 
-    const { user } = userSession;
+    try {
+        const dbUser = await db.user.findUnique({ where: { id: user.id } });
+        if (!dbUser) return { error: 'Unauthorised' };
 
-    const dbUser = await db.user.findUnique({
-        where: { id: user.id }
-    });
+        const validated = ReviewServerSchema.safeParse(values);
+        if (!validated.success) return { error: 'Invalid fields' };
 
-    if (!dbUser) {
-        return { error: 'Unauthorised' };
-    }
+        const { rating, comment, whiskyId } = validated.data;
 
-    const validatedFields = ReviewServerSchema.safeParse(values);
-
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields' };
-    }
-
-    let { rating, comment, whiskyId } = validatedFields.data;
-
-    const existingReview = await db.review.findFirst({
-        where: {
-            userId: user.id,
-            whiskyId: whiskyId
-        }
-    });
-
-    let data: Review;
-
-    if (existingReview) {
-        data = await db.review.update({
-            where: { id: existingReview.id },
-            data: {
-                rating: rating,
-                comment: comment
-            }
-        });
-    } else {
-        data = await db.review.create({
-            data: {
+        // Upsert review atomically (Accelerate-safe)
+        const data = await db.review.upsert({
+            where: {
+                userId_whiskyId: {
+                    userId: user.id,
+                    whiskyId
+                }
+            },
+            update: { rating, comment },
+            create: {
                 userId: user.id,
-                whiskyId: whiskyId,
-                rating: rating,
-                comment: comment
+                whiskyId,
+                rating,
+                comment
             }
         });
+
+        // Trigger revalidation of the meeting page
+        const whisky = await db.whisky.findUnique({
+            where: { id: whiskyId },
+            select: { meetingId: true }
+        });
+
+        if (whisky?.meetingId) revalidateMeetingResults(whisky.meetingId);
+
+        return { success: data };
+    } catch (err) {
+        console.error('[createVote]', err);
+        return { error: 'Internal server error' };
     }
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    const meeting = await db.whisky.findUnique({ where: { id: whiskyId } });
-
-    revalidatePath(`/meeting/${meeting?.meetingId}`);
-
-    return { success: data };
 };

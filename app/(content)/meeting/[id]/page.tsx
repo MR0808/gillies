@@ -13,9 +13,13 @@ export const revalidate = 60;
 export async function generateStaticParams() {
     const meetings = await getAllMeetings();
 
-    return meetings.map((w) => ({
-        id: w.id
-    }));
+    if (meetings.data) {
+        return meetings.data.map((w) => ({
+            id: w.id
+        }));
+    } else {
+        return [];
+    }
 }
 
 export default async function MeetingVotingPage({

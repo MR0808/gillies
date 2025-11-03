@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 import { format } from 'date-fns';
+import { unstable_cache } from 'next/cache';
 
 import PortalLayout from '@/components/portalLayout/PortalLayout';
 import { Button } from '@/components/ui/button';
@@ -45,16 +46,16 @@ export default async function MeetingVotingPage({
                         <Loader2 className="size-4 text-muted-foreground animate-spin" />
                     }
                 >
-                    {!results.meeting ? (
+                    {!results.data ? (
                         <div>No meeting results found</div>
                     ) : (
                         <>
                             <div className="flex items-start justify-between">
                                 <div>
                                     <p className="text-muted-foreground mt-2">
-                                        {results.meeting.location} •{' '}
+                                        {results.data.meetingName} •{' '}
                                         {format(
-                                            new Date(results.meeting.date),
+                                            new Date(results.data.meetingDate),
                                             'MMMM dd, yyyy'
                                         )}
                                     </p>
@@ -62,11 +63,11 @@ export default async function MeetingVotingPage({
                             </div>
                             <div className="space-y-6">
                                 <ResultsCharts
-                                    whiskies={results.meeting.whiskies}
+                                    whiskies={results.data.whiskies}
                                 />
                                 <ResultsTable
-                                    whiskies={results.meeting.whiskies}
-                                    quaichId={results.meeting.quaich}
+                                    whiskies={results.data.whiskies}
+                                    quaichId={results.data.meetingQuaich}
                                 />
                             </div>
                         </>

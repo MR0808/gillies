@@ -68,7 +68,8 @@ const MembersCSVUploadDialog = () => {
                 });
             } else {
                 toast.error('Upload failed', {
-                    description: result.error || 'Failed to process CSV'
+                    description:
+                        result.error?.toString() || 'Failed to process CSV'
                 });
             }
         } catch (error) {

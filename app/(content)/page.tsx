@@ -6,7 +6,7 @@ import { MeetingSelector } from '@/components/mainpage/MeetingSelector';
 const SettingsPage = async () => {
     const userSession = await authCheck('/');
 
-    const meetings = await getUserMeetings();
+    const meetings = await getUserMeetings(userSession.user.id);
 
     return (
         <PortalLayout userSession={userSession}>

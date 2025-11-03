@@ -1,11 +1,17 @@
 'use server';
 
 import * as z from 'zod';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
 
 import db from '@/lib/db';
 import { CreateMeetingSchema, UpdateMeetingSchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
+import { TAGS } from '@/cache/tags';
+import {
+    revalidateMeetingsList,
+    revalidateMeeting,
+    revalidateMeetingResults
+} from '@/cache/revalidate';
 
 type UserWithMeetings = {
     id: string;
@@ -20,348 +26,411 @@ type UserWithMeetings = {
     meetings: { id: string }[];
 };
 
-export const getAllMeetings = async () => {
-    const meetings = await db.whisky.findMany({
-        select: { id: true }
-    });
-
-    return meetings;
+const requireAdmin = async () => {
+    const session = await authCheckServer();
+    if (!session || session.user.role !== 'ADMIN') {
+        return { ok: false, error: { error: 'Not authorised' } };
+    }
+    return { ok: true };
 };
 
-export const getMeetings = async () => {
-    const userSession = await authCheckServer();
+// export const getAllMeetings = async () => {
+//     try {
+//         const meetings = await db.meeting.findMany({
+//             select: { id: true },
+//             orderBy: { date: 'asc' }
+//         });
+//         return { data: meetings };
+//     } catch (err) {
+//         return { error: 'Internal server error' };
+//     }
+// };
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
-
-    const meetings = await db.meeting.findMany({
-        orderBy: { date: 'asc' },
-        select: {
-            id: true,
-            date: true,
-            location: true,
-            quaich: true,
-            status: true
+export const getAllMeetings = unstable_cache(
+    async () => {
+        try {
+            const meetings = await db.meeting.findMany({
+                select: { id: true },
+                orderBy: { date: 'asc' }
+            });
+            return { data: meetings };
+        } catch (err) {
+            console.error('[getAllMeetings]', err);
+            return { error: 'Internal server error' };
         }
-    });
+    },
+    ['all-meetings'],
+    { revalidate: 120, tags: [TAGS.meetings] }
+);
 
-    if (!meetings.length) return { data: [] };
+// export const getMeetings = async () => {
+//     unstable_cache(
+//         async () => {
+//             const auth = await requireAdmin();
+//             if (!auth.ok) return auth.error;
 
-    const meetingIds = meetings.map((m) => m.id);
+//             try {
+//                 const meetings = await db.meeting.findMany({
+//                     orderBy: { date: 'asc' },
+//                     select: {
+//                         id: true,
+//                         date: true,
+//                         location: true,
+//                         quaich: true,
+//                         status: true
+//                     }
+//                 });
 
-    // Step 2: Fetch whiskies + users
-    const [whiskies, users] = await Promise.all([
-        db.whisky.findMany({
-            where: { meetingId: { in: meetingIds } },
-            orderBy: { order: 'asc' },
-            select: {
-                id: true,
-                name: true,
-                image: true,
-                description: true,
-                order: true,
-                meetingId: true,
-                quaich: true
+//                 if (!meetings.length) return { data: [] };
+//                 const meetingIds = meetings.map((m) => m.id);
+
+//                 // Parallelised related fetches (Accelerate-safe)
+//                 const [whiskies, users] = await Promise.all([
+//                     db.whisky.findMany({
+//                         where: { meetingId: { in: meetingIds } },
+//                         orderBy: { order: 'asc' },
+//                         select: {
+//                             id: true,
+//                             name: true,
+//                             image: true,
+//                             description: true,
+//                             order: true,
+//                             meetingId: true,
+//                             quaich: true
+//                         }
+//                     }),
+//                     db.user.findMany({
+//                         where: {
+//                             meetings: { some: { id: { in: meetingIds } } }
+//                         },
+//                         orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
+//                         select: {
+//                             id: true,
+//                             name: true,
+//                             lastName: true,
+//                             email: true,
+//                             image: true,
+//                             emailVerified: true,
+//                             role: true,
+//                             createdAt: true,
+//                             updatedAt: true,
+//                             meetings: { select: { id: true } }
+//                         }
+//                     }) as unknown as UserWithMeetings[]
+//                 ]);
+
+//                 const data = meetings.map((meeting) => ({
+//                     ...meeting,
+//                     whiskies: whiskies.filter(
+//                         (w) => w.meetingId === meeting.id
+//                     ),
+//                     users: users
+//                         .filter((u) =>
+//                             u.meetings.some((m) => m.id === meeting.id)
+//                         )
+//                         .map(({ meetings, ...rest }) => rest)
+//                 }));
+
+//                 return { data };
+//             } catch (err) {
+//                 return { error: 'Internal server error' };
+//             }
+//         },
+//         ['meetings-list'],
+//         { revalidate: 60, tags: ['meetings', 'whiskies', 'users'] }
+//     );
+// };
+
+// export const getMeeting = async (id: string) => {
+//     const auth = await requireAdmin();
+//     if (!auth.ok) return { data: null, error: auth.error };
+//     if (!id) return { data: null, error: 'Missing id!' };
+
+//     try {
+//         const meeting = await db.meeting.findUnique({
+//             where: { id },
+//             select: {
+//                 id: true,
+//                 date: true,
+//                 location: true,
+//                 status: true,
+//                 quaich: true
+//             }
+//         });
+
+//         if (!meeting) return { data: null, error: 'Not found' };
+
+//         const [whiskies, users] = await Promise.all([
+//             db.whisky.findMany({
+//                 where: { meetingId: id },
+//                 orderBy: { order: 'asc' },
+//                 select: {
+//                     id: true,
+//                     name: true,
+//                     image: true,
+//                     description: true,
+//                     order: true,
+//                     quaich: true
+//                 }
+//             }),
+//             db.user.findMany({
+//                 where: { meetings: { some: { id } } },
+//                 orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
+//                 select: {
+//                     id: true,
+//                     image: true,
+//                     name: true,
+//                     lastName: true,
+//                     email: true
+//                 }
+//             })
+//         ]);
+
+//         return { data: { ...meeting, whiskies, users }, error: null };
+//     } catch (err) {
+//         return { data: null, error: 'Internal server error' };
+//     }
+// };
+
+export async function getMeetings() {
+    return unstable_cache(
+        async () => {
+            const auth = await requireAdmin();
+            if (!auth.ok) return { data: null, error: auth.error };
+
+            try {
+                const meetings = await db.meeting.findMany({
+                    orderBy: { date: 'asc' },
+                    select: {
+                        id: true,
+                        date: true,
+                        location: true,
+                        quaich: true,
+                        status: true
+                    }
+                });
+
+                if (!meetings.length) return { data: [] };
+
+                const meetingIds = meetings.map((m) => m.id);
+
+                const [whiskies, users] = await Promise.all([
+                    db.whisky.findMany({
+                        where: { meetingId: { in: meetingIds } },
+                        orderBy: { order: 'asc' },
+                        select: {
+                            id: true,
+                            name: true,
+                            image: true,
+                            description: true,
+                            order: true,
+                            meetingId: true,
+                            quaich: true
+                        }
+                    }),
+                    db.user.findMany({
+                        where: {
+                            meetings: { some: { id: { in: meetingIds } } }
+                        },
+                        orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
+                        select: {
+                            id: true,
+                            name: true,
+                            lastName: true,
+                            email: true,
+                            image: true,
+                            emailVerified: true,
+                            role: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            meetings: { select: { id: true } }
+                        }
+                    }) as unknown as UserWithMeetings[]
+                ]);
+
+                const data = meetings.map((meeting) => ({
+                    ...meeting,
+                    whiskies: whiskies.filter(
+                        (w) => w.meetingId === meeting.id
+                    ),
+                    users: users
+                        .filter((u) =>
+                            u.meetings.some((m) => m.id === meeting.id)
+                        )
+                        .map(({ meetings, ...rest }) => rest)
+                }));
+
+                return { data, error: null };
+            } catch (err) {
+                return { data: null, error: 'Internal server error' };
             }
-        }),
-        db.user.findMany({
-            where: { meetings: { some: { id: { in: meetingIds } } } },
-            orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
-            // ✅ Explicitly include meetings relation
-            select: {
-                id: true,
-                name: true,
-                lastName: true,
-                email: true,
-                image: true,
-                emailVerified: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-                meetings: { select: { id: true } } // required for join matching
+        },
+        ['meetings-list'], // cache key
+        { revalidate: 60, tags: [TAGS.meetings] } // tag for manual revalidation
+    )();
+}
+
+export async function getMeeting(id: string) {
+    return unstable_cache(
+        async () => {
+            const auth = await requireAdmin();
+            if (!auth.ok) return { data: null, error: auth.error };
+            if (!id) return { data: null, error: 'Missing id!' };
+
+            try {
+                // --- Step 1: Fetch meeting
+                const meeting = await db.meeting.findUnique({
+                    where: { id },
+                    select: {
+                        id: true,
+                        date: true,
+                        location: true,
+                        status: true,
+                        quaich: true
+                    }
+                });
+
+                if (!meeting) return { data: null, error: 'Not found' };
+
+                // --- Step 2: Fetch related entities in parallel
+                const [whiskies, users] = await Promise.all([
+                    db.whisky.findMany({
+                        where: { meetingId: id },
+                        orderBy: { order: 'asc' },
+                        select: {
+                            id: true,
+                            name: true,
+                            image: true,
+                            description: true,
+                            order: true,
+                            quaich: true
+                        }
+                    }),
+                    db.user.findMany({
+                        where: { meetings: { some: { id } } },
+                        orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
+                        select: {
+                            id: true,
+                            image: true,
+                            name: true,
+                            lastName: true,
+                            email: true
+                        }
+                    })
+                ]);
+
+                // --- Step 3: Return merged data
+                return { data: { ...meeting, whiskies, users }, error: null };
+            } catch (err) {
+                console.error('[getMeeting]', err);
+                return { data: null, error: 'Internal server error' };
             }
-        }) as unknown as UserWithMeetings[] // <-- ✅ forces correct type
-    ]);
-
-    // Step 3: Merge data
-    const data = meetings.map((meeting) => ({
-        ...meeting,
-        whiskies: whiskies.filter((w) => w.meetingId === meeting.id),
-        users: users
-            .filter((u) => u.meetings.some((m) => m.id === meeting.id))
-            .map(({ meetings, ...u }) => u) // remove internal link
-    }));
-
-    // const data = await db.meeting.findMany({
-    //     orderBy: {
-    //         date: 'asc'
-    //     },
-    //     select: {
-    //         id: true,
-    //         date: true,
-    //         location: true,
-    //         quaich: true,
-    //         status: true,
-    //         whiskies: {
-    //             select: {
-    //                 id: true,
-    //                 quaich: true,
-    //                 name: true,
-    //                 image: true,
-    //                 description: true,
-    //                 order: true,
-    //                 meetingId: true
-    //             },
-    //             orderBy: { order: 'asc' }
-    //         },
-    //         users: {
-    //             select: {
-    //                 id: true,
-    //                 image: true,
-    //                 name: true,
-    //                 lastName: true,
-    //                 email: true
-    //             },
-    //             orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
-    //         }
-    //     }
-    // });
-
-    return { data };
-};
-
-export const getMeeting = async (id: string) => {
-    const userSession = await authCheckServer();
-
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
-
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
-
-    const meeting = await db.meeting.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            date: true,
-            location: true,
-            status: true,
-            quaich: true
-        }
-    });
-
-    if (!meeting) return null;
-
-    const [whiskies, users] = await Promise.all([
-        db.whisky.findMany({
-            where: { meetingId: id },
-            orderBy: { order: 'asc' },
-            select: {
-                id: true,
-                name: true,
-                image: true,
-                description: true,
-                order: true,
-                quaich: true
-            }
-        }),
-        db.user.findMany({
-            where: { meetings: { some: { id } } },
-            orderBy: [{ name: 'asc' }, { lastName: 'asc' }],
-            select: {
-                id: true,
-                image: true,
-                name: true,
-                lastName: true,
-                email: true
-            }
-        })
-    ]);
-
-    const data = { ...meeting, whiskies, users };
-
-    // const data = await db.meeting.findUnique({
-    //     where: { id },
-    //     select: {
-    //         id: true,
-    //         date: true,
-    //         location: true,
-    //         quaich: true,
-    //         status: true,
-    //         whiskies: {
-    //             select: {
-    //                 id: true,
-    //                 quaich: true,
-    //                 name: true,
-    //                 image: true,
-    //                 description: true,
-    //                 order: true,
-    //                 meetingId: true
-    //             },
-    //             orderBy: { order: 'asc' }
-    //         },
-    //         users: {
-    //             select: {
-    //                 id: true,
-    //                 image: true,
-    //                 name: true,
-    //                 lastName: true,
-    //                 email: true
-    //             },
-    //             orderBy: [{ lastName: 'asc' }, { name: 'asc' }]
-    //         }
-    //     }
-    // });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    return { data };
-};
+        },
+        [`meeting:${id}`],
+        { revalidate: 60, tags: [TAGS.meeting(id)] }
+    )();
+}
 
 export const createMeeting = async (
     values: z.infer<typeof CreateMeetingSchema>
 ) => {
-    const userSession = await authCheckServer();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { error: auth.error || 'Not authorised' };
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
+    const validated = CreateMeetingSchema.safeParse(values);
+    if (!validated.success) return { error: 'Invalid fields!' };
+
+    try {
+        const meeting = await db.meeting.create({ data: validated.data });
+        revalidateMeetingsList();
+        revalidateMeeting(meeting.id);
+        return { data: meeting };
+    } catch (err) {
+        return { error: 'Internal server error' };
     }
-
-    const validatedFields = CreateMeetingSchema.safeParse(values);
-
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields!' };
-    }
-
-    const data = await db.meeting.create({
-        data: {
-            ...values
-        }
-    });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    revalidatePath(`/dashboard/meetings`);
-
-    return { data };
 };
 
 export const updateMeeting = async (
     values: z.infer<typeof UpdateMeetingSchema>,
     id: string
 ) => {
-    const userSession = await authCheckServer();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { error: auth.error || 'Not authorised' };
+    if (!id) return { error: 'Missing id!' };
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
+    const validated = UpdateMeetingSchema.safeParse(values);
+    if (!validated.success) return { error: 'Invalid fields!' };
+
+    try {
+        const updated = await db.meeting.update({
+            where: { id },
+            data: validated.data
+        });
+
+        revalidateMeetingsList();
+        revalidateMeeting(id);
+        revalidateMeetingResults(id);
+        return { data: updated };
+    } catch (err) {
+        return { error: 'Internal server error' };
     }
-
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
-
-    const validatedFields = UpdateMeetingSchema.safeParse(values);
-
-    if (!validatedFields.success) {
-        return { error: 'Invalid fields!' };
-    }
-
-    const data = await db.meeting.update({
-        where: {
-            id
-        },
-        data: {
-            ...values
-        }
-    });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    revalidatePath(`/dashboard/meetings/${data.id}`);
-
-    return { data };
 };
 
 export const closeMeeting = async (id: string) => {
-    const userSession = await authCheckServer();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { error: auth.error || 'Not authorised' };
+    if (!id) return { error: 'Missing id!' };
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
+    try {
+        const updated = await db.meeting.update({
+            where: { id },
+            data: { status: 'CLOSED' }
+        });
+
+        revalidateMeetingsList();
+        revalidateMeeting(id);
+        revalidateMeetingResults(id);
+        return { data: updated };
+    } catch (err) {
+        return { error: 'Internal server error' };
     }
-
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
-
-    const data = await db.meeting.update({
-        where: {
-            id
-        },
-        data: {
-            status: 'CLOSED'
-        }
-    });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    revalidatePath(`/dashboard/meetings/`);
-    revalidatePath(`/dashboard/meetings/${data.id}`);
-
-    return { data };
 };
 
 export const addMemberToMeeting = async (meetingId: string, userId: string) => {
-    const userSession = await authCheckServer();
+    const auth = await requireAdmin();
+    if (!auth.ok) return { error: auth.error || 'Not authorised' };
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
+    try {
+        await db.meeting.update({
+            where: { id: meetingId },
+            data: { users: { connect: { id: userId } } }
+        });
+
+        revalidateMeeting(meetingId);
+        revalidateMeetingsList();
+        return { success: true };
+    } catch (err) {
+        return { error: 'Internal server error' };
     }
-
-    // Mock: Add user to meeting
-    await db.meeting.update({
-        where: { id: meetingId },
-        data: {
-            users: {
-                connect: { id: userId }
-            }
-        }
-    });
-
-    revalidatePath(`/dashboard/meetings/${meetingId}`);
-    return { success: true };
 };
 
 export const removeMemberFromMeeting = async (
     meetingId: string,
     userId: string
 ) => {
-    const userSession = await authCheckServer();
+    const auth = await requireAdmin();
+    if (!auth.ok) return auth.error;
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
+    try {
+        await db.meeting.update({
+            where: { id: meetingId },
+            data: { users: { disconnect: { id: userId } } }
+        });
+
+        revalidateMeeting(meetingId);
+        revalidateMeetingsList();
+        return { success: true };
+    } catch (err) {
+        return { error: 'Internal server error' };
     }
-
-    // Mock: Remove user from meeting
-    await db.meeting.update({
-        where: { id: meetingId },
-        data: {
-            users: {
-                disconnect: { id: userId }
-            }
-        }
-    });
-
-    revalidatePath(`/dashboard/meetings/${meetingId}`);
-    return { success: true };
 };

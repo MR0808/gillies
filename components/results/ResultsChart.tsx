@@ -35,16 +35,18 @@ export function ResultsCharts({ whiskies }: ResultsChartsProps) {
     const chartData = whiskies
         .map((whisky) => ({
             name: whisky.name,
-            average: calculateAverage(whisky.reviews),
-            votes: whisky.reviews.length
+            average: calculateAverage(whisky.reviewers),
+            votes: whisky.reviewers.length
         }))
         .sort((a, b) => b.average - a.average);
 
     const overallStats = {
-        totalVotes: whiskies.reduce((sum, w) => sum + w.reviews.length, 0),
+        totalVotes: whiskies.reduce((sum, w) => sum + w.reviewers.length, 0),
         averageRating: (
-            whiskies.reduce((sum, w) => sum + calculateAverage(w.reviews), 0) /
-            whiskies.length
+            whiskies.reduce(
+                (sum, w) => sum + calculateAverage(w.reviewers),
+                0
+            ) / whiskies.length
         ).toFixed(1),
         topRated: chartData[0]
     };

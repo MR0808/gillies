@@ -41,7 +41,7 @@ const MeetingDetailsForm = ({ meeting }: { meeting: Meeting }) => {
                 toast.success('Meeting updated');
             }
             if (data.error) {
-                toast.error(data.error);
+                toast.error(data.error.toString());
             }
         });
     };

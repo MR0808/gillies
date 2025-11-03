@@ -51,7 +51,9 @@ export function CreateMeetingDialog() {
                 form.reset();
                 router.refresh();
             } else {
-                toast.error(result.error || 'Failed to create meeting');
+                toast.error(
+                    result.error.toString || 'Failed to create meeting'
+                );
             }
         } catch (error) {
             toast.error('Error');

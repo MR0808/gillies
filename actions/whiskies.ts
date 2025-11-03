@@ -1,84 +1,82 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 import { Whisky } from '@/generated/prisma';
 
+import { TAGS } from '@/cache/tags';
+import {
+    revalidateMeeting,
+    revalidateMeetingResults,
+    revalidateMeetingsList,
+    revalidateWhiskies,
+    revalidateWhisky
+} from '@/cache/revalidate';
 import db from '@/lib/db';
 import { deleteImage } from '@/utils/supabase';
 import { WhiskySchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 
-export const getAllWhiskies = async () => {
-    const whiskies = await db.whisky.findMany({
-        select: { id: true }
-    });
+export const getAllWhiskies = unstable_cache(
+    async () => {
+        const whiskies = await db.whisky.findMany({
+            select: { id: true }
+        });
+        return { data: whiskies };
+    },
+    ['whiskies-list'],
+    { revalidate: 300, tags: [TAGS.meetings] } // Shared under meetings-level cache
+);
 
-    return whiskies;
-};
+export async function getMeetingWhiskies(meetingId: string) {
+    return unstable_cache(
+        async () => {
+            const session = await authCheckServer();
+            if (!session || session.user.role !== 'ADMIN')
+                return { error: 'Not authorised' };
+            if (!meetingId) return { error: 'Missing meetingId' };
 
-export const getMeetingWhiskies = async (meetingId: string) => {
-    const userSession = await authCheckServer();
+            const whiskies = await db.whisky.findMany({
+                where: { meetingId },
+                orderBy: { order: 'asc' }
+            });
 
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
+            return { data: whiskies };
+        },
+        [`meeting-whiskies:${meetingId}`],
+        { revalidate: 120, tags: [TAGS.meetingWhiskies(meetingId)] }
+    )();
+}
 
-    if (!meetingId) {
-        return { error: 'Bad request' };
-    }
+export async function getMeetingWhisky(id: string) {
+    return unstable_cache(
+        async () => {
+            const session = await authCheckServer();
+            if (!session || session.user.role !== 'ADMIN')
+                return { error: 'Not authorised' };
+            if (!id) return { error: 'Missing id!' };
 
-    const data = await db.whisky.findMany({
-        where: { meetingId },
-        orderBy: {
-            order: 'asc'
-        }
-    });
+            const whisky = await db.whisky.findUnique({
+                where: { id }
+            });
 
-    return { data };
-};
-
-export const getMeetingWhisky = async (id: string) => {
-    const userSession = await authCheckServer();
-
-    if (!userSession || userSession.user.role !== 'ADMIN') {
-        return { error: 'Not authorised' };
-    }
-
-    if (!id) {
-        return { error: 'Bad request' };
-    }
-
-    const data = await db.whisky.findUnique({
-        where: { id }
-    });
-
-    if (!data) {
-        return { error: 'Not found' };
-    }
-
-    return { data };
-};
+            if (!whisky) return { error: 'Not found' };
+            return { data: whisky };
+        },
+        [`whisky:${id}`],
+        { revalidate: 120, tags: [TAGS.whisky(id)] }
+    )();
+}
 
 export const deleteWhisky = async (id: string) => {
-    const userSession = await authCheckServer();
-
-    if (!userSession || userSession.user.role !== 'ADMIN') {
+    const session = await authCheckServer();
+    if (!session || session.user.role !== 'ADMIN')
         return { error: 'Not authorised' };
-    }
-
-    if (!id) {
-        return { error: 'Missing id!' };
-    }
+    if (!id) return { error: 'Missing id!' };
 
     const whisky = await db.whisky.findUnique({ where: { id } });
+    if (!whisky) return { error: 'Missing whisky' };
 
-    if (!whisky) {
-        return { error: 'Missing whisky' };
-    }
-
-    if (whisky.image) {
-        await deleteImage(whisky.image, 'images');
-    }
+    if (whisky.image) await deleteImage(whisky.image, 'images');
 
     if (whisky.quaich) {
         await db.meeting.update({
@@ -87,19 +85,15 @@ export const deleteWhisky = async (id: string) => {
         });
     }
 
-    const data = await db.whisky.delete({
-        where: {
-            id
-        }
-    });
+    await db.whisky.delete({ where: { id } });
 
-    if (!data) {
-        return { error: 'Not found' };
-    }
+    // 🔄 Cache revalidation cascade
+    await revalidateMeeting(whisky.meetingId);
+    await revalidateMeetingResults(whisky.meetingId);
+    await revalidateMeetingsList();
+    await revalidateWhiskies(whisky.meetingId);
 
-    revalidatePath(`/dashboard/meetings/${data.meetingId}`);
-
-    return { data };
+    return { success: true };
 };
 
 export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
@@ -184,6 +178,10 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
         });
     }
 
-    revalidatePath(`/dashboard/meetings/${meetingId}`);
+    await revalidateMeeting(meetingId);
+    await revalidateMeetingResults(meetingId);
+    await revalidateMeetingsList();
+    await revalidateWhiskies(whisky.meetingId);
+    await revalidateWhisky(whisky.id);
     return { success: true };
 };

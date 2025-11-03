@@ -31,7 +31,7 @@ const CloseMeetingDialog = ({
                 toast.success('Meeting closed');
             }
             if (data.error) {
-                toast.error(data.error);
+                toast.error(data.error.toString());
             }
         });
     }
