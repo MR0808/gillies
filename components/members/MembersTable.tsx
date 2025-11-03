@@ -91,15 +91,15 @@ const MembersTable = ({ users }: UsersTableProps) => {
         }
     };
 
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(new Date(date));
-    };
+    // const formatDate = (date: Date) => {
+    //     return new Intl.DateTimeFormat('en-GB', {
+    //         day: '2-digit',
+    //         month: 'short',
+    //         year: 'numeric',
+    //         hour: '2-digit',
+    //         minute: '2-digit'
+    //     }).format(new Date(date));
+    // };
 
     // Filter users based on search query and filters
     const filteredUsers = useMemo(() => {
@@ -435,10 +435,10 @@ const MembersTable = ({ users }: UsersTableProps) => {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {formatDate(user.createdAt)}
+                                        {/* {formatDate(user.createdAt)} */}
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {formatDate(user.updatedAt)}
+                                        {/* {formatDate(user.updatedAt)} */}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
