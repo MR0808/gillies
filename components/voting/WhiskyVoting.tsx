@@ -81,6 +81,7 @@ function WhiskyVotingCard({
                 const data = await createVote(parsed);
                 if (data.success) {
                     setSuccess(true);
+                    form.reset();
                     toast.success('Review submitted successfully!');
                 }
                 if (data.error) {
