@@ -193,11 +193,13 @@ export const getAllMeetings = unstable_cache(
 // };
 
 export async function getMeetings() {
-    return unstable_cache(
-        async () => {
-            const auth = await requireAdmin();
-            if (!auth.ok) return { data: null, error: auth.error };
+    // ✅ 1️⃣ Run dynamic logic *outside* the cache
+    const auth = await requireAdmin();
+    if (!auth.ok) return { data: null, error: auth.error };
 
+    // ✅ 2️⃣ Pure cached query block
+    const cachedFn = unstable_cache(
+        async () => {
             try {
                 const meetings = await db.meeting.findMany({
                     orderBy: { date: 'asc' },
@@ -214,6 +216,7 @@ export async function getMeetings() {
 
                 const meetingIds = meetings.map((m) => m.id);
 
+                // Parallelised fetches (Accelerate-safe)
                 const [whiskies, users] = await Promise.all([
                     db.whisky.findMany({
                         where: { meetingId: { in: meetingIds } },
@@ -248,6 +251,7 @@ export async function getMeetings() {
                     }) as unknown as UserWithMeetings[]
                 ]);
 
+                // Merge results efficiently
                 const data = meetings.map((meeting) => ({
                     ...meeting,
                     whiskies: whiskies.filter(
@@ -262,25 +266,34 @@ export async function getMeetings() {
 
                 return { data, error: null };
             } catch (err) {
+                console.error('[getMeetings]', err);
                 return { data: null, error: 'Internal server error' };
             }
         },
-        ['meetings-list'], // cache key
-        { revalidate: 60, tags: [TAGS.meetings] } // tag for manual revalidation
-    )();
+        ['meetings-list'], // cache key parts
+        {
+            revalidate: 60, // 1 minute cache lifetime
+            tags: [TAGS.meetings]
+        }
+    );
+
+    // ✅ 3️⃣ Return the cached data
+    return cachedFn();
 }
 
 export async function getMeeting(id: string) {
-    return unstable_cache(
-        async () => {
-            const auth = await requireAdmin();
-            if (!auth.ok) return { data: null, error: auth.error };
-            if (!id) return { data: null, error: 'Missing id!' };
+    // ✅ Step 1: Do dynamic operations *outside* the cache
+    const auth = await requireAdmin();
+    if (!auth.ok) return { data: null, error: auth.error };
+    if (!id) return { data: null, error: 'Missing id!' };
 
+    // ✅ Step 2: Define the cached pure query
+    const cachedFn = unstable_cache(
+        async (meetingId: string) => {
             try {
                 // --- Step 1: Fetch meeting
                 const meeting = await db.meeting.findUnique({
-                    where: { id },
+                    where: { id: meetingId },
                     select: {
                         id: true,
                         date: true,
@@ -295,7 +308,7 @@ export async function getMeeting(id: string) {
                 // --- Step 2: Fetch related entities in parallel
                 const [whiskies, users] = await Promise.all([
                     db.whisky.findMany({
-                        where: { meetingId: id },
+                        where: { meetingId },
                         orderBy: { order: 'asc' },
                         select: {
                             id: true,
@@ -307,7 +320,7 @@ export async function getMeeting(id: string) {
                         }
                     }),
                     db.user.findMany({
-                        where: { meetings: { some: { id } } },
+                        where: { meetings: { some: { id: meetingId } } },
                         orderBy: [{ lastName: 'asc' }, { name: 'asc' }],
                         select: {
                             id: true,
@@ -326,9 +339,16 @@ export async function getMeeting(id: string) {
                 return { data: null, error: 'Internal server error' };
             }
         },
+        // cache key
         [`meeting:${id}`],
-        { revalidate: 60, tags: [TAGS.meeting(id)] }
-    )();
+        {
+            revalidate: 60,
+            tags: [TAGS.meeting(id), TAGS.meetings]
+        }
+    );
+
+    // ✅ Step 3: Execute and return cached data
+    return cachedFn(id);
 }
 
 export const createMeeting = async (

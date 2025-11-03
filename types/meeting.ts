@@ -1,5 +1,5 @@
 import { getMeeting } from '@/actions/meetings';
-import { getMembersFirstName } from '@/actions/members';
+import { getMembers } from '@/actions/members';
 
 export type GetMeetingReturn = Awaited<ReturnType<typeof getMeeting>>;
 
@@ -25,14 +25,11 @@ export type Member =
             : never
         : never;
 
-export type GetMembersFirstNameReturn = Awaited<
-    ReturnType<typeof getMembersFirstName>
->;
+export type GetMembersFirstNameReturn = Awaited<ReturnType<typeof getMembers>>;
 
-export type Members = Extract<
-    GetMembersFirstNameReturn,
-    { data: unknown }
->['data'];
+export type Members = NonNullable<
+    Extract<GetMembersFirstNameReturn, { data: unknown }>['data']
+>;
 
 export interface MeetingsTableProps {
     meetings: Meeting[];

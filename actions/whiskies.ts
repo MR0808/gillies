@@ -28,43 +28,90 @@ export const getAllWhiskies = unstable_cache(
 );
 
 export async function getMeetingWhiskies(meetingId: string) {
-    return unstable_cache(
-        async () => {
-            const session = await authCheckServer();
-            if (!session || session.user.role !== 'ADMIN')
-                return { error: 'Not authorised' };
-            if (!meetingId) return { error: 'Missing meetingId' };
+    // ✅ 1️⃣ Do dynamic session logic outside cache
+    const session = await authCheckServer();
+    if (!session || session.user.role !== 'ADMIN') {
+        return { data: null, error: 'Not authorised' };
+    }
 
+    if (!meetingId) return { error: 'Missing meetingId' };
+
+    // ✅ 2️⃣ Define pure cached query (no headers/cookies here)
+    const cachedFn = unstable_cache(
+        async (mId: string) => {
             const whiskies = await db.whisky.findMany({
-                where: { meetingId },
-                orderBy: { order: 'asc' }
+                where: { meetingId: mId },
+                orderBy: { order: 'asc' },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    image: true,
+                    order: true,
+                    quaich: true,
+                    meetingId: true
+                }
             });
 
             return { data: whiskies };
         },
         [`meeting-whiskies:${meetingId}`],
-        { revalidate: 120, tags: [TAGS.meetingWhiskies(meetingId)] }
-    )();
+        {
+            revalidate: 120, // 2 min cache window
+            tags: [
+                TAGS.meeting(meetingId), // invalidate when meeting changes
+                TAGS.meetingWhiskies(meetingId) // specific tag for whiskies
+            ]
+        }
+    );
+
+    // ✅ 3️⃣ Execute cached function
+    return cachedFn(meetingId);
 }
 
 export async function getMeetingWhisky(id: string) {
-    return unstable_cache(
-        async () => {
-            const session = await authCheckServer();
-            if (!session || session.user.role !== 'ADMIN')
-                return { error: 'Not authorised' };
-            if (!id) return { error: 'Missing id!' };
+    // ✅ 1️⃣ Do dynamic session logic *outside* cache
+    const session = await authCheckServer();
+    if (!session || session.user.role !== 'ADMIN') {
+        return { error: 'Not authorised' };
+    }
 
+    if (!id) {
+        return { error: 'Missing id!' };
+    }
+
+    // ✅ 2️⃣ Define pure cached query (no headers/cookies here)
+    const cachedFn = unstable_cache(
+        async (whiskyId: string) => {
             const whisky = await db.whisky.findUnique({
-                where: { id }
+                where: { id: whiskyId },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    image: true,
+                    order: true,
+                    quaich: true,
+                    meetingId: true
+                }
             });
 
             if (!whisky) return { error: 'Not found' };
             return { data: whisky };
         },
+        // Unique key per whisky
         [`whisky:${id}`],
-        { revalidate: 120, tags: [TAGS.whisky(id)] }
-    )();
+        {
+            revalidate: 120, // 2-minute cache lifetime
+            tags: [
+                TAGS.whisky(id), // whisky-specific tag
+                TAGS.meetingWhiskies(id) // link to whisky lists
+            ]
+        }
+    );
+
+    // ✅ 3️⃣ Execute cached function
+    return cachedFn(id);
 }
 
 export const deleteWhisky = async (id: string) => {

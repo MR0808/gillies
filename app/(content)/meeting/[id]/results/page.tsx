@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 import { format } from 'date-fns';
-import { unstable_cache } from 'next/cache';
 
 import PortalLayout from '@/components/portalLayout/PortalLayout';
 import { Button } from '@/components/ui/button';

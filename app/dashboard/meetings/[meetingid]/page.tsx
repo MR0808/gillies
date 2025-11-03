@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { getMeeting } from '@/actions/meetings';
 import { authCheckAdmin } from '@/lib/authCheck';
 import MeetingManager from '@/components/meetings/view/MeetingManager';
-import { getMembersFirstName } from '@/actions/members';
+import { getMembers } from '@/actions/members';
 
 const breadcrumbItems = [
     { title: 'Dashboard', link: '/dashboard' },
@@ -25,7 +25,7 @@ const MeetingEditPage = async (props: {
     );
     const meeting = await getMeeting(params.meetingid);
 
-    const allMembers = await getMembersFirstName();
+    const allMembers = await getMembers();
 
     if (!allMembers.data || !meeting) {
         return (

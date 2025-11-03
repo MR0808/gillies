@@ -7,17 +7,18 @@ import { authCheckServer } from '@/lib/authCheck';
 import { TAGS } from '@/cache/tags';
 
 export async function getMeetingResults(meetingId: string) {
-    return unstable_cache(
-        async () => {
-            // --- Security ---
-            const userSession = await authCheckServer();
-            if (!userSession) return { error: 'Not authorised' };
-            if (!meetingId) return { error: 'Missing id!' };
+    // ✅ 1️⃣ Dynamic operations outside the cache
+    const userSession = await authCheckServer();
+    if (!userSession) return { data: null, error: 'Not authorised' };
+    if (!meetingId) return { data: null, error: 'Missing id!' };
 
+    // ✅ 2️⃣ Define the cached function (pure DB logic)
+    const cachedFn = unstable_cache(
+        async (id: string) => {
             try {
                 // --- Step 1: Base meeting info ---
                 const meeting = await db.meeting.findUnique({
-                    where: { id: meetingId },
+                    where: { id },
                     select: {
                         id: true,
                         date: true,
@@ -26,11 +27,11 @@ export async function getMeetingResults(meetingId: string) {
                     }
                 });
 
-                if (!meeting) return { error: 'Meeting not found' };
+                if (!meeting) return { data: null, error: 'Meeting not found' };
 
-                // --- Step 2: Whiskies in this meeting ---
+                // --- Step 2: Fetch whiskies ---
                 const whiskies = await db.whisky.findMany({
-                    where: { meetingId },
+                    where: { meetingId: id },
                     orderBy: { order: 'asc' },
                     select: {
                         id: true,
@@ -43,6 +44,7 @@ export async function getMeetingResults(meetingId: string) {
 
                 if (!whiskies.length)
                     return { error: 'No whiskies found for meeting' };
+
                 const whiskyIds = whiskies.map((w) => w.id);
 
                 // --- Step 3: Aggregate review stats ---
@@ -63,7 +65,7 @@ export async function getMeetingResults(meetingId: string) {
                     _min: { rating: true }
                 })) as unknown as ReviewStats[];
 
-                // --- Step 4: Get individual reviews + user info ---
+                // --- Step 4: Get all review details + user info ---
                 const reviewUsers = await db.review.findMany({
                     where: { whiskyId: { in: whiskyIds } },
                     select: {
@@ -78,19 +80,15 @@ export async function getMeetingResults(meetingId: string) {
                     orderBy: { createdAt: 'desc' }
                 });
 
-                // --- Step 5: Merge into final data structure ---
-                const data = whiskies.map((w) => {
+                // --- Step 5: Merge results ---
+                const whiskiesWithStats = whiskies.map((w) => {
                     const stats = reviewStats.find((r) => r.whiskyId === w.id);
                     const reviewers = reviewUsers.filter(
                         (r) => r.whiskyId === w.id
                     );
 
                     return {
-                        id: w.id,
-                        name: w.name,
-                        description: w.description,
-                        image: w.image,
-                        order: w.order,
+                        ...w,
                         average: stats?._avg.rating ?? 0,
                         count: stats?._count.rating ?? 0,
                         min: stats?._min.rating ?? 0,
@@ -105,14 +103,22 @@ export async function getMeetingResults(meetingId: string) {
                         meetingName: meeting.location,
                         meetingDate: meeting.date,
                         meetingQuaich: meeting.quaich,
-                        whiskies: data
-                    }
+                        whiskies: whiskiesWithStats
+                    },
+                    error: null
                 };
             } catch (err) {
-                return { error: 'Internal server error' };
+                return { error: 'Internal server error', data: null };
             }
         },
-        [`meeting-results:${meetingId}`], // per-meeting key
-        { revalidate: 60, tags: [TAGS.meetingResults(meetingId)] }
-    )(); // call immediately
+        // cache key + config
+        [`meeting-results:${meetingId}`],
+        {
+            revalidate: 60,
+            tags: [TAGS.meetingResults(meetingId), TAGS.meeting(meetingId)]
+        }
+    );
+
+    // ✅ 3️⃣ Execute cached function
+    return cachedFn(meetingId);
 }

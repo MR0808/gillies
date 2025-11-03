@@ -8,18 +8,21 @@ import { ReviewServerInput, ReviewServerSchema } from '@/schemas/voting';
 import { revalidateMeetingResults } from '@/cache/revalidate';
 import { TAGS } from '@/cache/tags';
 
-export async function getUserMeetings(userId: string) {
-    return unstable_cache(
-        async () => {
-            const session = await authCheckServer();
-            if (!session) return { error: 'Not authorised' };
+export async function getUserMeetings(userId?: string) {
+    // ✅ 1️⃣ Do dynamic session logic outside cache
+    const session = await authCheckServer();
+    if (!session) return { data: null, error: 'Not authorised' };
 
-            const { user } = session;
+    // Determine target user ID (either provided or current session)
+    const effectiveUserId = userId || session.user.id;
 
+    // ✅ 2️⃣ Define pure cached function
+    const cachedFn = unstable_cache(
+        async (uid: string) => {
             try {
-                // Fetch meetings joined by this user
+                // --- Step 1: Fetch meetings joined by user ---
                 const meetings = await db.meeting.findMany({
-                    where: { users: { some: { id: user.id } } },
+                    where: { users: { some: { id: uid } } },
                     orderBy: { date: 'desc' },
                     select: {
                         id: true,
@@ -31,7 +34,7 @@ export async function getUserMeetings(userId: string) {
 
                 if (!meetings.length) return { data: [] };
 
-                // Fetch whiskies per meeting in one go
+                // --- Step 2: Fetch whiskies for all those meetings ---
                 const whiskies = await db.whisky.findMany({
                     where: { meetingId: { in: meetings.map((m) => m.id) } },
                     orderBy: { order: 'asc' },
@@ -44,75 +47,103 @@ export async function getUserMeetings(userId: string) {
                     }
                 });
 
-                // Merge manually (Accelerate-safe)
+                // --- Step 3: Merge safely ---
                 const data = meetings.map((m) => ({
                     ...m,
                     whiskies: whiskies.filter((w) => w.meetingId === m.id)
                 }));
 
-                return { data };
+                return { data, error: null };
             } catch (err) {
-                return { error: 'Internal server error' };
+                console.error('[getUserMeetings]', err);
+                return { error: 'Internal server error', data: null };
             }
         },
-        [`meetings`],
-        { revalidate: 120, tags: [TAGS.meetings] }
-    )();
+        // ✅ Unique cache key per user
+        [`user-meetings:${effectiveUserId}`],
+        {
+            revalidate: 120, // cache lifespan (2 min)
+            tags: [
+                TAGS.meetings, // all meetings cache
+                TAGS.meetingResults(effectiveUserId) // cross-link if used in dashboards
+            ]
+        }
+    );
+
+    // ✅ 3️⃣ Return cached result
+    return cachedFn(effectiveUserId);
 }
 
-export const getMeetingWhiskies = async (meetingId: string) => {
+export async function getMeetingWhiskies(meetingId: string) {
+    // ✅ 1️⃣ Dynamic operations outside the cache
     const session = await authCheckServer();
-    if (!session) return { error: 'Not authorised' };
-    if (!meetingId) return { error: 'Missing meeting ID' };
+    if (!session) return { data: null, error: 'Not authorised' };
+    if (!meetingId) return { data: null, error: 'Missing meeting ID' };
 
     const { user } = session;
+    const dbUser = await db.user.findUnique({ where: { id: user.id } });
+    if (!dbUser) return { data: null, error: 'Unauthorised' };
 
-    try {
-        const dbUser = await db.user.findUnique({ where: { id: user.id } });
-        if (!dbUser) return { error: 'Unauthorised' };
+    // ✅ 2️⃣ Define pure cached query (Accelerate-safe)
+    const cachedFn = unstable_cache(
+        async (mId: string, uId: string) => {
+            try {
+                // --- Step 1: Fetch whiskies for meeting ---
+                const whiskies = await db.whisky.findMany({
+                    where: { meetingId: mId },
+                    orderBy: { order: 'asc' },
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true,
+                        image: true,
+                        order: true,
+                        quaich: true
+                    }
+                });
 
-        // Fetch whiskies first
-        const whiskies = await db.whisky.findMany({
-            where: { meetingId },
-            orderBy: { order: 'asc' },
-            select: {
-                id: true,
-                name: true,
-                description: true,
-                image: true,
-                order: true,
-                quaich: true
+                if (!whiskies.length) return { data: [] };
+
+                // --- Step 2: Fetch this user's reviews ---
+                const reviews = await db.review.findMany({
+                    where: {
+                        userId: uId,
+                        whiskyId: { in: whiskies.map((w) => w.id) }
+                    },
+                    select: {
+                        id: true,
+                        rating: true,
+                        comment: true,
+                        whiskyId: true
+                    }
+                });
+
+                // --- Step 3: Merge results manually ---
+                const data = whiskies.map((w) => ({
+                    ...w,
+                    reviews: reviews.filter((r) => r.whiskyId === w.id)
+                }));
+
+                return { data, error: null };
+            } catch (err) {
+                console.error('[getMeetingWhiskies]', err);
+                return { data: null, error: 'Internal server error' };
             }
-        });
+        },
+        // Cache key (unique per meeting + user)
+        [`meeting-whiskies:${meetingId}:${dbUser.id}`],
+        {
+            revalidate: 60, // 1 minute cache window
+            tags: [
+                TAGS.meeting(meetingId), // meeting-level invalidation
+                TAGS.meetingResults(meetingId) // results invalidate whiskies
+            ]
+        }
+    );
 
-        if (!whiskies.length) return { data: [] };
-
-        // Fetch this user's reviews for these whiskies
-        const reviews = await db.review.findMany({
-            where: {
-                userId: dbUser.id,
-                whiskyId: { in: whiskies.map((w) => w.id) }
-            },
-            select: {
-                id: true,
-                rating: true,
-                comment: true,
-                whiskyId: true
-            }
-        });
-
-        // Merge manually
-        const data = whiskies.map((w) => ({
-            ...w,
-            reviews: reviews.filter((r) => r.whiskyId === w.id)
-        }));
-
-        return { data };
-    } catch (err) {
-        console.error('[getMeetingWhiskies]', err);
-        return { error: 'Internal server error' };
-    }
-};
+    // ✅ 3️⃣ Execute cached query
+    return cachedFn(meetingId, dbUser.id);
+}
 
 export const createVote = async (values: ReviewServerInput) => {
     const session = await authCheckServer();

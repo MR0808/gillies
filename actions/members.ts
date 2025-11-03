@@ -20,30 +20,40 @@ async function requireAdmin() {
     return { ok: true };
 }
 
-export const getMembers = unstable_cache(
-    async () => {
-        const session = await authCheckServer();
-        if (!session || session.user.role !== 'ADMIN')
-            return { error: 'Not authorised' };
+export async function getMembers() {
+    // ✅ 1️⃣ Do dynamic auth *outside* the cache
+    const session = await authCheckServer();
+    if (!session || session.user.role !== 'ADMIN') {
+        return { data: null, error: 'Not authorised' };
+    }
 
-        const users = await db.user.findMany({
-            orderBy: [{ name: 'asc' }, { lastName: 'asc' }],
-            select: {
-                id: true,
-                name: true,
-                lastName: true,
-                email: true,
-                role: true,
-                emailVerified: true
-            }
-        });
-        return { data: users };
-    },
-    ['members-list'],
-    { revalidate: 120, tags: [TAGS.members] }
-);
+    // ✅ 2️⃣ Define the pure cached query (no headers/cookies here)
+    const cachedFn = unstable_cache(
+        async () => {
+            const users = await db.user.findMany({
+                orderBy: [{ name: 'asc' }, { lastName: 'asc' }],
+                select: {
+                    id: true,
+                    name: true,
+                    lastName: true,
+                    email: true,
+                    role: true,
+                    emailVerified: true
+                }
+            });
 
-export const getMembersFirstName = getMembers;
+            return { data: users };
+        },
+        ['members-list'], // cache key
+        {
+            revalidate: 120, // refresh every 2 minutes
+            tags: [TAGS.members]
+        }
+    );
+
+    // ✅ 3️⃣ Call and return cached data
+    return cachedFn();
+}
 
 // export const getMember = async (id: string) => {
 //     const userSession = await authCheckServer();
