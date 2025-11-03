@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { useForm, SubmitErrorHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -69,6 +69,16 @@ function WhiskyVotingCard({
         }
     });
 
+    useEffect(() => {
+        const existingReview = whisky.reviews[0];
+        form.reset({
+            whiskyId: whisky.id,
+            rating: existingReview?.rating.toString() || '0',
+            comment: existingReview?.comment || ''
+        });
+        setSuccess(false);
+    }, [whisky.id, whisky.reviews, form.reset]);
+
     const onSubmit = async (data: ReviewFormInput) => {
         startTransition(async () => {
             const parsed = {
@@ -81,7 +91,6 @@ function WhiskyVotingCard({
                 const data = await createVote(parsed);
                 if (data.success) {
                     setSuccess(true);
-                    form.reset();
                     toast.success('Review submitted successfully!');
                 }
                 if (data.error) {
@@ -512,6 +521,7 @@ const WhiskyVoting = ({ whiskies }: { whiskies: Whisky[] }) => {
     return (
         <div className="py-4">
             <WhiskyVotingCard
+                key={whiskies[currentIndex].id}
                 whisky={whiskies[currentIndex]}
                 onNext={handleNext}
                 onPrev={handlePrev}
