@@ -107,7 +107,7 @@ export function ResultsTable({
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <Link
-                                                    href={`/dashboard/whiskies/${meetingId}/whiskies/${whisky.id}`}
+                                                    href={`/dashboard/meetings/${meetingId}/whiskies/${whisky.id}`}
                                                     className="font-medium"
                                                 >
                                                     {whisky.name}

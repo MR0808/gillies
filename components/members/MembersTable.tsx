@@ -97,13 +97,11 @@ const MembersTable = ({ users }: UsersTableProps) => {
         const dateObj = new Date(date);
         if (isNaN(dateObj.getTime())) return 'N/A';
 
-        return new Intl.DateTimeFormat('en-GB', {
-            hour: '2-digit',
-            minute: '2-digit',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        }).format(dateObj);
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+
+        return `${day}/${month}/${year}`;
     };
 
     // Filter users based on search query and filters

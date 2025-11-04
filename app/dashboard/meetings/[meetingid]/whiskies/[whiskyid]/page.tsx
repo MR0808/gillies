@@ -28,7 +28,9 @@ const WhiskyDetailPage = async (props: {
         <div className="container mx-auto py-8 space-y-8">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/meetings/${params.meetingid}/results`}>
+                    <Link
+                        href={`/dashboard/meetings/${params.meetingid}/results`}
+                    >
                         <ArrowLeft className="h-4 w-4" />
                     </Link>
                 </Button>

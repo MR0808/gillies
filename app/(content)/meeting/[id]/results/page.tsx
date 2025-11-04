@@ -67,6 +67,7 @@ export default async function MeetingVotingPage({
                                 <ResultsTable
                                     whiskies={results.data.whiskies}
                                     quaichId={results.data.meetingQuaich}
+                                    meetingId={id}
                                 />
                             </div>
                         </>

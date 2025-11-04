@@ -28,29 +28,6 @@ type SortConfig = {
     direction: 'asc' | 'desc';
 };
 
-function formatDate(date: Date): string {
-    const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-    ];
-    const month = months[date.getMonth()];
-    const day = date.getDate().toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${month} ${day}, ${year} ${hours}:${minutes}`;
-}
-
 const WhiskyVotesTable = ({ reviews, whiskyName }: WhiskyVotesTableProps) => {
     const [sortConfig, setSortConfig] = useState<SortConfig>({
         column: 'name',
@@ -83,12 +60,11 @@ const WhiskyVotesTable = ({ reviews, whiskyName }: WhiskyVotesTableProps) => {
     };
 
     const exportToCSV = () => {
-        const headers = ['Name', 'Rating', 'Comment', 'Date'];
+        const headers = ['Name', 'Rating', 'Comment'];
         const rows = reviews.map((review) => [
             `${review.user.name} ${review.user.lastName}`,
             review.rating.toString(),
-            `"${review.comment.replace(/"/g, '""')}"`, // Escape quotes in comments
-            review.createdAt ? formatDate(new Date(review.createdAt)) : 'N/A'
+            `"${review.comment.replace(/"/g, '""')}"` // Escape quotes in comments
         ]);
 
         const csvContent = [
@@ -155,9 +131,6 @@ const WhiskyVotesTable = ({ reviews, whiskyName }: WhiskyVotesTableProps) => {
                                     </Button>
                                 </TableHead>
                                 <TableHead>Comment</TableHead>
-                                <TableHead className="text-right">
-                                    Date
-                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -195,13 +168,6 @@ const WhiskyVotesTable = ({ reviews, whiskyName }: WhiskyVotesTableProps) => {
                                         <p className="text-sm">
                                             {review.comment}
                                         </p>
-                                    </TableCell>
-                                    <TableCell className="text-right text-sm text-muted-foreground">
-                                        {review.createdAt
-                                            ? formatDate(
-                                                  new Date(review.createdAt)
-                                              )
-                                            : 'N/A'}
                                     </TableCell>
                                 </TableRow>
                             ))}
