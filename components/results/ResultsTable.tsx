@@ -17,8 +17,13 @@ import {
     HoverCardTrigger
 } from '@/components/ui/hover-card';
 import { Review, ResultsTableProps } from '@/types/results';
+import Link from 'next/link';
 
-export function ResultsTable({ whiskies, quaichId }: ResultsTableProps) {
+export function ResultsTable({
+    whiskies,
+    quaichId,
+    meetingId
+}: ResultsTableProps) {
     const calculateStats = (reviews: Review[]) => {
         if (reviews.length === 0) return { avg: 0, min: 0, max: 0, count: 0 };
 
@@ -101,9 +106,12 @@ export function ResultsTable({ whiskies, quaichId }: ResultsTableProps) {
                                         />
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <p className="font-medium">
+                                                <Link
+                                                    href={`/dashboard/whiskies/${meetingId}/whiskies/${whisky.id}`}
+                                                    className="font-medium"
+                                                >
                                                     {whisky.name}
-                                                </p>
+                                                </Link>
                                                 {isQuaich && (
                                                     <Badge
                                                         variant="secondary"

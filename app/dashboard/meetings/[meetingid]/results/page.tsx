@@ -65,6 +65,7 @@ const ResultsPage = async ({
                                 <ResultsTable
                                     whiskies={results.data.whiskies}
                                     quaichId={results.data.meetingQuaich}
+                                    meetingId={meetingid}
                                 />
                             </div>
                         </>

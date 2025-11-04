@@ -63,6 +63,7 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
                                     key={whisky.id}
                                     whisky={whisky}
                                     onEdit={handleEdit}
+                                    meetingId={meeting.id}
                                 />
                             ))}
                         </div>

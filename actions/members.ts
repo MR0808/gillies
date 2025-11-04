@@ -38,7 +38,9 @@ export async function getMembers() {
                     lastName: true,
                     email: true,
                     role: true,
-                    emailVerified: true
+                    emailVerified: true,
+                    createdAt: true,
+                    updatedAt: true
                 }
             });
 

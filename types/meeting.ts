@@ -47,6 +47,7 @@ export interface WhiskyManagerProps {
 export interface WhiskyCardProps {
     whisky: Whisky;
     onEdit: (whisky: Whisky) => void;
+    meetingId: string;
 }
 
 export interface WhiskyDialogProps {

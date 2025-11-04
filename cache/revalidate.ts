@@ -25,3 +25,13 @@ export async function revalidateWhiskies(id: string) {
 export async function revalidateWhisky(id: string) {
     revalidateTag(TAGS.whisky(id), 'max');
 }
+export async function revalidateMeetingWhisky(
+    meetingId: string,
+    whiskyId: string
+) {
+    revalidateTag(TAGS.meetingWhisky(meetingId, whiskyId), 'max');
+}
+
+export async function revalidateReviews(id: string) {
+    revalidateTag(TAGS.reviews, 'max');
+}

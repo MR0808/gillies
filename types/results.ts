@@ -9,6 +9,7 @@ export type Review = Whisky['reviewers'][number];
 export type ResultsTableProps = {
     whiskies: Whisky[];
     quaichId: string | null;
+    meetingId: string;
 };
 
 export type ResultsChartsProps = {

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { toast } from 'sonner';
 
-import { Edit, Trash2, Award, Radio } from 'lucide-react';
+import { Edit, Trash2, Award, Radio, ChartArea } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -28,7 +28,7 @@ import { WhiskyCardProps } from '@/types/meeting';
 import { deleteWhisky } from '@/actions/whiskies';
 import Link from 'next/link';
 
-const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
+const WhiskyCard = ({ whisky, onEdit, meetingId }: WhiskyCardProps) => {
     const handleDelete = async () => {
         try {
             const data = await deleteWhisky(whisky.id);
@@ -129,6 +129,18 @@ const WhiskyCard = ({ whisky, onEdit }: WhiskyCardProps) => {
                         >
                             <Radio className="mr-2 h-4 w-4" />
                             Live scores
+                        </Button>
+                    </Link>
+                    <Link
+                        href={`/dashboard/meetings/${meetingId}/whiskies/${whisky.id}`}
+                    >
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="cursor-pointer"
+                        >
+                            <ChartArea className="mr-2 h-4 w-4" />
+                            Results
                         </Button>
                     </Link>
                 </div>

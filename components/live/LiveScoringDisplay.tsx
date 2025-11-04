@@ -9,7 +9,7 @@ import {
     Users,
     Sparkles
 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
@@ -139,6 +139,12 @@ const LiveScoringDisplay = ({
                             </div>
                             <div className="flex items-start gap-4">
                                 <Avatar className="h-16 w-16 border-2 border-slate-300">
+                                    <AvatarImage
+                                        src={
+                                            latestReview.user.image ||
+                                            '/images/profile.jpg'
+                                        }
+                                    />
                                     <AvatarFallback className="text-2xl bg-slate-950 text-slate-200">
                                         {latestReview.user.name[0]}
                                         {latestReview.user.lastName[0]}
@@ -279,6 +285,12 @@ const LiveScoringDisplay = ({
                                         }`}
                                     >
                                         <Avatar className="h-12 w-12">
+                                            <AvatarImage
+                                                src={
+                                                    review.user.image ||
+                                                    '/images/profile.jpg'
+                                                }
+                                            />
                                             <AvatarFallback className="bg-slate-700 text-slate-200">
                                                 {review.user.name[0]}
                                                 {review.user.lastName[0]}

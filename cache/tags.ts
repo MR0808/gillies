@@ -7,6 +7,9 @@ export const TAGS = {
     meeting: (id: string) => `meeting:${id}`,
     meetingResults: (id: string) => `meeting-results:${id}`,
     meetingWhiskies: (id: string) => `meeting-whiskies:${id}`,
+    meetingWhisky: (meetingId: string, whiskyId: string) =>
+        `whisky-details:${meetingId}:${whiskyId}`,
     whisky: (id: string) => `whisky:${id}`,
-    members: 'members'
+    members: 'members',
+    reviews: 'reviews'
 };

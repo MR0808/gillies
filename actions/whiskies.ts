@@ -232,3 +232,130 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
     await revalidateWhisky(whisky.id);
     return { success: true };
 };
+
+export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {
+    const userSession = await authCheckServer();
+
+    if (!userSession || userSession.user.role !== 'ADMIN') {
+        return { data: null, error: 'Not authorised' };
+    }
+
+    if (!meetingId || !whiskyId)
+        return { data: null, error: 'Missing meetingId or whiskyId' };
+
+    // ✅ Define cached function (pure + deterministic)
+    const cachedFn = unstable_cache(
+        async (mId: string, wId: string) => {
+            // --- Step 1: Base whisky & meeting info ---
+            const whisky = await db.whisky.findUnique({
+                where: { id: wId },
+                include: {
+                    meeting: {
+                        select: {
+                            id: true,
+                            date: true,
+                            location: true,
+                            status: true
+                        }
+                    }
+                }
+            });
+
+            if (!whisky) return { error: 'Whisky not found' };
+
+            // --- Step 2: Fetch reviews safely ---
+            const reviews = await db.review.findMany({
+                where: { whiskyId: wId },
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    rating: true,
+                    comment: true,
+                    createdAt: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            lastName: true,
+                            image: true
+                        }
+                    }
+                }
+            });
+
+            // --- Step 3: Prisma aggregation (basic stats) ---
+            const stats = await db.review.aggregate({
+                where: { whiskyId: wId },
+                _avg: { rating: true },
+                _count: { rating: true },
+                _min: { rating: true },
+                _max: { rating: true }
+            });
+
+            // --- Step 4: Compute range, median, stddev manually ---
+            const ratings = reviews.map((r) => r.rating).sort((a, b) => a - b);
+            const count = ratings.length;
+
+            const range =
+                count > 0
+                    ? (stats._max.rating ?? 0) - (stats._min.rating ?? 0)
+                    : 0;
+
+            const median =
+                count === 0
+                    ? 0
+                    : count % 2 === 1
+                      ? ratings[Math.floor(count / 2)]
+                      : (ratings[count / 2 - 1] + ratings[count / 2]) / 2;
+
+            const mean = stats._avg.rating ?? 0;
+            const variance =
+                count > 1
+                    ? ratings.reduce(
+                          (acc, val) => acc + Math.pow(val - mean, 2),
+                          0
+                      ) / count
+                    : 0;
+            const standardDeviation = Math.sqrt(variance);
+
+            // --- Step 5: Return merged result ---
+            return {
+                data: {
+                    id: whisky.id,
+                    name: whisky.name,
+                    description: whisky.description,
+                    image: whisky.image,
+                    order: whisky.order,
+                    quaich: whisky.quaich,
+                    meeting: whisky.meeting,
+                    stats: {
+                        average: mean,
+                        count: stats._count.rating ?? 0,
+                        min: stats._min.rating ?? 0,
+                        max: stats._max.rating ?? 0,
+                        range,
+                        median,
+                        standardDeviation
+                    },
+                    reviews
+                },
+                error: null
+            };
+        },
+        // Unique cache key per whisky + meeting combo
+        [`whisky-details:${meetingId}:${whiskyId}`],
+        {
+            revalidate: 60, // 1 minute
+            tags: [
+                TAGS.whisky(whiskyId),
+                TAGS.meeting(meetingId),
+                TAGS.meetingWhiskies(meetingId),
+                TAGS.meetingWhisky(meetingId, whiskyId),
+                TAGS.reviews
+            ]
+        }
+    );
+
+    // ✅ Execute cached function
+    return cachedFn(meetingId, whiskyId);
+};
