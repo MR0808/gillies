@@ -1,4 +1,4 @@
-// import { PrismaClient } from '@/generated/prisma';
+// import { PrismaClient } from '@/generated/prisma/client';;
 
 // const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -8,7 +8,7 @@
 
 // export default db;
 
-// import { PrismaClient } from '@/generated/prisma';
+// import { PrismaClient } from '@/generated/prisma/client';;
 // import { withAccelerate } from '@prisma/extension-accelerate';
 
 // // Use `any` on the global cache to avoid type-narrowing conflicts with the extended client

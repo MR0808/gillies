@@ -14,7 +14,7 @@ import {
     ArrowUp,
     ArrowDown
 } from 'lucide-react';
-import { User } from '@/generated/prisma';
+import { User } from '@/generated/prisma/client';;
 
 import { Input } from '@/components/ui/input';
 import {

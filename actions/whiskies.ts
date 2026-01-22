@@ -2,7 +2,7 @@
 
 import type { Prisma } from '@/generated/prisma/client';
 import { unstable_cache } from 'next/cache';
-import { Whisky } from '@/generated/prisma';
+import { Whisky } from '@/generated/prisma/client';;
 
 import { TAGS } from '@/cache/tags';
 import {

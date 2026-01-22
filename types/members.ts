@@ -1,4 +1,4 @@
-import { User } from '@/generated/prisma';
+import { User } from '@/generated/prisma/client';;
 
 export type UsersTableProps = {
     users: User[];

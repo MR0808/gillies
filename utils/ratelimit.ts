@@ -1,5 +1,5 @@
 import db from '@/lib/db';
-import type { RateLimit } from '@/generated/prisma';
+import type { RateLimit } from '@/generated/prisma/client';;
 
 export const calculateCooldownSeconds = (resetTime: Date): number => {
     return Math.max(0, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
