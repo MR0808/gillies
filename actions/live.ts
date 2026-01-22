@@ -29,15 +29,37 @@
 
 'use server';
 
+import type { Prisma } from '@/generated/prisma/client';
 import db from '@/lib/db';
 import { unstable_cache } from 'next/cache';
+
+type LiveReview = Prisma.ReviewGetPayload<{
+    select: {
+        id: true;
+        rating: true;
+        comment: true;
+        createdAt: true;
+        user: {
+            select: {
+                id: true;
+                name: true;
+                lastName: true;
+                image: true;
+            };
+        };
+    };
+}>;
+
+type LiveWhisky = Prisma.WhiskyGetPayload<{
+    include: { meeting: true };
+}> & { reviews: LiveReview[] };
 
 /**
  * Fetches a whisky, its meeting, and all reviews with user info.
  * Optimised for Prisma Accelerate and serverless environments.
  */
 export const getLiveWhiskyScores = unstable_cache(
-    async (whiskyId: string) => {
+    async (whiskyId: string): Promise<LiveWhisky | null> => {
         if (!whiskyId) return null;
 
         // --- Step 1: Fetch base whisky
@@ -49,7 +71,7 @@ export const getLiveWhiskyScores = unstable_cache(
         if (!whisky) return null;
 
         // --- Step 2: Fetch reviews + user info separately (Accelerate-safe)
-        const reviews = await db.review.findMany({
+        const reviews = (await db.review.findMany({
             where: { whiskyId },
             orderBy: { createdAt: 'desc' },
             select: {
@@ -66,7 +88,7 @@ export const getLiveWhiskyScores = unstable_cache(
                     }
                 }
             }
-        });
+        })) as unknown as LiveReview[];
 
         // --- Step 3: Merge manually
         return {

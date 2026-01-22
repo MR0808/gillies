@@ -200,8 +200,10 @@ const DashboardCharts = ({ dashboardStats }: DashboardOverviewProps) => {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={({ role, percentage }) =>
-                                        `${role}: ${percentage}%`
+                                    label={({ payload, percent }) =>
+                                        `${payload?.role ?? ''}: ${Math.round(
+                                            (percent ?? 0) * 100
+                                        )}%`
                                     }
                                     outerRadius={80}
                                     fill="#8884d8"

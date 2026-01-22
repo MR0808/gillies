@@ -380,6 +380,7 @@
 
 'use server';
 
+import type { Prisma } from '@/generated/prisma/client';
 import db from '@/lib/db';
 import { createCached } from '@/lib/cache';
 
@@ -401,6 +402,17 @@ type UserRoleGroup = {
         _all: number;
     };
 };
+
+type RecentMeetingWithCount = Prisma.MeetingGetPayload<{
+    include: { _count: { select: { users: true } } };
+}>;
+
+type TopWhiskyWithReviews = Prisma.WhiskyGetPayload<{
+    include: {
+        reviews: { select: { rating: true } };
+        meeting: { select: { location: true } };
+    };
+}>;
 
 export const getDashboardStats = createCached(
     'dashboard-stats',
@@ -432,7 +444,7 @@ export const getDashboardStats = createCached(
                 take: RECENT_MEETINGS_LIMIT,
                 orderBy: { date: 'desc' },
                 include: { _count: { select: { users: true } } }
-            }),
+            }) as unknown as Prisma.PrismaPromise<RecentMeetingWithCount[]>,
 
             db.whisky.findMany({
                 take: TOP_WHISKIES_LIMIT,
@@ -441,7 +453,7 @@ export const getDashboardStats = createCached(
                     meeting: { select: { location: true } }
                 },
                 orderBy: { reviews: { _count: 'desc' } }
-            }),
+            }) as unknown as Prisma.PrismaPromise<TopWhiskyWithReviews[]>,
 
             db.user.groupBy({
                 by: ['role'],

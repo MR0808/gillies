@@ -1,5 +1,6 @@
 'use server';
 
+import type { Prisma } from '@/generated/prisma/client';
 import { unstable_cache } from 'next/cache';
 import { Whisky } from '@/generated/prisma';
 
@@ -15,6 +16,23 @@ import db from '@/lib/db';
 import { deleteImage } from '@/utils/supabase';
 import { WhiskySchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
+
+type ReviewWithUser = Prisma.ReviewGetPayload<{
+    select: {
+        id: true;
+        rating: true;
+        comment: true;
+        createdAt: true;
+        user: {
+            select: {
+                id: true;
+                name: true;
+                lastName: true;
+                image: true;
+            };
+        };
+    };
+}>;
 
 export const getAllWhiskies = unstable_cache(
     async () => {
@@ -264,7 +282,7 @@ export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {
             if (!whisky) return { error: 'Whisky not found' };
 
             // --- Step 2: Fetch reviews safely ---
-            const reviews = await db.review.findMany({
+            const reviews = (await db.review.findMany({
                 where: { whiskyId: wId },
                 orderBy: { createdAt: 'desc' },
                 select: {
@@ -281,7 +299,7 @@ export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {
                         }
                     }
                 }
-            });
+            })) as unknown as ReviewWithUser[];
 
             // --- Step 3: Prisma aggregation (basic stats) ---
             const stats = await db.review.aggregate({

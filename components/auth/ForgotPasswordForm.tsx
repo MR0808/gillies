@@ -19,7 +19,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmailSchema } from '@/schemas/auth';
-import { forgetPassword } from '@/lib/auth-client';
+import { requestPasswordReset } from '@/lib/auth-client';
+
+type AuthClientError = {
+    error: {
+        message: string;
+    };
+};
 
 const ForgotPasswordForm = () => {
     const [success, setSuccess] = useState(false);
@@ -35,11 +41,11 @@ const ForgotPasswordForm = () => {
     const onSubmit = (values: z.infer<typeof EmailSchema>) => {
         setSuccess(false);
         startTransition(async () => {
-            await forgetPassword({
+            await requestPasswordReset({
                 email: values.email,
                 redirectTo: '/auth/reset-password',
                 fetchOptions: {
-                    onError: (ctx) => {
+                    onError: (ctx: AuthClientError) => {
                         toast.error(ctx.error.message);
                     },
                     onSuccess: async () => {

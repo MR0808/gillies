@@ -19,7 +19,7 @@ export const {
     signIn,
     useSession,
     sendVerificationEmail,
-    forgetPassword,
+    requestPasswordReset,
     resetPassword,
     updateUser,
     changeEmail,

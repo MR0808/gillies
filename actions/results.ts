@@ -1,10 +1,23 @@
 'use server';
 
+import type { Prisma } from '@/generated/prisma/client';
 import { unstable_cache } from 'next/cache';
 
 import db from '@/lib/db';
 import { authCheckServer } from '@/lib/authCheck';
 import { TAGS } from '@/cache/tags';
+
+type ReviewWithUser = Prisma.ReviewGetPayload<{
+    select: {
+        id: true;
+        whiskyId: true;
+        rating: true;
+        comment: true;
+        user: {
+            select: { name: true; lastName: true; image: true };
+        };
+    };
+}>;
 
 export async function getMeetingResults(meetingId: string) {
     // ✅ 1️⃣ Dynamic operations outside the cache
@@ -66,7 +79,7 @@ export async function getMeetingResults(meetingId: string) {
                 })) as unknown as ReviewStats[];
 
                 // --- Step 4: Get all review details + user info ---
-                const reviewUsers = await db.review.findMany({
+                const reviewUsers = (await db.review.findMany({
                     where: { whiskyId: { in: whiskyIds } },
                     select: {
                         id: true,
@@ -78,7 +91,7 @@ export async function getMeetingResults(meetingId: string) {
                         }
                     },
                     orderBy: { createdAt: 'desc' }
-                });
+                })) as unknown as ReviewWithUser[];
 
                 // --- Step 5: Merge results ---
                 const whiskiesWithStats = whiskies.map((w) => {
