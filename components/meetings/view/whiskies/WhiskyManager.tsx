@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,11 @@ import { Whisky, WhiskyManagerProps } from '@/types/meeting';
 const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingWhisky, setEditingWhisky] = useState<Whisky | null>(null);
+    const [whiskies, setWhiskies] = useState(meeting.whiskies);
+
+    useEffect(() => {
+        setWhiskies(meeting.whiskies);
+    }, [meeting.whiskies]);
 
     const handleEdit = (whisky: Whisky) => {
         setEditingWhisky(whisky);
@@ -31,6 +36,19 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
     const handleClose = () => {
         setDialogOpen(false);
         setEditingWhisky(null);
+    };
+
+    const handleWhiskySaved = (savedWhisky: Whisky) => {
+        setWhiskies((prev) => {
+            let next = prev.filter((w) => w.id !== savedWhisky.id);
+
+            if (savedWhisky.quaich) {
+                next = next.map((w) => ({ ...w, quaich: false }));
+            }
+
+            next.push(savedWhisky);
+            return next.sort((a, b) => a.order - b.order);
+        });
     };
 
     return (
@@ -51,14 +69,14 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {meeting.whiskies.length === 0 ? (
+                    {whiskies.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
                             No whiskies added yet. Click "Add Whisky" to get
                             started.
                         </div>
                     ) : (
                         <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-5">
-                            {meeting.whiskies.map((whisky) => (
+                            {whiskies.map((whisky) => (
                                 <WhiskyCard
                                     key={whisky.id}
                                     whisky={whisky}
@@ -76,8 +94,11 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
                 onClose={handleClose}
                 whisky={editingWhisky}
                 meetingId={meeting.id}
-                currentQuaichId={meeting.quaich}
-                existingOrders={meeting.whiskies.map((w) => w.order)}
+                currentQuaichId={
+                    whiskies.find((w) => w.quaich)?.id ?? meeting.quaich
+                }
+                existingOrders={whiskies.map((w) => w.order)}
+                onSaved={handleWhiskySaved}
             />
         </div>
     );

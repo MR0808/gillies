@@ -5,6 +5,7 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -51,8 +52,10 @@ const WhiskyDialog = ({
     whisky,
     meetingId,
     currentQuaichId,
-    existingOrders
+    existingOrders,
+    onSaved
 }: WhiskyDialogProps) => {
+    const router = useRouter();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [showQuaichWarning, setShowQuaichWarning] = useState(false);
@@ -145,10 +148,16 @@ const WhiskyDialog = ({
                 imageUrl = await uploadImage(imageFile, 'images');
             }
 
-            await addOrUpdateWhisky(meetingId, {
+            const result = await addOrUpdateWhisky(meetingId, {
                 ...data,
                 image: imageUrl
             });
+
+            if (result?.error || !result?.data) {
+                throw new Error(result?.error || 'Failed to save whisky');
+            }
+
+            onSaved(result.data);
 
             toast.success(
                 whisky
@@ -156,9 +165,16 @@ const WhiskyDialog = ({
                     : 'Whisky added successfully'
             );
 
+            router.refresh();
             onClose();
         } catch (error) {
-            toast.error('Failed to save whisky');
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Unknown error while saving whisky';
+            toast.error('Failed to save whisky', {
+                description: message
+            });
         }
     };
 

@@ -57,6 +57,7 @@ export interface WhiskyDialogProps {
     meetingId: string;
     currentQuaichId: string | null;
     existingOrders: number[];
+    onSaved: (whisky: Whisky) => void;
 }
 
 export interface MemberManagerProps {

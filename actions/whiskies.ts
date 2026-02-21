@@ -248,7 +248,7 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
     await revalidateMeetingsList();
     await revalidateWhiskies(whisky.meetingId);
     await revalidateWhisky(whisky.id);
-    return { success: true };
+    return { success: true, data: whisky };
 };
 
 export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {

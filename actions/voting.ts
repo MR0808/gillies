@@ -136,7 +136,8 @@ export async function getMeetingWhiskies(meetingId: string) {
             revalidate: 60, // 1 minute cache window
             tags: [
                 TAGS.meeting(meetingId), // meeting-level invalidation
-                TAGS.meetingResults(meetingId) // results invalidate whiskies
+                TAGS.meetingWhiskies(meetingId), // whisky list invalidation
+                TAGS.meetingResults(meetingId) // results/reviews invalidation
             ]
         }
     );
