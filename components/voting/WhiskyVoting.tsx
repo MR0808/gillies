@@ -32,6 +32,35 @@ import { cn } from '@/lib/utils';
 import { Whisky } from '@/types/voting';
 import { createVote } from '@/actions/voting';
 
+const urlRegex = /(https?:\/\/\S+)/g;
+const exactUrlRegex = /^https?:\/\/\S+$/;
+
+function renderDescriptionWithLinks(description: string) {
+    return description.split(urlRegex).map((part, index) => {
+        if (!exactUrlRegex.test(part)) {
+            return part;
+        }
+
+        const match = part.match(/^(https?:\/\/\S*?)([),.!?;:]*)$/);
+        const href = match?.[1] ?? part;
+        const trailingPunctuation = match?.[2] ?? '';
+
+        return (
+            <span key={`${href}-${index}`}>
+                <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:no-underline"
+                >
+                    {href}
+                </a>
+                {trailingPunctuation}
+            </span>
+        );
+    });
+}
+
 function WhiskyVotingCard({
     whisky,
     onNext,
@@ -218,8 +247,10 @@ function WhiskyVotingCard({
                                         {whisky.name}
                                     </h2>
                                     {whisky.description && (
-                                        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                                            {whisky.description}
+                                        <p className="mt-2 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                            {renderDescriptionWithLinks(
+                                                whisky.description
+                                            )}
                                         </p>
                                     )}
                                 </div>
