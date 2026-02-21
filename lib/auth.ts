@@ -8,7 +8,13 @@ import db from '@/lib/db';
 import { hashPassword, verifyPassword } from '@/lib/argon2';
 import { sendResetEmail, sendVerificationEmail } from '@/lib/mail';
 
+const baseURL =
+    process.env.BETTER_AUTH_BASE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'http://localhost:3000';
+
 const options = {
+    baseURL,
     database: prismaAdapter(db, {
         provider: 'postgresql' // or "mysql", "postgresql", ...etc
     }),
