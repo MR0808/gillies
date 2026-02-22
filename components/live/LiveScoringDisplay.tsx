@@ -157,7 +157,7 @@ const LiveScoringDisplay = ({
                                             {latestReview.user.lastName}
                                         </p>
                                         <Badge className="bg-slate-950 text-gray-100 text-2xl px-4 py-1">
-                                            {latestReview.rating.toFixed(1)}
+                                            {latestReview.rating.toFixed(2)}
                                         </Badge>
                                     </div>
                                     <p className="text-slate-100 text-lg leading-relaxed">
@@ -204,7 +204,7 @@ const LiveScoringDisplay = ({
                                     }}
                                     className="text-9xl font-bold text-white mb-4"
                                 >
-                                    {stats.avg.toFixed(1)}
+                                    {stats.avg.toFixed(2)}
                                 </motion.div>
                             </AnimatePresence>
                             <p className="text-blue-200 text-2xl">
@@ -225,7 +225,7 @@ const LiveScoringDisplay = ({
                                 Highest
                             </p>
                             <p className="text-4xl font-bold text-white">
-                                {stats.max.toFixed(1)}
+                                {stats.max.toFixed(2)}
                             </p>
                         </Card>
 
@@ -239,7 +239,7 @@ const LiveScoringDisplay = ({
                                 Lowest
                             </p>
                             <p className="text-4xl font-bold text-white">
-                                {stats.min.toFixed(1)}
+                                {stats.min.toFixed(2)}
                             </p>
                         </Card>
 

@@ -47,7 +47,7 @@ export function ResultsCharts({ whiskies }: ResultsChartsProps) {
                 (sum, w) => sum + calculateAverage(w.reviewers),
                 0
             ) / whiskies.length
-        ).toFixed(1),
+        ).toFixed(2),
         topRated: chartData[0]
     };
 
@@ -102,7 +102,7 @@ export function ResultsCharts({ whiskies }: ResultsChartsProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">
-                        {overallStats.topRated.average.toFixed(1)}
+                        {overallStats.topRated.average.toFixed(2)}
                     </div>
                     <p className="text-xs text-muted-foreground">
                         {overallStats.topRated.name}

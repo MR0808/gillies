@@ -540,7 +540,7 @@ export const getDashboardStats = createCached(
             );
             const averageRating =
                 whisky.reviews.length > 0
-                    ? Number((totalRating / whisky.reviews.length).toFixed(1))
+                    ? Number((totalRating / whisky.reviews.length).toFixed(2))
                     : 0;
 
             return {

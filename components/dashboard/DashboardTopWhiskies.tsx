@@ -45,7 +45,7 @@ const DashboardTopWhiskies = ({ dashboardStats }: DashboardOverviewProps) => {
                                     <div className="flex items-center gap-1">
                                         <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                                         <span className="text-sm font-medium">
-                                            {whisky.averageRating.toFixed(1)}
+                                            {whisky.averageRating.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-1">

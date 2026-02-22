@@ -246,7 +246,7 @@ export function ResultsTable({
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <span className="font-bold text-lg">
-                                            {stats.avg.toFixed(1)}
+                                            {stats.avg.toFixed(2)}
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -254,7 +254,7 @@ export function ResultsTable({
                                             variant="outline"
                                             className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
                                         >
-                                            {stats.max.toFixed(1)}
+                                            {stats.max.toFixed(2)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -262,12 +262,12 @@ export function ResultsTable({
                                             variant="outline"
                                             className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
                                         >
-                                            {stats.min.toFixed(1)}
+                                            {stats.min.toFixed(2)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <span className="text-muted-foreground">
-                                            {(stats.max - stats.min).toFixed(1)}
+                                            {(stats.max - stats.min).toFixed(2)}
                                         </span>
                                     </TableCell>
                                 </TableRow>
