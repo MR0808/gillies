@@ -13,8 +13,19 @@ const baseURL =
     process.env.NEXT_PUBLIC_APP_URL ||
     'http://localhost:3000';
 
+const trustedOrigins = [
+    baseURL,
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.BETTER_AUTH_BASE_URL,
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+]
+    .filter(Boolean)
+    .map((origin) => origin!.replace(/\/$/, ''));
+
 const options = {
     baseURL,
+    trustedOrigins,
     database: prismaAdapter(db, {
         provider: 'postgresql' // or "mysql", "postgresql", ...etc
     }),

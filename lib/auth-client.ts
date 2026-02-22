@@ -5,8 +5,13 @@ import {
 } from 'better-auth/client/plugins';
 import type { auth } from '@/lib/auth';
 
+function getBaseUrl(): string {
+    if (typeof window !== 'undefined') return window.location.origin;
+    return process.env.NEXT_PUBLIC_APP_URL ?? '';
+}
+
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_APP_URL,
+    baseURL: getBaseUrl(),
     plugins: [
         inferAdditionalFields<typeof auth>(),
         customSessionClient<typeof auth>()
