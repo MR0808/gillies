@@ -30,14 +30,19 @@ export function ResultsTable({
 }: ResultsTableProps) {
     const [sortMode, setSortMode] = useState<'rank' | 'order'>('rank');
     const calculateStats = (reviews: Review[]) => {
-        if (reviews.length === 0) return { avg: 0, min: 0, max: 0, count: 0 };
+        if (reviews.length === 0)
+            return { avg: 0, min: 0, max: 0, stdDev: 0, count: 0 };
 
         const ratings = reviews.map((r) => r.rating);
         const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
         const min = Math.min(...ratings);
         const max = Math.max(...ratings);
+        const variance =
+            ratings.reduce((sum, rating) => sum + (rating - avg) ** 2, 0) /
+            ratings.length;
+        const stdDev = Math.sqrt(variance);
 
-        return { avg, min, max, count: reviews.length };
+        return { avg, min, max, stdDev, count: reviews.length };
     };
 
     // Sort whiskies by average rating (descending)
@@ -106,6 +111,9 @@ export function ResultsTable({
                                 </div>
                             </TableHead>
                             <TableHead className="text-center">Range</TableHead>
+                            <TableHead className="text-center">
+                                Std Dev
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -254,7 +262,7 @@ export function ResultsTable({
                                             variant="outline"
                                             className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
                                         >
-                                            {stats.max.toFixed(2)}
+                                            {stats.max.toFixed(1)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
@@ -262,12 +270,17 @@ export function ResultsTable({
                                             variant="outline"
                                             className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
                                         >
-                                            {stats.min.toFixed(2)}
+                                            {stats.min.toFixed(1)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <span className="text-muted-foreground">
-                                            {(stats.max - stats.min).toFixed(2)}
+                                            {(stats.max - stats.min).toFixed(1)}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <span className="text-muted-foreground">
+                                            {stats.stdDev.toFixed(2)}
                                         </span>
                                     </TableCell>
                                 </TableRow>
