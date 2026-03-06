@@ -68,6 +68,8 @@ export default async function MeetingVotingPage({
                                     whiskies={results.data.whiskies}
                                     quaichId={results.data.meetingQuaich}
                                     meetingId={id}
+                                    meetingName={results.data.meetingName}
+                                    meetingDate={results.data.meetingDate}
                                 />
                             </div>
                         </>

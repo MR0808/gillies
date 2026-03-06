@@ -10,6 +10,8 @@ export type ResultsTableProps = {
     whiskies: Whisky[];
     quaichId: string | null;
     meetingId: string;
+    meetingName: string;
+    meetingDate: string | Date;
 };
 
 export type ResultsChartsProps = {

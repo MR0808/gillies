@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { Trophy, TrendingUp, TrendingDown, Users } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Users, Download } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -21,12 +21,15 @@ import {
     HoverCardContent,
     HoverCardTrigger
 } from '@/components/ui/hover-card';
+import { Button } from '@/components/ui/button';
 import { Review, ResultsTableProps } from '@/types/results';
 
 export function ResultsTable({
     whiskies,
     quaichId,
-    meetingId
+    meetingId,
+    meetingName,
+    meetingDate
 }: ResultsTableProps) {
     const [sortMode, setSortMode] = useState<'rank' | 'order'>('rank');
     const calculateStats = (reviews: Review[]) => {
@@ -61,6 +64,83 @@ export function ResultsTable({
             ? rankedWhiskies
             : [...whiskies].sort((a, b) => a.order - b.order);
 
+    const escapeCsvValue = (value: string | number) => {
+        const normalized = String(value);
+        return `"${normalized.replace(/"/g, '""')}"`;
+    };
+
+    const sanitizeFilenamePart = (value: string) => {
+        return value
+            .trim()
+            .replace(/[^a-zA-Z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '')
+            .toLowerCase();
+    };
+
+    const formatMeetingDateForFilename = (value: string | Date) => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return 'unknown-date';
+        }
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const exportToCSV = () => {
+        const headers = [
+            'Whisky Name',
+            'Order',
+            'Votes',
+            'Average',
+            'High',
+            'Low',
+            'Range',
+            'Standard Deviation'
+        ];
+
+        const rows = [...whiskies]
+            .sort((a, b) => a.order - b.order)
+            .map((whisky) => {
+                const stats = calculateStats(whisky.reviewers);
+                const range = stats.max - stats.min;
+
+                return [
+                    escapeCsvValue(whisky.name),
+                    escapeCsvValue(whisky.order),
+                    escapeCsvValue(stats.count),
+                    escapeCsvValue(stats.avg.toFixed(2)),
+                    escapeCsvValue(stats.max.toFixed(1)),
+                    escapeCsvValue(stats.min.toFixed(1)),
+                    escapeCsvValue(range.toFixed(1)),
+                    escapeCsvValue(stats.stdDev.toFixed(2))
+                ].join(',');
+            });
+
+        const csvContent = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csvContent], {
+            type: 'text/csv;charset=utf-8;'
+        });
+
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        const safeMeetingName = sanitizeFilenamePart(meetingName);
+        const safeMeetingDate = formatMeetingDateForFilename(meetingDate);
+
+        link.setAttribute('href', url);
+        link.setAttribute(
+            'download',
+            `${safeMeetingName}_${safeMeetingDate}_results.csv`
+        );
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -76,11 +156,17 @@ export function ResultsTable({
                         Sort by {sortMode === 'rank' ? 'Rank' : 'Order'}
                     </Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                    {sortMode === 'rank'
-                        ? 'Sorted by average rating'
-                        : 'Sorted by tasting order'}
-                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">
+                        {sortMode === 'rank'
+                            ? 'Sorted by average rating'
+                            : 'Sorted by tasting order'}
+                    </p>
+                    <Button onClick={exportToCSV} variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export CSV
+                    </Button>
+                </div>
             </div>
             <div className="rounded-md border">
                 <Table>
