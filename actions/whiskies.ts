@@ -16,6 +16,7 @@ import db from '@/lib/db';
 import { deleteImage } from '@/utils/supabase';
 import { WhiskySchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
+import { serializeWhiskyRow, whiskyCoreSelect } from '@/lib/whisky';
 
 type ReviewWithUser = Prisma.ReviewGetPayload<{
     select: {
@@ -61,17 +62,12 @@ export async function getMeetingWhiskies(meetingId: string) {
                 where: { meetingId: mId },
                 orderBy: { order: 'asc' },
                 select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                    image: true,
-                    order: true,
-                    quaich: true,
+                    ...whiskyCoreSelect,
                     meetingId: true
                 }
             });
 
-            return { data: whiskies };
+            return { data: whiskies.map(serializeWhiskyRow) };
         },
         [`meeting-whiskies:${meetingId}`],
         {
@@ -104,18 +100,13 @@ export async function getMeetingWhisky(id: string) {
             const whisky = await db.whisky.findUnique({
                 where: { id: whiskyId },
                 select: {
-                    id: true,
-                    name: true,
-                    description: true,
-                    image: true,
-                    order: true,
-                    quaich: true,
+                    ...whiskyCoreSelect,
                     meetingId: true
                 }
             });
 
             if (!whisky) return { error: 'Not found' };
-            return { data: whisky };
+            return { data: serializeWhiskyRow(whisky) };
         },
         // Unique key per whisky
         [`whisky:${id}`],
@@ -217,6 +208,9 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
             data: {
                 name: validated.name,
                 description: validated.description,
+                age: validated.age,
+                nas: validated.nas,
+                abv: validated.abv,
                 image: validated.image,
                 order: validated.order,
                 quaich: validated.quaich
@@ -227,6 +221,9 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
             data: {
                 name: validated.name,
                 description: validated.description,
+                age: validated.age,
+                nas: validated.nas,
+                abv: validated.abv,
                 image: validated.image,
                 order: validated.order,
                 quaich: validated.quaich,
@@ -248,7 +245,7 @@ export const addOrUpdateWhisky = async (meetingId: string, data: unknown) => {
     await revalidateMeetingsList();
     await revalidateWhiskies(whisky.meetingId);
     await revalidateWhisky(whisky.id);
-    return { success: true, data: whisky };
+    return { success: true, data: serializeWhiskyRow(whisky) };
 };
 
 export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {
@@ -342,6 +339,9 @@ export const getWhiskyDetails = async (meetingId: string, whiskyId: string) => {
                     id: whisky.id,
                     name: whisky.name,
                     description: whisky.description,
+                    age: whisky.age,
+                    nas: whisky.nas,
+                    abv: serializeWhiskyRow(whisky).abv,
                     image: whisky.image,
                     order: whisky.order,
                     quaich: whisky.quaich,

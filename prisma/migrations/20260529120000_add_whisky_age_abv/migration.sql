@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Whisky" ADD COLUMN "age" INTEGER,
+ADD COLUMN "abv" DECIMAL(4,1);

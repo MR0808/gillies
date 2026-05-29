@@ -2,6 +2,7 @@ import { Trophy, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { WhiskyDetailHeaderProps } from '@/types/whisky';
+import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 
 const WhiskyDetailHeader = ({ whisky }: WhiskyDetailHeaderProps) => {
     return (
@@ -31,6 +32,12 @@ const WhiskyDetailHeader = ({ whisky }: WhiskyDetailHeaderProps) => {
                                     </Badge>
                                 )}
                             </div>
+                            <WhiskySpecs
+                                age={whisky.age}
+                                nas={whisky.nas}
+                                abv={whisky.abv}
+                                className="mb-2"
+                            />
                             <p className="text-lg text-muted-foreground">
                                 {whisky.description}
                             </p>

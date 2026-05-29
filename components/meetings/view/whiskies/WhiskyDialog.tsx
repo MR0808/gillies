@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { WhiskySchema, type WhiskyInput } from '@/schemas/meetings';
+import { WhiskySchema, type WhiskyFormInput } from '@/schemas/meetings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,10 +41,37 @@ type Whisky = {
     id: string;
     name: string;
     description: string | null;
+    age: number | null;
+    nas: boolean;
+    abv: number | null;
     image: string | null;
     order: number;
     quaich: boolean;
 };
+
+const whiskyFormDefaults = (whisky: Whisky | null, existingOrders: number[]) =>
+    whisky
+        ? {
+              id: whisky.id,
+              name: whisky.name,
+              description: whisky.description || '',
+              age: whisky.nas ? '' : (whisky.age ?? ''),
+              nas: whisky.nas,
+              abv: whisky.abv != null ? whisky.abv.toFixed(1) : '',
+              image: whisky.image || '',
+              order: whisky.order,
+              quaich: whisky.quaich
+          }
+        : {
+              name: '',
+              description: '',
+              age: '',
+              nas: false,
+              abv: '',
+              image: '',
+              order: Math.max(...existingOrders, 0) + 1,
+              quaich: false
+          };
 
 const WhiskyDialog = ({
     open,
@@ -59,7 +86,7 @@ const WhiskyDialog = ({
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [showQuaichWarning, setShowQuaichWarning] = useState(false);
-    const [pendingData, setPendingData] = useState<WhiskyInput | null>(null);
+    const [pendingData, setPendingData] = useState<WhiskyFormInput | null>(null);
 
     const {
         register,
@@ -68,48 +95,21 @@ const WhiskyDialog = ({
         reset,
         watch,
         setValue
-    } = useForm<WhiskyInput>({
+    } = useForm<WhiskyFormInput>({
         resolver: zodResolver(WhiskySchema),
-        defaultValues: whisky
-            ? {
-                  id: whisky.id,
-                  name: whisky.name,
-                  description: whisky.description || '',
-                  image: whisky.image || '',
-                  order: whisky.order,
-                  quaich: whisky.quaich
-              }
-            : {
-                  name: '',
-                  description: '',
-                  image: '',
-                  order: Math.max(...existingOrders, 0) + 1,
-                  quaich: false
-              }
+        defaultValues: whiskyFormDefaults(whisky, existingOrders)
     });
 
     const quaichValue = watch('quaich');
+    const nasValue = watch('nas');
 
     useEffect(() => {
         if (open) {
             if (whisky) {
-                reset({
-                    id: whisky.id,
-                    name: whisky.name,
-                    description: whisky.description || '',
-                    image: whisky.image || '',
-                    order: whisky.order,
-                    quaich: whisky.quaich
-                });
+                reset(whiskyFormDefaults(whisky, existingOrders));
                 setImagePreview(whisky.image);
             } else {
-                reset({
-                    name: '',
-                    description: '',
-                    image: '',
-                    order: Math.max(...existingOrders, 0) + 1,
-                    quaich: false
-                });
+                reset(whiskyFormDefaults(null, existingOrders));
                 setImagePreview(null);
             }
             setImageFile(null);
@@ -128,7 +128,7 @@ const WhiskyDialog = ({
         }
     };
 
-    const onSubmit = async (data: WhiskyInput) => {
+    const onSubmit = async (data: WhiskyFormInput) => {
         // Check if marking as quaich and there's already a quaich
         if (data.quaich && currentQuaichId && currentQuaichId !== whisky?.id) {
             setPendingData(data);
@@ -139,7 +139,7 @@ const WhiskyDialog = ({
         await saveWhisky(data);
     };
 
-    const saveWhisky = async (data: WhiskyInput) => {
+    const saveWhisky = async (data: WhiskyFormInput) => {
         try {
             let imageUrl = data.image;
 
@@ -218,6 +218,89 @@ const WhiskyDialog = ({
                                     {errors.name.message}
                                 </p>
                             )}
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="age">Age (years)</Label>
+                                <Input
+                                    id="age"
+                                    type="number"
+                                    min={1}
+                                    max={150}
+                                    step={1}
+                                    placeholder="e.g. 12"
+                                    disabled={nasValue || isSubmitting}
+                                    {...register('age', {
+                                        setValueAs: (v) =>
+                                            v === '' || v == null ? '' : v
+                                    })}
+                                    aria-invalid={errors.age ? 'true' : 'false'}
+                                />
+                                {errors.age && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.age.message}
+                                    </p>
+                                )}
+                                <div className="flex items-center space-x-2 pt-1">
+                                    <Checkbox
+                                        id="nas"
+                                        checked={nasValue}
+                                        disabled={isSubmitting}
+                                        onCheckedChange={(checked) => {
+                                            const isNas = checked === true;
+                                            setValue('nas', isNas);
+                                            if (isNas) setValue('age', '');
+                                        }}
+                                    />
+                                    <Label
+                                        htmlFor="nas"
+                                        className="cursor-pointer text-sm font-normal"
+                                    >
+                                        NAS (no age statement)
+                                    </Label>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="abv">ABV (%)</Label>
+                                <Input
+                                    id="abv"
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder="e.g. 43.0"
+                                    {...register('abv', {
+                                        setValueAs: (v) =>
+                                            v === '' || v == null ? '' : v
+                                    })}
+                                    onBlur={(e) => {
+                                        const val = e.target.value.trim();
+                                        if (val === '') {
+                                            setValue('abv', '');
+                                            return;
+                                        }
+                                        const num = parseFloat(val);
+                                        if (!Number.isNaN(num)) {
+                                            setValue(
+                                                'abv',
+                                                Math.max(
+                                                    0,
+                                                    Math.min(100, num)
+                                                ).toFixed(1)
+                                            );
+                                        }
+                                    }}
+                                    aria-invalid={errors.abv ? 'true' : 'false'}
+                                />
+                                {errors.abv && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.abv.message}
+                                    </p>
+                                )}
+                                <p className="text-sm text-muted-foreground">
+                                    Optional, one decimal place
+                                </p>
+                            </div>
                         </div>
 
                         <div className="space-y-2">

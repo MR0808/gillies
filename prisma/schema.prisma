@@ -137,6 +137,9 @@ model Whisky {
   id          String   @id @default(cuid())
   name        String
   description String?
+  age         Int?
+  nas         Boolean  @default(false)
+  abv         Decimal? @db.Decimal(4, 1)
   image       String?
   quaich      Boolean  @default(false)
   order       Int      @default(0)

@@ -7,6 +7,7 @@ import db from '@/lib/db';
 import { CreateMeetingSchema, UpdateMeetingSchema } from '@/schemas/meetings';
 import { authCheckServer } from '@/lib/authCheck';
 import { TAGS } from '@/cache/tags';
+import { serializeWhiskyRow, whiskyCoreSelect } from '@/lib/whisky';
 import {
     revalidateMeetingsList,
     revalidateMeeting,
@@ -222,13 +223,8 @@ export async function getMeetings() {
                         where: { meetingId: { in: meetingIds } },
                         orderBy: { order: 'asc' },
                         select: {
-                            id: true,
-                            name: true,
-                            image: true,
-                            description: true,
-                            order: true,
-                            meetingId: true,
-                            quaich: true
+                            ...whiskyCoreSelect,
+                            meetingId: true
                         }
                     }),
                     db.user.findMany({
@@ -254,9 +250,9 @@ export async function getMeetings() {
                 // Merge results efficiently
                 const data = meetings.map((meeting) => ({
                     ...meeting,
-                    whiskies: whiskies.filter(
-                        (w) => w.meetingId === meeting.id
-                    ),
+                    whiskies: whiskies
+                        .filter((w) => w.meetingId === meeting.id)
+                        .map(serializeWhiskyRow),
                     users: users
                         .filter((u) =>
                             u.meetings.some((m) => m.id === meeting.id)
@@ -310,14 +306,7 @@ export async function getMeeting(id: string) {
                     db.whisky.findMany({
                         where: { meetingId },
                         orderBy: { order: 'asc' },
-                        select: {
-                            id: true,
-                            name: true,
-                            image: true,
-                            description: true,
-                            order: true,
-                            quaich: true
-                        }
+                        select: whiskyCoreSelect
                     }),
                     db.user.findMany({
                         where: { meetings: { some: { id: meetingId } } },
@@ -333,7 +322,14 @@ export async function getMeeting(id: string) {
                 ]);
 
                 // --- Step 3: Return merged data
-                return { data: { ...meeting, whiskies, users }, error: null };
+                return {
+                    data: {
+                        ...meeting,
+                        whiskies: whiskies.map(serializeWhiskyRow),
+                        users
+                    },
+                    error: null
+                };
             } catch (err) {
                 console.error('[getMeeting]', err);
                 return { data: null, error: 'Internal server error' };

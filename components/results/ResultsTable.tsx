@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 import { useState } from 'react';
 
 import { Trophy, TrendingUp, TrendingDown, Users, Download } from 'lucide-react';
@@ -263,6 +264,12 @@ export function ResultsTable({
                                                         </Badge>
                                                     )}
                                                 </div>
+                                                <WhiskySpecs
+                                                    age={whisky.age}
+                                                    nas={whisky.nas}
+                                                    abv={whisky.abv}
+                                                    className="mt-1"
+                                                />
                                                 <p className="text-sm text-muted-foreground">
                                                     {whisky.description}
                                                 </p>

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Whisky" ADD COLUMN "nas" BOOLEAN NOT NULL DEFAULT false;

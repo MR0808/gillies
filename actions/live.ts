@@ -32,6 +32,7 @@
 import type { Prisma } from '@/generated/prisma/client';
 import db from '@/lib/db';
 import { unstable_cache } from 'next/cache';
+import { serializeWhiskyRow } from '@/lib/whisky';
 
 type LiveReview = Prisma.ReviewGetPayload<{
     select: {
@@ -50,9 +51,14 @@ type LiveReview = Prisma.ReviewGetPayload<{
     };
 }>;
 
-type LiveWhisky = Prisma.WhiskyGetPayload<{
+type LiveWhiskyBase = Prisma.WhiskyGetPayload<{
     include: { meeting: true };
-}> & { reviews: LiveReview[] };
+}>;
+
+export type LiveWhisky = Omit<LiveWhiskyBase, 'abv'> & {
+    abv: number | null;
+    reviews: LiveReview[];
+};
 
 /**
  * Fetches a whisky, its meeting, and all reviews with user info.
@@ -90,9 +96,11 @@ export const getLiveWhiskyScores = unstable_cache(
             }
         })) as unknown as LiveReview[];
 
-        // --- Step 3: Merge manually
+        // --- Step 3: Merge manually (serialize ABV for client components)
+        const serialized = serializeWhiskyRow(whisky);
         return {
-            ...whisky,
+            ...serialized,
+            meeting: whisky.meeting,
             reviews
         };
     },

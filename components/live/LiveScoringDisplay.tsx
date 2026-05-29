@@ -16,6 +16,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { WhiskyLive } from '@/types/live';
 import { supabase } from '@/utils/supabase';
 import { getLiveWhiskyScores } from '@/actions/live';
+import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 
 const LiveScoringDisplay = ({
     whisky: initialWhisky
@@ -113,6 +114,12 @@ const LiveScoringDisplay = ({
                                         </Badge>
                                     )}
                                 </div>
+                                <WhiskySpecs
+                                    age={whisky.age}
+                                    nas={whisky.nas}
+                                    abv={whisky.abv}
+                                    className="mb-2"
+                                />
                                 {whisky.description && (
                                     <p className="text-slate-400 text-base line-clamp-2">
                                         {whisky.description}

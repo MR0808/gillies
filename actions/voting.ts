@@ -7,6 +7,7 @@ import { authCheckServer } from '@/lib/authCheck';
 import { ReviewServerInput, ReviewServerSchema } from '@/schemas/voting';
 import { revalidateMeetingResults } from '@/cache/revalidate';
 import { TAGS } from '@/cache/tags';
+import { serializeWhiskyRow, whiskyCoreSelect } from '@/lib/whisky';
 
 export async function getUserMeetings(userId?: string) {
     // ✅ 1️⃣ Do dynamic session logic outside cache
@@ -92,14 +93,7 @@ export async function getMeetingWhiskies(meetingId: string) {
                 const whiskies = await db.whisky.findMany({
                     where: { meetingId: mId },
                     orderBy: { order: 'asc' },
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                        image: true,
-                        order: true,
-                        quaich: true
-                    }
+                    select: whiskyCoreSelect
                 });
 
                 if (!whiskies.length) return { data: [] };
@@ -120,7 +114,7 @@ export async function getMeetingWhiskies(meetingId: string) {
 
                 // --- Step 3: Merge results manually ---
                 const data = whiskies.map((w) => ({
-                    ...w,
+                    ...serializeWhiskyRow(w),
                     reviews: reviews.filter((r) => r.whiskyId === w.id)
                 }));
 

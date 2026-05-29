@@ -31,6 +31,7 @@ import { ReviewSchema, ReviewFormInput } from '@/schemas/voting';
 import { cn } from '@/lib/utils';
 import { Whisky } from '@/types/voting';
 import { createVote } from '@/actions/voting';
+import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 
 const urlRegex = /(https?:\/\/\S+)/g;
 const exactUrlRegex = /^https?:\/\/\S+$/;
@@ -246,6 +247,12 @@ function WhiskyVotingCard({
                                     <h2 className="text-2xl font-bold tracking-tight">
                                         {whisky.name}
                                     </h2>
+                                    <WhiskySpecs
+                                        age={whisky.age}
+                                        nas={whisky.nas}
+                                        abv={whisky.abv}
+                                        className="mt-2"
+                                    />
                                     {whisky.description && (
                                         <p className="mt-2 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                             {renderDescriptionWithLinks(

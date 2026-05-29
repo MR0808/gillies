@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { WhiskyCardProps } from '@/types/meeting';
 import { deleteWhisky } from '@/actions/whiskies';
+import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 import Link from 'next/link';
 
 const WhiskyCard = ({ whisky, onEdit, meetingId }: WhiskyCardProps) => {
@@ -72,6 +73,12 @@ const WhiskyCard = ({ whisky, onEdit, meetingId }: WhiskyCardProps) => {
             </CardHeader>
             <CardContent className="p-4">
                 <CardTitle className="text-lg mb-2">{whisky.name}</CardTitle>
+                <WhiskySpecs
+                    age={whisky.age}
+                    nas={whisky.nas}
+                    abv={whisky.abv}
+                    className="mb-2"
+                />
                 <p className="text-sm text-muted-foreground line-clamp-2">
                     {whisky.description || 'No description'}
                 </p>

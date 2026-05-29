@@ -6,6 +6,7 @@ import { unstable_cache } from 'next/cache';
 import db from '@/lib/db';
 import { authCheckServer } from '@/lib/authCheck';
 import { TAGS } from '@/cache/tags';
+import { serializeWhiskyRow, whiskyCoreSelect } from '@/lib/whisky';
 
 type ReviewWithUser = Prisma.ReviewGetPayload<{
     select: {
@@ -46,13 +47,7 @@ export async function getMeetingResults(meetingId: string) {
                 const whiskies = await db.whisky.findMany({
                     where: { meetingId: id },
                     orderBy: { order: 'asc' },
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                        image: true,
-                        order: true
-                    }
+                    select: whiskyCoreSelect
                 });
 
                 if (!whiskies.length)
@@ -95,13 +90,14 @@ export async function getMeetingResults(meetingId: string) {
 
                 // --- Step 5: Merge results ---
                 const whiskiesWithStats = whiskies.map((w) => {
+                    const serialized = serializeWhiskyRow(w);
                     const stats = reviewStats.find((r) => r.whiskyId === w.id);
                     const reviewers = reviewUsers.filter(
                         (r) => r.whiskyId === w.id
                     );
 
                     return {
-                        ...w,
+                        ...serialized,
                         average: stats?._avg.rating ?? 0,
                         count: stats?._count.rating ?? 0,
                         min: stats?._min.rating ?? 0,
