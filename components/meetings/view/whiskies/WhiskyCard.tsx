@@ -29,12 +29,13 @@ import { deleteWhisky } from '@/actions/whiskies';
 import WhiskySpecs from '@/components/whisky/WhiskySpecs';
 import Link from 'next/link';
 
-const WhiskyCard = ({ whisky, onEdit, meetingId }: WhiskyCardProps) => {
+const WhiskyCard = ({ whisky, onEdit, onDeleted, meetingId }: WhiskyCardProps) => {
     const handleDelete = async () => {
         try {
             const data = await deleteWhisky(whisky.id);
             if (data.success) {
                 toast.success('Whisky deleted successfully');
+                await onDeleted();
             }
             if (data.error) {
                 toast.error('Failed to delete whisky');

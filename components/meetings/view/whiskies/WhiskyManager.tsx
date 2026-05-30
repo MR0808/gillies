@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import WhiskyCard from '@/components/meetings/view/whiskies/WhiskyCard';
 import WhiskyDialog from '@/components/meetings/view/whiskies/WhiskyDialog';
+import { getMeetingWhiskies } from '@/actions/whiskies';
 import { Whisky, WhiskyManagerProps } from '@/types/meeting';
 
 const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
@@ -19,9 +20,18 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
     const [editingWhisky, setEditingWhisky] = useState<Whisky | null>(null);
     const [whiskies, setWhiskies] = useState(meeting.whiskies);
 
+    // Only reset when viewing a different meeting — not on every parent re-render
+    // (router.refresh() can briefly serve stale cached whiskies and wipe local adds).
     useEffect(() => {
         setWhiskies(meeting.whiskies);
-    }, [meeting.whiskies]);
+    }, [meeting.id]);
+
+    const refreshWhiskies = async () => {
+        const result = await getMeetingWhiskies(meeting.id);
+        if (result.data) {
+            setWhiskies(result.data);
+        }
+    };
 
     const handleEdit = (whisky: Whisky) => {
         setEditingWhisky(whisky);
@@ -38,17 +48,12 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
         setEditingWhisky(null);
     };
 
-    const handleWhiskySaved = (savedWhisky: Whisky) => {
-        setWhiskies((prev) => {
-            let next = prev.filter((w) => w.id !== savedWhisky.id);
+    const handleWhiskySaved = async () => {
+        await refreshWhiskies();
+    };
 
-            if (savedWhisky.quaich) {
-                next = next.map((w) => ({ ...w, quaich: false }));
-            }
-
-            next.push(savedWhisky);
-            return next.sort((a, b) => a.order - b.order);
-        });
+    const handleWhiskyDeleted = async () => {
+        await refreshWhiskies();
     };
 
     return (
@@ -81,6 +86,7 @@ const WhiskyManager = ({ meeting }: WhiskyManagerProps) => {
                                     key={whisky.id}
                                     whisky={whisky}
                                     onEdit={handleEdit}
+                                    onDeleted={handleWhiskyDeleted}
                                     meetingId={meeting.id}
                                 />
                             ))}

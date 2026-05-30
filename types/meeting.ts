@@ -47,6 +47,7 @@ export interface WhiskyManagerProps {
 export interface WhiskyCardProps {
     whisky: Whisky;
     onEdit: (whisky: Whisky) => void;
+    onDeleted: () => void | Promise<void>;
     meetingId: string;
 }
 
@@ -57,7 +58,7 @@ export interface WhiskyDialogProps {
     meetingId: string;
     currentQuaichId: string | null;
     existingOrders: number[];
-    onSaved: (whisky: Whisky) => void;
+    onSaved: () => void | Promise<void>;
 }
 
 export interface MemberManagerProps {

@@ -5,7 +5,6 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -82,7 +81,6 @@ const WhiskyDialog = ({
     existingOrders,
     onSaved
 }: WhiskyDialogProps) => {
-    const router = useRouter();
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [showQuaichWarning, setShowQuaichWarning] = useState(false);
@@ -157,7 +155,7 @@ const WhiskyDialog = ({
                 throw new Error(result?.error || 'Failed to save whisky');
             }
 
-            onSaved(result.data);
+            await onSaved();
 
             toast.success(
                 whisky
@@ -165,7 +163,6 @@ const WhiskyDialog = ({
                     : 'Whisky added successfully'
             );
 
-            router.refresh();
             onClose();
         } catch (error) {
             const message =
