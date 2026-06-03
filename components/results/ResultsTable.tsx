@@ -23,6 +23,7 @@ import {
     HoverCardTrigger
 } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
+import { calculateWhiskyScoreStats } from '@/lib/scoring';
 import { Review, ResultsTableProps } from '@/types/results';
 
 export function ResultsTable({
@@ -33,21 +34,8 @@ export function ResultsTable({
     meetingDate
 }: ResultsTableProps) {
     const [sortMode, setSortMode] = useState<'rank' | 'order'>('rank');
-    const calculateStats = (reviews: Review[]) => {
-        if (reviews.length === 0)
-            return { avg: 0, min: 0, max: 0, stdDev: 0, count: 0 };
-
-        const ratings = reviews.map((r) => r.rating);
-        const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-        const min = Math.min(...ratings);
-        const max = Math.max(...ratings);
-        const variance =
-            ratings.reduce((sum, rating) => sum + (rating - avg) ** 2, 0) /
-            ratings.length;
-        const stdDev = Math.sqrt(variance);
-
-        return { avg, min, max, stdDev, count: reviews.length };
-    };
+    const calculateStats = (reviews: Review[]) =>
+        calculateWhiskyScoreStats(reviews.map((r) => r.rating));
 
     // Sort whiskies by average rating (descending)
     const rankedWhiskies = [...whiskies].sort((a, b) => {
@@ -96,6 +84,7 @@ export function ResultsTable({
             'Order',
             'Votes',
             'Average',
+            'Ice Skating Score',
             'High',
             'Low',
             'Range',
@@ -113,6 +102,7 @@ export function ResultsTable({
                     escapeCsvValue(whisky.order),
                     escapeCsvValue(stats.count),
                     escapeCsvValue(stats.avg.toFixed(2)),
+                    escapeCsvValue(stats.iceSkating.toFixed(2)),
                     escapeCsvValue(stats.max.toFixed(1)),
                     escapeCsvValue(stats.min.toFixed(1)),
                     escapeCsvValue(range.toFixed(1)),
@@ -184,6 +174,9 @@ export function ResultsTable({
                             </TableHead>
                             <TableHead className="text-center">
                                 Avg Score
+                            </TableHead>
+                            <TableHead className="text-center">
+                                Ice Skating Score
                             </TableHead>
                             <TableHead className="text-center">
                                 <div className="flex items-center justify-center gap-1">
@@ -348,6 +341,18 @@ export function ResultsTable({
                                     <TableCell className="text-center">
                                         <span className="font-bold text-lg">
                                             {stats.avg.toFixed(2)}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <span
+                                            className="font-bold text-lg"
+                                            title={
+                                                stats.count >= 3
+                                                    ? 'Highest and lowest scores removed, then averaged'
+                                                    : 'Needs at least 3 votes to drop top and bottom; showing average'
+                                            }
+                                        >
+                                            {stats.iceSkating.toFixed(2)}
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-center">
